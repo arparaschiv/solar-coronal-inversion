@@ -17,7 +17,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 
 ### **Documentation**
 
-1. Extensive documentation, **including instalation instruction, dependencies, algorithm scematics and much more** is available in a dedicated documentation writeup. [README-CODEDOC.pdf](./README-CODEDOC.pdf).
+1. Extensive documentation, **including instalation instruction, dependencies, algorithm scematics and much more** is available in a dedicated documentation writeup. [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
 2. Additional in-depth documentation for the bash/fortran parallel database generation module is also provided; [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md)
 3. This is a alpha-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents current issues and functions to be implemented in the near future.
 ### **System platform compatibility**
