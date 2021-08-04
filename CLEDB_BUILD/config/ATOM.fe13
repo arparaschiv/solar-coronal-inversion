@@ -1,0 +1,119 @@
+* written by atomwr on Tue Mar  3 20:45:13 2020
+FE XIII
+* abnd  awgt
+** elemental abundance (H = 12), atomic weight
+    8.12   55.85
+*
+** number of levels, number of lines, number of continua, number of fixed
+**  usually only nk and nline are needed for coronal lines
+* nk,nline,ncont,nrfix
+        4        6        0        0
+*       E cm-1    g   label                        ion  S   L   J   P  Lande G
+         0.000  1.00  '            3S2 3P2 3PE 0'  13 1.0 1.0 0.0 0  1.0000e+00
+      9303.000  3.00  '            3S2 3P2 3PE 1'  13 1.0 1.0 1.0 0  1.5012e+00
+**    standard lande g factor level
+     18561.600  5.00  '            3S2 3P2 3PE 2'  13 1.0 1.0 2.0 0  1.5012e+00
+** Line to account for Sascha's calculation.
+*    18561.600  5.00  '            3S2 3P2 3PE 2'  13 1.0 1.0 2.0 0  1.4950e+00
+    494942.000  3.00  '          3S2 3P 3D 3PO 1'  13 1.0 1.0 1.0 1  1.5012e+00
+**
+** Upper level, lower level, absorption oscillator strength,
+**             number of wavelengthn points across the line profile,
+**             maximum wavelength in units of QNORM (see input* files)
+**             wavelength between core (linear) and wing (logarithmic) wavelengths
+**             IWIDE is an obselete parameter not needed (0 here)
+**             then the three 0.00e+00 are obselete parameters to define Voigt profile
+**
+*   3S2 3P2 3PE 1   3S2 3P2 3PE 0        10746.269
+   2   1 7.274e-07  30  10.0  10.0  0   0.00e+00  0.00e+00  0.00e+00
+*   3S2 3P2 3PE 2   3S2 3P2 3PE 0         5385.968
+   3   1 1.386e-10  30  10.0  10.0  0   0.00e+00  0.00e+00  0.00e+00
+*   3S2 3P 3D 3PO 1   3S2 3P2 3PE 0          202.044
+   4   1 6.e-02  30  10.0  10.0  0   0.00e+00  0.00e+00  0.00e+00
+*   3S2 3P2 3PE 2   3S2 3P2 3PE 1        10797.804
+   3   2 2.880e-07  30  10.0  10.0  0   0.00e+00  0.00e+00  0.00e+00
+*   3S2 3P 3D 3PO 1   3S2 3P2 3PE 1          205.914
+   4   2 4.011e-04  30  10.0  10.0  0   0.00e+00  0.00e+00  0.00e+00
+*   3S2 3P 3D 3PO 1   3S2 3P2 3PE 2          209.916
+   4   3 .59e-03  30  10.0  10.0  0   0.00e+00  0.00e+00  0.00e+00
+* WRITTEN BY COLWR ON Tue Mar  3 20:45:13 2020
+* ATOM IS    FE
+GENCOL
+** grid of temperatures
+TEMP
+ 8 1.00000e+04 3.16228e+04 1.00000e+05 3.16228e+05 1.00000e+06
+ 3.16228e+06 1.00000e+07 3.16228e+07
+**
+** level i level j Maxwellian averaged collision strengths between levels
+**
+OHM
+   1   2   4.54e-01 6.69e-01 7.43e-01 5.82e-01 3.08e-01 1.28e-01 4.76e-02
+ 1.68e-02
+OHM
+   1   3   4.37e-01 7.07e-01 7.12e-01 5.69e-01 3.38e-01 1.88e-01 1.26e-01
+ 1.05e-01
+OHM
+   2   3   1.30e+00 2.57e+00 2.80e+00 2.25e+00 1.27e+00 6.12e-01 3.32e-01
+ 2.31e-01
+TEMP
+ 2   1.e5 1.e8
+OHM
+   1   4   20  40
+TEMP
+5 1.e6 1.5e6 2.e6 2.5e6 3.e6
+** proton collision rates between magnetic substates cm-3 /sec
+* Landman 1975 A+A 43, 285, table 4
+* I  J  M  M'
+CPMM
+  1  2  0 -1    .136e-10 .380e-10 .662e-10 .949e-10 1.23e-10
+CPMM
+  1  2  0  0    .136e-10 .380e-10 .662e-10 .949e-10 1.23e-10
+CPMM
+  1  2  0  1    .136e-10 .380e-10 .662e-10 .949e-10 1.23e-10
+*
+CPMM
+  1  3  0 -2    .509e-10 1.26e-10 2.02e-10 2.70e-10 3.29e-10
+CPMM
+  1  3  0 -1    .509e-10 1.26e-10 2.02e-10 2.70e-10 3.29e-10
+CPMM
+  1  3  0  0    .509e-10 1.26e-10 2.02e-10 2.70e-10 3.29e-10
+CPMM
+  1  3  0  1    .509e-10 1.26e-10 2.02e-10 2.70e-10 3.29e-10
+CPMM
+  1  3  0  2    .509e-10 1.26e-10 2.02e-10 2.70e-10 3.29e-10
+*
+CPMM
+  2  2 -1  0    1.21e-10 1.65e-10 2.01e-10 2.30e-10 2.54e-10
+CPMM
+  2  2 -1  1    2.30e-10 2.99e-10 3.49e-10 3.88e-10 4.19e-10
+CPMM
+  2  3 -1 -2    1.11e-10 2.19e-10 3.14e-10 3.93e-10 4.58e-10
+CPMM
+  2  3 -1 -1    1.51e-10 2.84e-10 3.93e-10 4.79e-10 5.46e-10
+CPMM
+  2  3 -1  0    1.46e-10 2.71e-10 3.70e-10 4.46e-10 5.03e-10
+CPMM
+  2  3 -1  1    .975e-10 1.80e-10 2.46e-10 2.93e-10 3.28e-10
+CPMM
+  2  3 -1  2    .047e-10 .108e-10 .160e-10 .198e-10 .222e-10
+CPMM
+  2  3  0 -2    1.90e-10 3.49e-10 4.73e-10 5.66e-10 6.35e-10
+CPMM
+  2  3  0 -1    .579e-10 1.15e-10 1.65e-10 2.06e-10 2.40e-10
+CPMM
+  2  3  0  0    .138e-10 .369e-10 .622e-10 .864e-10 1.08e-10
+*
+CPMM
+  3  3 -2 -1    2.08e-10 2.95e-10 3.55e-10 3.98e-10 4.32e-10
+CPMM
+  3  3 -2  0    1.33e-10 1.79e-10 2.04e-10 2.17e-10 2.24e-10
+CPMM
+  3  3 -2  1    .044e-10 .093e-10 .137e-10 .172e-10 .198e-10
+CPMM
+  3  3 -2  2    .028e-10 .041e-10 .047e-10 .049e-10 .049e-10
+*
+CPMM
+  3  3 -1  0    .529e-10 .985e-10 1.45e-10 1.89e-10 2.29e-10
+CPMM
+  3  3 -1  1    1.96e-10 2.58e-10 2.90e-10 3.05e-10 3.11e-10
+END

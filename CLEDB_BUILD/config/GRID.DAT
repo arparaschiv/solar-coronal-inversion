@@ -1,0 +1,11 @@
+* GXMIN GXMAX LOS
+-.3 .3
+* GYMIN GYMAX EW
+0.99 1.25
+* GZMIN GZMAX NS
+-.05 .05
+*NX
+32
+*
+
+
