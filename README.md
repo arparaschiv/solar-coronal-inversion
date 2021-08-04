@@ -32,8 +32,8 @@ both 1-line and 2-line implementations of CLEDB can be tested with synthetic dat
 1. [test_1line](./test_1line.ipynb)
 2. [test_2line](./test_2line.ipynb)
 
-The synthetic test data is [hosted separately here.](link to drive not ready)
-Both examples are expected to fully execute in a correct instalation.
+The synthetic test data is [hosted separately here.](https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing).
+Both examples are expected to fully execute in a correct installation.
 
 ### **Scholarly works supporting the CLEDB inversion**
 1. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) 
