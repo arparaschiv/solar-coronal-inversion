@@ -17,14 +17,14 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 
 ### **Documentation**
 
-1. Extensive documentation, **including instalation instruction, dependencies, algorithm scematics and much more** is available in a dedicated documentation writeup. [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
-2. Additional in-depth documentation for the bash/fortran parallel database generation module is also provided; [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md)
+1. Extensive documentation, **including instalation instruction, dependencies, algorithm scematics and much more** is available in a dedicated documentation write-up. [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
+2. Additional in-depth documentation for the Bash & Fortran parallel database generation module is also provided; [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md)
 3. This is a alpha-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents current issues and functions to be implemented in the near future.
 ### **System platform compatibility**
 
-1. Debian+derivatives Linux x64       -- all inversion modules are fully working.
-2. OSX (Darwin) Catalina and Big Sur  -- all inversion modules are fully working; One additional homebrew package required. See README-CODEDOC.pdf.
-3. Windows platform                   -- not tested.
+1. Debian+derivatives Linux x64           -- all inversion modules are fully working.
+2. OSX (Darwin x64) Catalina and Big Sur  -- all inversion modules are fully working; One additional homebrew package required. See README-CODEDOC.pdf.
+3. Windows platform                       -- not tested.
 
 ### **Examples**
 After installing the package and generating databases, as describes in the README-CODEDOC,
@@ -32,8 +32,12 @@ both 1-line and 2-line implementations of CLEDB can be tested with synthetic dat
 1. [test_1line](./test_1line.ipynb)
 2. [test_2line](./test_2line.ipynb)
 
+Note: The script versions (.py) of both 1-line nad 2-line tests and the test_cledb_script.sh are slurm enabled for headless RC system runs. 
+These offer the same functionality as the notebooks (from which they are directly derived from).
+
 The synthetic test data is [hosted separately here.](https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing).
 Both examples are expected to fully execute in a correct installation.
+
 
 ### **Scholarly works supporting the CLEDB inversion**
 1. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) 

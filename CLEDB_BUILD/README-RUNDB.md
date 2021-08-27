@@ -4,16 +4,17 @@ Contact: Alin Paraschiv (arparaschiv@nso.edu)
 
 History:
 - ARP: 20210617 - initial release
+- ARP: 20210827 - Added a slurm enabled version of the script for RC systems
 
 SCOPE:
 
-This is a simple bash implementation that launches separate parralel processes.
+This is a simple bash implementation that launches separate parallel processes.
 
 INSTALL and USAGE:
 
 - make sure the scripts are executable  
-chmod u+x run_db_1074.sh
-chmod u+x run_db_1074.sh
+chmod u+x rundb_1line.sh
+chmod u+x rundb_1line_slurm.sh
 
 - (Optional if needed) OSX might have issues with running executables ("cannot execute binary file").
 To fix try:
@@ -24,7 +25,7 @@ xattr -d com.apple.quarantine /path/to/file
 
 - run with:
 
-./run_db_1line
+./rundb_1line
 
 - The only user editable file is the DB.INPUT that configures the database number of calculations (resolution).
 
@@ -50,8 +51,8 @@ NOTES:
 - The script is configured to produce one line database outputs.All atomic data for the four ions of interest along with the configuration files 
   are directly available and this setup selects the relevant inputs automatically.
 
-- Database output, header, and logs will be written in the correspondent subdir. Intermediary folders and files will be deleted upon completion.
-  The logs are dinamically written and calculation status can be checked anytime with  commands like tail; e.g.
+- Database output, header, and logs will be written in the correspondent subdirectory. Intermediary folders and files will be deleted upon completion.
+  The logs are dynamically written and calculation status can be checked anytime with  commands like tail; e.g.
 
 tail BASHJOB_0.LOG 
 
@@ -67,7 +68,7 @@ tail BASHJOB_0.LOG
 - The script heavily relies on the SED function. 
   SED has different implementations on Linux (GNU) vs mac (BSD) which make commands not be directly correspondent.
   A function wrapper SEDI that disentangles GNU vs BSD syntax is provided in the scripts.
-  OSX users need to install a gnu inplementation of sed (gnu-sed) for the script to be portable between systems (via the gsed command)
+  OSX users need to install a gnu implementation of sed (gnu-sed) for the script to be portable between systems (via the gsed command)
 
 brew install gnu-sed
 
@@ -76,7 +77,7 @@ brew install gnu-sed
 
 - Executables (dbxxx) need to be build (from CLE) on the current architecture: ELF(linux) or Mach-O(OSX) 
   If non-correct executables are called a "cannot execute binary file" error is produced. Architecture can be checked with the file command 
-  The configuration now deduces the OS in use and selects and uses the proper dbxxx executable in each case, as long as both Darwin and LINUX executables are present.
+  The configuration now deduces the OS in use and selects and uses the proper dbxxx executable in each case, where both Darwin and LINUX executables exist.
 
 
 
