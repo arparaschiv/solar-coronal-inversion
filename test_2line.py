@@ -47,6 +47,21 @@ waveB=waveB[::-1]
 ## we test here using sobs1.
 
 
+# In[6]:
+
+
+## load the fake observation muram data.
+## FE XIII 1074+1079
+## sobs_a is normalized to first column (stokes I 1074)
+## RMS is 1 in this example; observation can be convoluted with noise if needed and re-normalized again
+
+# with open('obsstokes_avg_muram.pkl','rb') as f:
+#     f1aa,f2aa,sobs_a,yobs_a,rms,wvl,xxl,yyl = pickle.load(f)    
+
+# with open('obsstokes_avg_muram2.pkl','rb') as f:
+#     sobs_a,yobs_a,rms,xxl,yyl = pickle.load(f)        
+
+
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
 
 # ##### Remember to set your personal options and database paths in the ctrlparams class (in the parent directory) before continuing.
@@ -121,14 +136,26 @@ invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,db
 
 # ##### All should be good if we reached this point; all the outputs should be computed.
 
-# ### 4. PLOT the outputs
+# ### 4. DUMP results (optional)
+
+# In[8]:
+
+
+from datetime import datetime
+datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")
+
+with open(f'outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump([specout,invout,sfound], f)
+
+
+# ### 5. PLOT the outputs (optional)
 
 # In[10]:
 
 
 ##needed libraries and functions
 from matplotlib import pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'widget')
+#%matplotlib widget                ## interactive plotting; use only on local machines if installed
 
 # colorbar function to have nice colorbars in figures
 def colorbar(mappable):
@@ -204,6 +231,7 @@ ab=plots[2,3].imshow(specout[230:400,65:195,linen,11],vmin=0.0,vmax=0.3)
 plots[2,3].set_title('Total polarization fraction')
 colorbar(ab)
 plt.tight_layout()
+plt.savefig(f"specout_2line_{datestamp}.pdf")
 
 
 # In[23]:
@@ -262,6 +290,7 @@ ab=plots[3,2].imshow(invout[230:400,65:195,soln,10],vmin=-400,vmax=400)
 plots[3,2].set_title('LOS cartesian B$_z$')
 colorbar(ab)
 plt.tight_layout()
+plt.savefig(f"blosout_1line_{datestamp}.pdf")
 
 
 # In[60]:
@@ -269,13 +298,13 @@ plt.tight_layout()
 
 ##Print inversion solution in a human readable way
 
-np.set_printoptions(linewidth=200,suppress=False)   ## Suppress can be set to true to disable exponential notation.
-xx=310      ## x pixel position
-yy=105      ## y pixel positions
+# np.set_printoptions(linewidth=200,suppress=False)   ## Suppress can be set to true to disable exponential notation.
+# xx=310      ## x pixel position
+# yy=105      ## y pixel positions
 
 
-print("||    DB Index   ||     chi^2    ||  ne density  ||  y (height)  || x (LOS pos.) ||      B       ||    B_theta   ||    B_phi     ||      Bx      ||      By      ||     Bz       ||")
-print(invout[xx,yy,:,:])
+# print("||    DB Index   ||     chi^2    ||  ne density  ||  y (height)  || x (LOS pos.) ||      B       ||    B_theta   ||    B_phi     ||      Bx      ||      By      ||     Bz       ||")
+# print(invout[xx,yy,:,:])
 
 
 # In[ ]:

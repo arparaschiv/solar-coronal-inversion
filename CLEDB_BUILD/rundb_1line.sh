@@ -46,6 +46,10 @@ case "$(uname -s)" in
     MINGW*)     dbexec='db*_linux';;
     *)          exit 1
 esac
+## additional case for the CU research computing systems;a 3rd executable exists for this
+uname -n | grep 'rc.int.colorado.edu' &> /dev/null
+if [ $? == 0 ]; then dbexec='db*_rclinux'; fi
+
 
 ### database and calculation configuration parameters
 ### please keep the DB.INPUT configuration as in example; including spaces and decimal numbers on line 5 for this to work
@@ -74,13 +78,13 @@ for e in `seq 0 $ncore`; do
 	##tasks will not evenly split between CPU threads; residual tasks will be given to last CPU threah
 	if (($e < $ncore)); then                                                                           ## default tast split
 
-		ymin_c=$(echo "scale=3; $ymin+0.001 + ( $e      *$subcalc)*(($ymax - $ymin) / $yh)  " | bc );  ## min and max y height of each CPU thread subtask
-		ymax_c=$(echo "scale=3; $ymin+        (($e+1)   *$subcalc)*(($ymax - $ymin) / $yh)  " | bc );
+		ymin_c=$(echo "scale=4; $ymin+0.001 + ( $e      *$subcalc)*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');  ## min and max y height of each CPU thread subtask
+		ymax_c=$(echo "scale=4; $ymin+        (($e+1)   *$subcalc)*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');
 	
 	else                                                                                               ## extra tasks for last core
 		ymin_c=$(echo "scale=3 ; $ymax_c + 0.001 " | bc);
 		ymax_c=$(echo "scale=3 ; $ymax   + 0.001 " | bc);
-		subcalc=$(echo "scale=0 ; $yh / ($ncore +1) + ($yh % ($ncore +1)) " | bc);                     ## update the number of tasks in this last case
+		subcalc=$(echo "scale=0 ; $yh / $ncore  + ($yh % $ncore ) " | bc);                     ## update the number of tasks in this last case
 		dbconf_new="$subcalc"${dbconf[@]:2}"";
 	fi	
 

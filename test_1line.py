@@ -10,7 +10,7 @@
 ## Do not directly edit that version!
 
 
-# In[1]:
+# In[6]:
 
 
 ## Needed modules
@@ -24,6 +24,8 @@ from numba.typed import List ## Most numba functions are loaded by the CLEDB mod
 import constants as consts
 import ctrlparams 
 
+
+# ### 1. LOAD the input data
 
 # In[3]:
 
@@ -43,6 +45,21 @@ sobsa=sobsa[:,:,::-1,:]
 waveA=waveA[::-1]
 waveB=waveB[::-1]
 ## we test here using sobs1.
+
+
+# In[6]:
+
+
+## load the fake observation muram data.
+## FE XIII 1074+1079
+## sobs_a is normalized to first column (stokes I 1074)
+## RMS is 1 in this example; observation can be convoluted with noise if needed and re-normalized again
+
+# with open('obsstokes_avg_muram.pkl','rb') as f:
+#     f1aa,f2aa,sobs_a,yobs_a,rms,wvl,xxl,yyl = pickle.load(f)    
+
+# with open('obsstokes_avg_muram2.pkl','rb') as f:
+#     sobs_a,yobs_a,rms,xxl,yyl = pickle.load(f)        
 
 
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
@@ -112,16 +129,28 @@ importlib.reload(procinv)       ## If module is modified, reload the contents
 blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 
 
-# ##### All should be good if we reached this point; all the outputs should be computed.
+# ### 4. DUMP results (optional)
 
-# ### 4. PLOT the outputs
+# In[8]:
 
-# In[11]:
+
+from datetime import datetime
+datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")
+
+with open(f'outparams_1line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump([specout,blosout], f)
+
+
+# ##### All should be good if we reached this point; all the outputs should be computed and saved.
+
+# ### 5. PLOT the outputs (optional)
+
+# In[15]:
 
 
 ##needed libraries and functions
 from matplotlib import pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'widget')
+# %matplotlib widget                    ##interactive plotting;use only on local machines if available
 
 # colorbar function to have nice colorbars in figures
 def colorbar(mappable):
@@ -198,6 +227,8 @@ plots[2,3].set_title('Total polarization fraction')
 colorbar(ab)
 plt.tight_layout()
 
+plt.savefig(f"specout_1line_{datestamp}.pdf")
+
 
 # In[13]:
 
@@ -223,9 +254,5 @@ plots[1,1].set_title('Magnetic Azimuth')
 colorbar(ab)
 plt.tight_layout()
 
-
-# In[ ]:
-
-
-
+plt.savefig(f"blosout_1line_{datestamp}.pdf")
 

@@ -36,7 +36,17 @@ Note: The script versions (.py) of both 1-line and 2-line tests and the test_cle
 enabled for headless RC system runs. These offer the same functionality as the notebooks (from which they are directly derived from) See the dedicated readme_headless for additional information.
 
 The synthetic test data is [hosted separately here.](https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing).
-Both examples are expected to fully execute in a correct installation.
+
+For research computing systems the test data can be downloaded via the shell interface with the following method:
+
+i. Load the following gdrive wrapper script into your bash directly, or introduce it in your .bash_alias setup.
+    function gdrive_download () {   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p');   wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2;   rm -rf /tmp/cookies.txt; }
+
+ii. Download the file using its gdrive FILE_ID from the download link (test data FILE_ID = 1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m):
+    gdrive_download FILE_ID local_path/local_name
+
+
+Both test examples are expected to fully execute in a correct installation.
 
 
 ### **Scholarly works supporting the CLEDB inversion**
