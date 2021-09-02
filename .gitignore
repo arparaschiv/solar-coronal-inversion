@@ -128,5 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-## test datacube; available via google drive.
-obsstokes_3dipole_hires_fullspectra.pkl
+## test datacubes; available via google drive.
+obsstokes*.pkl
+## output plots
+specout*.pdf
+invout*.pdf
+blosout*.pdf

@@ -72,13 +72,16 @@ import os
 import sys
 import numexpr as ne
 
+import ctrlparams 
+params=ctrlparams.ctrlparams()    ## just a shorter label
+
 #########################################################################
 ### Main Modules ########################################################
 #########################################################################
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=True,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
 def sobs_preprocess(sobs_in,params):
 ## Main script to read data and prepare it for analysis.
 
@@ -192,7 +195,7 @@ def sobs_preprocess(sobs_in,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=True,forceobj=True,looplift=True)    
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True)    
 def sdb_preprocess(yobs,keyvals,params):
 ## Main script to find and preload all necessary databases. 
 ## Returns databases as a list along with an encoding corresponding to each voxel of the observation
@@ -216,7 +219,7 @@ def sdb_preprocess(yobs,keyvals,params):
     ######################################################################
     ## Create a file encoding showing which database to read for which voxel
     ## the encoding labels at this stage do not have an order.
-    db_enc=np.empty((nx,ny),dtype=np.int_)
+    db_enc=np.zeros((nx,ny),dtype=np.int32)
     
     for xx in range(nx):
         for yy in prange(ny):                     
@@ -283,7 +286,7 @@ def sdb_preprocess(yobs,keyvals,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=True,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
 def sdb_fileingest(dbdir,nline,tline,verbose):  
 #returns filename and index of elongation y in database  
 ## This prepares the database directory files outside of numba non-python..
@@ -304,19 +307,19 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 
             namesA=glob.glob(dbdir+dbsubdirs[0]+"DB*.DAT")
             namesB=glob.glob(dbdir+dbsubdirs[1]+"DB*.DAT")
-            nn=str.find(namesA[0],'DB')
-            dbynumbers=np.empty(len(namesA),dtype=np.int_)
+            nn=str.find(namesA[0],'DB0')
+            dbynumbers=np.empty(len(namesA),dtype=np.int32)
             for i in range(0,len(namesA)):
-                dbynumbers[i]=np.int_(namesA[i][nn+2:nn+6])
+                dbynumbers[i]=np.int32(namesA[i][nn+2:nn+6])
             return [namesA,namesB],dbynumbers,dbsubdirs
 
         ## legacy loop to read two line databases (for fe XIII). .hdr and .DAT database files need to be in dbdir.
         elif os.path.isfile(dbdir+"db.hdr") and glob.glob(dbdir+"DB*.DAT") != []:
             names=glob.glob(dbdir+"DB*.DAT")
-            nn=str.find(names[0],'DB')
-            dbynumbers=np.empty(len(names),dtype=np.int_)
+            nn=str.find(names[0],'DB0')
+            dbynumbers=np.empty(len(names),dtype=np.int32)
             for i in range(0,len(names)):
-                dbynumbers[i]=np.int_(names[i][nn+2:nn+6])
+                dbynumbers[i]=np.int32(names[i][nn+2:nn+6])
             return [names,None],dbynumbers,'twolineDB' ##double return of names +none is superfluous; reason is to keep returns consistent regardless in terms of datatype of the if case
 
         elif sum(line_bin) ==1:
@@ -335,10 +338,10 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
                     dbsubdirs.append(line_str[np.where(line_bin)[0][i]])
 
             namesA=glob.glob(dbdir+dbsubdirs+"DB*.DAT")
-            nn=str.find(namesA[0],'DB')
-            dbynumbers=np.empty(len(namesA),dtype=np.int_)
+            nn=str.find(namesA[0],'DB0')
+            dbynumbers=np.empty(len(namesA),dtype=np.int32)
             for i in range(0,len(namesA)):
-                dbynumbers[i]=np.int_(namesA[i][nn+2:nn+6])
+                dbynumbers[i]=np.int32(namesA[i][nn+2:nn+6])
             return [namesA,None],dbynumbers,dbsubdirs
 
         else:
@@ -347,20 +350,19 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 ###########################################################################
 ###########################################################################
 
-
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)               ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_findelongation(y,dbynumbers):
 # returns index of elongation y in database
-# The calculation is faster fed as a function rather than an inline calculation! 
-    return np.argmin(np.abs(1. + dbynumbers / 1000 - y))
+# The calculation is faster ingested as a function rather than an inline calculation! 
+    return np.argmin(np.abs(1. + dbynumbers / 1000. - y))
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@jit(forceobj=True)
+@jit(parallel=False,forceobj=True)  ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_parseheader(dbheaderfile):
 ## reads and parses the header and returns the parameters contained in the db.hdr of a database directory           
 ## db.hdr text file needs to have the specific version format described in the CLEDB 2.0.2 readme
@@ -370,10 +372,10 @@ def sdb_parseheader(dbheaderfile):
 ## 1. the linear coefficents of the form min, max, nx,theta,phi
 ## 2. logarithmically spaced parameters xed  (electron density array)
 ## for these also the min and max and number are also returned.
-    ned=np.int_(g[0]) 
-    ngx=np.int_(g[1])
-    nbphi=np.int_(g[2])
-    nbtheta=np.int_(g[3])
+    ned=np.int32(g[0]) 
+    ngx=np.int32(g[1])
+    nbphi=np.int32(g[2])
+    nbtheta=np.int32(g[3])
     emin=np.float64(g[4])
     emax=np.float64(g[5])
     xed=sdb_lcgrid(emin,emax,ned)    # Ne is log
@@ -383,7 +385,7 @@ def sdb_parseheader(dbheaderfile):
     bphimax=np.float64(g[9])
     bthetamin=np.float64(g[10])
     bthetamax=np.float64(g[11])
-    nline=np.int_(g[12])
+    nline=np.int32(g[12])
     wavel=np.empty(nline,dtype=np.float64)
     
     for k in range(0,nline): wavel[k]=g[13+k]    
@@ -395,7 +397,7 @@ def sdb_parseheader(dbheaderfile):
 
 ###########################################################################
 ###########################################################################
-@jit(forceobj=True)
+@jit(parallel=False,forceobj=True)   # don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_read(fildb,dbhdr,verbose):
 ## here reading data is done and stored in variable database of size (ncalc,line,4)
 ## due to calling dcompress nad np.fromfile, this is incompatible with numba    
@@ -423,7 +425,8 @@ def sdb_read(fildb,dbhdr,verbose):
 
 ###########################################################################
 ###########################################################################
-#@jit(forceobj=True)
+#@jit(parallel=False,forceobj=True) # don't try to parallelize things that don't need as the overhead will slow everything down
+##The del command makes this incompatible with numba. The del command is needed.
 def sdb_dcompress(i,verbose):
 ## helper routine for sdb_read
 ## CLEDB writes compressed databases to save storage space. We need this function to read the data
@@ -435,8 +438,8 @@ def sdb_dcompress(i,verbose):
     ## 15 is the number of orders of magnitude for the range of intensities
 
     if verbose >=2:
-        print(np.int_(sys.getsizeof(i)/1.e6)," MB in DB file")
-        if np.int_(sys.getsizeof(i)/1.e6) > 250 : print("WARNING: Very large DB, Processing will be slow!")
+        print(np.int64(sys.getsizeof(i)/1.e6)," MB in DB file")
+        if np.int64(sys.getsizeof(i)/1.e6) > 250 : print("WARNING: Very large DB, Processing will be slow!")
 
     negv=np.flatnonzero(i < 0)
 
@@ -452,7 +455,7 @@ def sdb_dcompress(i,verbose):
 
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)                              ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_lcgrid(mn,mx,n):
 ## grid for ned densities from mn to mx logarithms of density.
 
@@ -467,7 +470,7 @@ def sdb_lcgrid(mn,mx,n):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=True)
+@njit(parallel=params.jitparallel)
 def obs_calcheight(keyvals):
 ## helper function for observation preprocessing.
 ## calculates the off-limb heights corresponding to each voxel.
@@ -484,19 +487,18 @@ def obs_calcheight(keyvals):
     if crpix2 != 0:
         crval2 = crval2 - (crpix2 * cdelt2)
 
-    yobs=np.empty((nx,ny),dtype=np.float_)
+    yobs=np.empty((nx,ny),dtype=np.float64)
     for xx in range(nx):
         for yy in prange(ny):
             yobs[xx,yy]=np.sqrt((crval1+(xx*cdelt1))**2+(crval2+(yy*cdelt2))**2 )
 
-    #if verbose >= 1: print("\n Observation height map is computed. ")
     return yobs
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=True)
+@njit(parallel=params.jitparallel)
 def obs_integrate(sobs_in,keyvals):
 ## reads the background and peak emission of lines, subtracts the background and integrates the signal
 
@@ -505,12 +507,13 @@ def obs_integrate(sobs_in,keyvals):
     nx,ny,nw = keyvals[0:3]
     nline = keyvals[3]
 
-    sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float_)
-    cdf=np.empty((nx,ny,nw),dtype=np.float_)
+    sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float64)
+    cdf=np.empty((nx,ny,nw),dtype=np.float64)
     background=np.zeros((nx,ny,nline*4),dtype=np.float64)    ## array to record the background levels in stokes I,Q,U,V, in that order.
-    mask=np.zeros((4),dtype=np.int_)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
+    mask=np.zeros((4),dtype=np.int32)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
     rms=np.ones((nx,ny,nline*4),dtype=np.float64)
 
+######################################################################
 ##integrate for total profiles.
     for zz in range(nline):
         for xx in range(nx):
@@ -556,14 +559,13 @@ def obs_integrate(sobs_in,keyvals):
                         rms[xx,yy,i+(4*zz)]=np.sqrt(var)
                         #print("{:4.6f}".format(time.time()-start),' SUBSET: SECONDS FOR VARIANCE')
 
-    #if verbose >= 1: print("\n Integrated Stokes profile map is computed.")
     return sobs_tot,rms,background
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=True)
+@njit(parallel=params.jitparallel)
 def obs_qurotate(sobs_tot,yobs,keyvals):
 ## rotates the linear polarization components with the corresponding angle
 ## this implicitly assumes that yobs is kept in the same units as the header keys, either R_sun or arcsec.
@@ -580,7 +582,7 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
     if crpix2 != 0:
         crval2 = crval2 - (crpix2 * cdelt2)
 
-    aobs=np.empty((nx,ny),dtype=np.float_)
+    aobs=np.empty((nx,ny),dtype=np.float64)
     ## copy the sobs array 
     sobs_totrot=np.copy(sobs_tot)
 
@@ -607,11 +609,11 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=True)
+@njit(parallel=params.jitparallel)
 def obs_cdf(spectr):
 ## computes the cdf distribution for a spectra
     cdf=np.zeros((spectr.shape[0]),dtype=np.float64)
-    for i in range (0,spectr.shape[0]):
+    for i in prange (0,spectr.shape[0]):
         cdf[i]=np.sum(spectr[0:i+1])        ## need to check if should start from 0 or not.
     cdf=cdf[:]/cdf[-1]                      ## norm the cdf to simplify interpretation
     return cdf

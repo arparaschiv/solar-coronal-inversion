@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 @author: Alin Paraschiv paraschiv.alinrazvan+cledb@gmail.com
 """
@@ -17,5 +16,6 @@ class ctrlparams:
         self.bcalc    = 0                                                                          ## control parameter for computing the B magnitude for two line observations.
         self.maxchisq = 10                                                                         ## Stop computing solutions above this chi^2 threshold
         self.gaussfit = 2                                                                          ## Gaussian parametric fitting to use instead of the standard CDF fitting
-
+        ##numba jit flags
         self.numbajitflag = 1                                                                      ## Enable or disable numba jit XXXX
+        self.jitparallel = True

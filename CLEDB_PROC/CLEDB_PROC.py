@@ -59,6 +59,8 @@ from numba import jit,njit,prange
 import scipy.stats as sps
 from scipy.optimize import curve_fit
 import constants
+import ctrlparams 
+params=ctrlparams.ctrlparams()    ## just a shorter label
 #from numba.typed import List  ## numba list is needed ad standard reflected python lists will be deprecated in numba
 
 # from scipy.io import FortranFile
@@ -75,7 +77,7 @@ import constants
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=True)
+@njit(parallel=params.jitparallel)
 def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearch,maxchisq,bcalc,reduced,verbose):
 
     if verbose >=1: print('--------------------------------------\nCLEDB_IVPROC: TWO LINE INVERSION START\n--------------------------------------')
@@ -122,7 +124,7 @@ def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearc
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=True,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
 def blos_proc(sobs_tot,rms,keyvals,consts,params):
 ## Uses the "improved" magnetograph formulation in eq 40 Casini &Judge 99, eq 14 of Plowman 2014, and eq 17 and 18 of Dima & Schad 2020
 ## Follows the discussion in the three papers and adopts different implementations based on the line combination used
@@ -195,10 +197,9 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
 ###########################################################################
 ###########################################################################
 
-
 ###########################################################################
 ###########################################################################
-@jit(parallel=True,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
 def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 ## calculates 12 spectroscopic products
 ## Background is used both as an output product and as a preprocess parameter. More details in cdf_statistics comments.
@@ -275,7 +276,7 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=True,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
 def cdf_statistics(sobs_1pix,sobs_tot_1pix,rms_1pix,background_1pix,keyvals,const,nl,gaussfit,verbose):
 ## compute the statistics of the Stokes I profiles using CDF methods and return results for 1 pixel.
 ## this is run for 1 ion (one set of IQUV). Outside loop controls which ion is fed.
@@ -426,7 +427,7 @@ def cdf_statistics(sobs_1pix,sobs_tot_1pix,rms_1pix,background_1pix,keyvals,cons
 
 ###########################################################################
 ###########################################################################
-@njit#(parallel=True)
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,maxchisq,bcalc,reduced,verbose):
 ## main solver for the geometry and magnetic field strength
 ## Returns matched database index, double IQUV vector, and chi^2 fitting residual
@@ -570,7 +571,7 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
 
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose): 
 ## returns a subset of the sdb array compatible with the height in yobs
 
@@ -625,7 +626,7 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
 
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_quderotate(dbarr,ang):
 ## derotates the matched database entry to make it compatible with the observation
 
@@ -641,7 +642,7 @@ def cledb_quderotate(dbarr,ang):
 
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_partsort(arr,nsearch):
 ## cledb_partsort is a parallel function that produces an output similar to np.argpartition with sort.
 ## Simplest possible substitution partial sort. It just returns the first nsearch sorted indexes similar to np.argpartition.
@@ -667,7 +668,7 @@ def cledb_partsort(arr,nsearch):
 
 ###########################################################################
 ###########################################################################
-@njit 
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_params(index,dbcgrid):
 ## This function is used with the database header to help compute the physics associated to the i, j, k, l entry
 ## for index, get i,j,k,l indices in a database
@@ -693,7 +694,7 @@ def cledb_params(index,dbcgrid):
 
 ###########################################################################
 ###########################################################################
-@njit 
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_invparams(i,j,k,l,dbcgrid):
 ## This function is used with the database header to help compute the physics associated to the index entry
 ## Reverse function of params_par## 
@@ -710,7 +711,7 @@ def cledb_invparams(i,j,k,l,dbcgrid):
 
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_elecdens(r):
 ## computes an electron radial density estimation using the Baumbach formulation
 
@@ -723,7 +724,7 @@ def cledb_elecdens(r):
 
 ###########################################################################
 ###########################################################################
-@njit 
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 def cledb_phys(index,gy,dbhdr,b):
 ## Returns the lvs and LOS geometry and magnetic field physics
 ## this is kept separate from cledb_physlvs because it computes projections transformations of the database variables recovered via cledb_physlvs
@@ -741,7 +742,7 @@ def cledb_phys(index,gy,dbhdr,b):
 
 ###########################################################################
 ###########################################################################
-@njit 
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 def cledb_physlvs(index,gy,dbhdr):
 ## Helper for phys_par; returns the LVS physics and compatible observation geometry.
 ## this is the primary function that retrieves physics parameters from the database index.
@@ -762,12 +763,12 @@ def cledb_physlvs(index,gy,dbhdr):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=True)
+@njit(parallel=params.jitparallel)
 def obs_cdf(spectr):
 ## computes the cdf distribution for a spectra
 
     cdf=np.zeros((spectr.shape[0]),dtype=np.float64)
-    for i in range (0,spectr.shape[0]):
+    for i in prange (0,spectr.shape[0]):
         cdf[i]=np.sum(spectr[0:i+1])        ## need to check if should start at 0 or not
     cdf=cdf[:]/cdf[-1]                      ## norm the cdf to simplify interpretation
     return cdf
@@ -776,7 +777,7 @@ def obs_cdf(spectr):
 
 ###########################################################################
 ###########################################################################
-@njit
+@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 # ## Simple Gaussian Function for spectra fitting
 def obs_gaussfit(x,ymax,mean,sigma, offset):
 # ## Simple Gaussian Function
