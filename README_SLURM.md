@@ -7,11 +7,11 @@ Detailed instructions for the headless running of the CLEDB inversion.
 
 #### 1. Slurm enabled test scripts 
 
-- test_cledb_slurm.sh
+- [test_cledb_slurm.sh](./test_cledb_slurm.sh)
 
-- test_1line.py
+- [test_1line.py](./test_1line.py)
 
-- test_2line.py
+- [test_2line.py](./test_2line.py)
 
 Note: the *test_1line.py* and *test_1line.py* scripts are plain script versions from the notebook enabled tests. These are directly exported from the Jupyter .ipynb notebooks.
 All changes reflected in the notebook examples should be reflected here.

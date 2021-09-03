@@ -19,3 +19,4 @@ class ctrlparams:
         ##numba jit flags
         self.numbajitflag = 1                                                                      ## Enable or disable numba jit XXXX
         self.jitparallel = True
+        
