@@ -61,11 +61,10 @@ from scipy.optimize import curve_fit
 import constants
 import ctrlparams 
 params=ctrlparams.ctrlparams()    ## just a shorter label
-#from numba.typed import List  ## numba list is needed ad standard reflected python lists will be deprecated in numba
 
-# from scipy.io import FortranFile
+## optional libraries
+# import time
 # from pylab import *
-import time
 # import glob
 # import os
 # import sys
@@ -101,7 +100,7 @@ def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearc
 
     if verbose >= 1:      
         for xx in range(nx):
-            print("Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
+            print("CLEDB_INVPROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
             for yy in prange(ny):
                 invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_match(sobs_totrot[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
                     nsearch,maxchisq,bcalc,reduced,verbose)
@@ -137,42 +136,20 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
     tline = keyvals[4]
     ## initialize constants
     const=consts.Constants(tline[0])                       ## for each line load the correct constants
-
-    ## list the F factors from Dima & Schad 2020 for lines of interest; 
+    ## needed array initialization
+    blosout = np.zeros((nx,ny,4),dtype=np.longdouble)
+    
+    ## the list of the F factors from Dima & Schad 2020 for lines of interest are saved in the constants class; 
     ## both Fe XIII and SI IX have F == 0.
-    if   tline[0] == "fe-xiii_1074":
-        F_factor= 0.0
-        gu = 1.5
-        gl = 1
-        ju = 1
-        jl = 0
-    elif tline[0] == "fe-xiii_1079":
-        F_factor= 0.0
-        gu = 1.5
-        gl = 1.5
-        ju = 2
-        jl = 1
-    elif tline[0] == "si-x_1430":
-        F_factor= 0.5
-        gu = 1.334
-        gl = 0.665
-        ju = 1.5
-        jl = 0.5
-        if params.verbose >=1: print('BLOS_PROC: Constrained magnetograph solutions will have an additional correction applied. ')
-    elif tline[0] == "si-ix_3934":
-        F_factor= 0.0
-        gu = 1.5
-        gl = 1
-        ju = 1
-        jl = 0
-    g_eff=0.5*(gu+gl)+0.25*(gu-gl)*(ju*(ju+1)-jl*(jl+1))    ## e.g. Landi& Landofi 2004 eg 3.44; Casini & judge 99 eq 34
-
+    if params.verbose >=1:
+        if tline[0] == "si-x_1430":
+            print('BLOS_PROC: Constrained magnetograph solutions will have an additional correction applied. ')
 
     ## two degenerate solutions are produced for blos; Indexes 0 and 1
     ## the accurate solution matches sign with \sigma ^2_0 atomic alignment.
     ## the "standard" magnetograph formulation (index 2) represents, in practice, the average accuracy between the two degenerate solutions.
     ## Note: this solution is inaccurate in almost all cases; with the exception of fields tangential to the radial direction.
-    blosout = np.zeros((nx,ny,4),dtype=np.longdouble)
+
     for xx in range(nx):
         for yy in prange(ny):
 
@@ -184,15 +161,15 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
 
             ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
             ## sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 to minimize deviation from "true" solution.
-            blosout[xx,yy,0]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (g_eff*(sobs_tot[xx,yy,0] - lpol) - 0.66*F_factor*(lpol/1.)) )
-            blosout[xx,yy,1]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (g_eff*(sobs_tot[xx,yy,0] + lpol) + 0.66*F_factor*(lpol/1.)) )
+            blosout[xx,yy,0]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (const.g_eff*(sobs_tot[xx,yy,0] - lpol) - 0.66*const.F_factor*(lpol/1.)) )
+            blosout[xx,yy,1]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (const.g_eff*(sobs_tot[xx,yy,0] + lpol) + 0.66*const.F_factor*(lpol/1.)) )
             ## standard magnetograph formulation
-            blosout[xx,yy,2]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (g_eff*sobs_tot[xx,yy,0]) )
+            blosout[xx,yy,2]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (const.g_eff*sobs_tot[xx,yy,0]) )
 
     ######################################################################
     ## [placeholder for issuemask]
 
-    if params.verbose >=1: print('--------------------------------------\n---BLOS_PROC: LOS B ESTIMATION END----\n--------------------------------------')
+    if params.verbose >=1: print('--------------------------------------\n---BLOS_PROC: LOS B ESTIMATION END----\n--------------------------------------')   
     return blosout
 ###########################################################################
 ###########################################################################
@@ -205,7 +182,6 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 ## Background is used both as an output product and as a preprocess parameter. More details in cdf_statistics comments.
 
     if params.verbose >=1: print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY START\n--------------------------------------')
-
     ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx,ny,nw = keyvals[0:3]
     nline = keyvals[3]
@@ -260,29 +236,36 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 
     ######################################################################
     ## process the spectroscopy          
-            
-#     for nl in range(nline):
-#         const=consts.Constants(tline[nl])                       ## for each line load the correct constants
-#         for xx in range(nx):
-#             for yy in prange(ny):
-#                 specout[xx,yy,nl,:] = cdf_statistics(sobs_cal[xx,yy,:,(4*nl):(4*nl)+4],sobs_tot[xx,yy,(4*nl):(4*nl)+4],\
-#                     background[xx,yy,(4*nl):(4*nl)+4],wlarr[:,nl],keyvals,const,nl,params.gaussfit,params.verbose)     ## compute the statistics for the intensity and/or wavelength calibrated sobs.              
-    start0=time.time()                
-    if nline == 2:                  
-        for xx in range(nx):
-            for yy in prange(ny):
-                specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                    background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
-                specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
-                    background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
+                        
+               
+    if params.verbose >= 1: 
+        if nline == 2:                  
+            for xx in range(nx):
+                print("SPECTRO_PROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
+                for yy in prange(ny):
+                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
+                    specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
+                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
+        else:
+            for xx in prange(nx):
+                print("SPECTRO_PROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
+                for yy in prange(ny):
+                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)        
     else:
-        for xx in prange(nx):
-            start1=time.time()
-            for yy in prange(ny):
-                specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                    background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)        
-            print("{:4.6f}".format(time.time()-start1),'column ',xx,' time')   
-    print("{:4.6f}".format(time.time()-start0),'total time')            
+        if nline == 2:                  
+            for xx in range(nx):
+                for yy in prange(ny):
+                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
+                    specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
+                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
+        else:
+            for xx in prange(nx):
+                for yy in prange(ny):
+                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)             
                 
                 ##Note: cdf_statistics will alter sobs_cal, htough it is not outputed or used downstream!
 
@@ -299,7 +282,6 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     ##      In the case of just one line observations, the second dimension is not filled in.
     ##      The array can be reshaped outside of the numba enabled functions to drop the extra dimension if needed.
     if params.verbose >=1: print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY FINALIZED\n--------------------------------------')
-    
     return specout
 ###########################################################################
 ###########################################################################

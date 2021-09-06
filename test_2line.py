@@ -125,6 +125,15 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params)      ## when storing to disk do an if to reduce dimensions for 1 line cases
 
 
+# #####Process the LOS magnetic fields from the first line
+
+# In[ ]:
+
+
+#importlib.reload(procinv)       ## If module is modified, reload the contents 
+blosout=procinv.blos_proc(sobs_tot[:,:,0:4],rms[:,:,0:4],keyvals,consts,params)
+
+
 # ##### Process the full vector magnetic field inversion products
 
 # In[ ]:
@@ -143,10 +152,18 @@ invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,db
 
 
 from datetime import datetime
-datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")
+import os
+import glob
 
+## Remove old file saves and keep just the last run
+lst=glob.glob('./outparams_2line*.pkl')
+if len(lst) >0:
+    for i in range(len(lst)):
+        os.remove(lst[i])
+        
+## save the last run       
 with open(f'outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-    pickle.dump([specout,invout,sfound], f)
+    pickle.dump([specout,blosout,invout,sfound], f)
 
 
 # ### 5. PLOT the outputs (optional)

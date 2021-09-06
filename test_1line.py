@@ -10,7 +10,7 @@
 ## Do not directly edit that version!
 
 
-# In[2]:
+# In[14]:
 
 
 ## Needed modules
@@ -87,7 +87,7 @@ sobs_in = List()                              ## this is the List object impleme
 # In[7]:
 
 
-importlib.reload(prepinv)       ## If module is modified, reload the contents
+#importlib.reload(prepinv)       ## If module is modified, reload the contents
 sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,params)
 
 
@@ -96,7 +96,7 @@ sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(so
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[8]:
+# In[13]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -104,31 +104,40 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 
 # ##### Process the spectroscopy outputs
 
-# In[10]:
+# In[16]:
 
 
-importlib.reload(procinv)       ## If module is modified, reload the contents 
+#importlib.reload(procinv)       ## If module is modified, reload the contents 
 specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params)    ## when storing to disk do an if to reduce dimensions for 1 line cases
 
 
 # ##### Process the LOS vector magnetic field inversion products (Analythical solution)
 
-# In[11]:
+# In[17]:
 
 
-importlib.reload(procinv)       ## If module is modified, reload the contents 
+#importlib.reload(procinv)       ## If module is modified, reload the contents 
 blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 
 
 # ### 4. DUMP results (optional)
 
-# In[12]:
+# In[18]:
 
 
 from datetime import datetime
-datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")
+import os
+import glob
 
-with open(f'outparams_1line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+## Remove old file saves and keep just the last run
+lst=glob.glob('./outparams_1line*.pkl')
+if len(lst) >0:
+    for i in range(len(lst)):
+        os.remove(lst[i])
+        
+## save the last run       
+datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
+with open(f'outparams_1line_{datestamp}.pkl', 'wb') as f:  
     pickle.dump([specout,blosout], f)
 
 
@@ -136,11 +145,12 @@ with open(f'outparams_1line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(...,
 
 # ### 5. PLOT the outputs (optional)
 
-# In[27]:
+# In[19]:
 
 
 ##needed libraries and functions
 from matplotlib import pyplot as plt
+import numpy as np
 ##interactive plotting;use only on local machines if available
 #%matplotlib widget                   
 
@@ -161,7 +171,7 @@ def colorbar(mappable,*args,**kwargs):
     return cbar
 
 
-# In[28]:
+# In[20]:
 
 
 ## Plot utils
@@ -183,7 +193,7 @@ sry2=1023
 rnge=[0.989,1.060,-0.071,0.071]
 
 
-# In[37]:
+# In[22]:
 
 
 ##Plot spectroscopy
@@ -340,7 +350,7 @@ plt.tight_layout()
 plt.savefig(f"specout_1line_sol{linen}_{datestamp}.pdf")
 
 
-# In[44]:
+# In[23]:
 
 
 ## plot 1-line BLOS
@@ -354,7 +364,7 @@ plots[0,0].set_ylabel('Z [R$_\odot$]')
 #plots[0,0].set_xlabel('Y [R$_\odot$]')
 
 ab=plots[0,1].imshow(blosout[srx1:srx2,sry1:sry2,1],extent=rnge)
-plots[0,1].set_title('2$^{nd})$ degenerate magnetograph solution')
+plots[0,1].set_title('2$^{nd}$ degenerate magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 #plots[0,1].set_ylabel('Z [R$_\odot$]')
 #plots[0,1].set_xlabel('Y [R$_\odot$]')
@@ -372,4 +382,10 @@ plots[1,1].set_xlabel('Y [R$_\odot$]')
 plt.tight_layout()
 
 plt.savefig(f"blosout_1line_{datestamp}.pdf")
+
+
+# In[ ]:
+
+
+
 
