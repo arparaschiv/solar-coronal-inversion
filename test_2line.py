@@ -122,7 +122,7 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 
 
 #importlib.reload(procinv)       ## If module is modified, reload the contents 
-specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params)
+specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params)      ## when storing to disk do an if to reduce dimensions for 1 line cases
 
 
 # ##### Process the full vector magnetic field inversion products
@@ -151,96 +151,214 @@ with open(f'outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(...,
 
 # ### 5. PLOT the outputs (optional)
 
-# In[10]:
+# In[1]:
 
 
 ##needed libraries and functions
 from matplotlib import pyplot as plt
 #%matplotlib widget                ## interactive plotting; use only on local machines if installed
 
-# colorbar function to have nice colorbars in figures
-def colorbar(mappable):
-   from mpl_toolkits.axes_grid1 import make_axes_locatable
-   import matplotlib.pyplot as plt
-   last_axes = plt.gca()
-   ax = mappable.axes
-   fig = ax.figure
-   divider = make_axes_locatable(ax)
-   cax = divider.append_axes("right", size="3.5%", pad=0.05)
-   cbar = fig.colorbar(mappable, cax=cax)
-   #cbar.formatter.set_powerlimits((0,4))
-   plt.sca(last_axes)
-   return cbar
+# colorbar function to have nice colorbars in figures with title
+def colorbar(mappable,*args,**kwargs):
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    import matplotlib.pyplot as plt
+    last_axes = plt.gca()
+    ax = mappable.axes
+    fig = ax.figure
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    cbar = fig.colorbar(mappable, cax=cax,format='%.2f')
+    #cbar.formatter.set_powerlimits((0, 0))
+    title= kwargs.get('title', None)
+    cbar.set_label(title)
+    plt.sca(last_axes)
+    return cbar
 
 
-# In[21]:
+# In[ ]:
 
 
-## Plot spectroscopy
+## Plot utils
 
-linen=0                ## choose which line to plot; range is [0:1] for single or double line input
+linen=0                ## Specout: choose which line to plot; range is [0:1] for 2 line input
+soln=3                 ## Invout: which solution to plot; range is [0:nsearch-1] where nsearch is defined in ctrlparams
+## plot subranges for soome in snapshots
+# ## 3dipole
+# srx1=230
+# srx2=400
+# sry1=65
+# sry2=195
+#rnge=[0.8,1.5,-1.1,1.1]
 
-fig, plots = plt.subplots(nrows=3, ncols=4, figsize=(12,8))
-ab=plots[0,0].imshow(specout[230:400,65:195,linen,0],vmin=1074.45,vmax=1074.72)
+##muram
+srx1=0
+srx2=1023
+sry1=0
+sry2=1023
+rnge=[0.989,1.060,-0.071,0.071]
+
+
+# In[2]:
+
+
+##Plot spectroscopy
+
+fig, plots = plt.subplots(nrows=3, ncols=4, figsize=(12,10))
+
+## remove the 0 values and unreasonable/outlier values.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,0], mask=specout[srx1:srx2,sry1:sry2,linen,0]==0)
+mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,0]>= 3950)
+mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,0]<= 1070)
+vvmin=np.min(mx)
+vvmax=np.max(mx)
+ab=plots[0,0].imshow(specout[srx1:srx2,sry1:sry2,linen,0],extent=rnge,vmin=vvmin,vmax=vvmax,cmap='bone')
 plots[0,0].set_title('Wavelength')
-colorbar(ab)
+colorbar(ab,title="[nm]")
+plots[0,0].set_ylabel('Z [R$_\odot$]')
+#plots[0,0].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[0,1].imshow(specout[230:400,65:195,linen,1],vmin=-0.5,vmax=0.5)
-plots[0,1].set_title('Doppler shift [nm]')
-colorbar(ab)
+## for correctly scaling in doppler scales
+## remove unreasonable/outlier values.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,1], mask=specout[srx1:srx2,sry1:sry2,linen,1]>= 2 )
+mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,1]<= -2 )
+vvmax=np.max(mx)
+vvmin=np.min(mx)
+if np.abs(vvmin) >  np.abs(vvmax):
+    vr=np.abs(vvmin)
+else:
+    vr=np.abs(vvmax)
+ab=plots[0,1].imshow(specout[srx1:srx2,sry1:sry2,linen,1],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
+plots[0,1].set_title('Doppler shift')
+colorbar(ab,title="[nm]")
+#plots[0,1].set_ylabel('Z [R$_\odot$]')
+#plots[0,1].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[0,2].imshow(specout[230:400,65:195,linen,2],vmin=-40,vmax=40)
-plots[0,2].set_title('Doppler shift [km/s]')
-colorbar(ab)
+## for correctly scaling in doppler scales
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,2], mask=specout[srx1:srx2,sry1:sry2,linen,2]>= 1000 )
+mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,2]<= -1000 )
+vvmax=np.max(mx)
+vvmin=np.min(mx)
+if np.abs(vvmin) >  np.abs(vvmax):
+    vr=np.abs(vvmin)
+else:
+    vr=np.abs(vvmax)
+## back to plotting    
+ab=plots[0,2].imshow(specout[srx1:srx2,sry1:sry2,linen,2],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
+plots[0,2].set_title('Doppler shift')
+colorbar(ab,title="[km s$^{-1}$]")
+#plots[0,2].set_ylabel('Z [R$_\odot$]')
+#plots[0,2].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[0,3].imshow(specout[230:400,65:195,linen,7],vmin=0,vmax=0.01)
-plots[0,3].set_title('Background Stokes I')
-colorbar(ab)
 
+ab=plots[0,3].imshow(specout[srx1:srx2,sry1:sry2,linen,7],extent=rnge,vmin=0,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,7]),cmap='Reds')
+plots[0,3].set_title('Stokes I bkg.')
+colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+#plots[0,3].set_ylabel('Z [R$_\odot$]')
+#plots[0,3].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[1,0].imshow(specout[230:400,65:195,linen,3],vmin=0,vmax=5)
+ab=plots[1,0].imshow(specout[srx1:srx2,sry1:sry2,linen,3],extent=rnge,vmin=0,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,3]),cmap='Reds')
 plots[1,0].set_title('Stokes I int. (linecore)')
-colorbar(ab)
+colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+plots[1,0].set_ylabel('Z [R$_\odot$]')
+#plots[1,0].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[1,1].imshow(specout[230:400,65:195,linen,4],vmin=-0.05,vmax=0.05)
+vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,4])
+vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,4])
+if np.abs(vvmin) >  np.abs(vvmax):
+    vr=np.abs(vvmin)
+else:
+    vr=np.abs(vvmax)
+ab=plots[1,1].imshow(specout[srx1:srx2,sry1:sry2,linen,4],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
 plots[1,1].set_title('Stokes Q int. (linecore)')
-colorbar(ab)
+colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+#plots[1,1].set_ylabel('Z [R$_\odot$]')
+#plots[1,1].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[1,2].imshow(specout[230:400,65:195,linen,5],vmin=-0.05,vmax=0.05)
+vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,5])
+vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,5])
+if np.abs(vvmin) >  np.abs(vvmax):
+    vr=np.abs(vvmin)
+else:
+    vr=np.abs(vvmax)
+ab=plots[1,2].imshow(specout[srx1:srx2,sry1:sry2,linen,5],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
 plots[1,2].set_title('Stokes U int. (linecore)')
-colorbar(ab)
+colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+#plots[1,2].set_ylabel('Z [R$_\odot$]')
+#plots[1,2].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[1,3].imshow(specout[230:400,65:195,linen,6],vmin=-0.08,vmax=0.08)
+vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,5])
+vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,5])
+if np.abs(vvmin) >  np.abs(vvmax):
+    vr=np.abs(vvmin)
+else:
+    vr=np.abs(vvmax)
+ab=plots[1,3].imshow(specout[srx1:srx2,sry1:sry2,linen,6],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
 plots[1,3].set_title('Stokes V int. (linecore)')
-colorbar(ab)
+colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+#plots[1,3].set_ylabel('Z [R$_\odot$]')
+#plots[1,3].set_xlabel('Y [R$_\odot$]')
+############################################################
 
 
+## remove unreasonable/outlier values.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,8], mask=specout[srx1:srx2,sry1:sry2,linen,8]>= 0.45 )
+mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,8]<= 0.01 )
+vvmax=np.max(mx)
+vvmin=np.min(mx)
 
-ab=plots[2,0].imshow(specout[230:400,65:195,linen,8],vmin=0.05,vmax=0.2)
-plots[2,0].set_title('Line FWHM')
-colorbar(ab)
+ab=plots[2,0].imshow(specout[srx1:srx2,sry1:sry2,linen,8],extent=rnge,vmin=vvmin,vmax=vvmax,cmap='YlGnBu')
+plots[2,0].set_title('Line full width half max.')
+colorbar(ab,title="[nm]")
+plots[2,0].set_ylabel('Z [R$_\odot$]')
+plots[2,0].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[2,1].imshow(specout[230:400,65:195,linen,9],vmin=0.05,vmax=0.2)
-plots[2,1].set_title('Non-thermal width')
-colorbar(ab)
+## remove unreasonable/outlier values.
+## PLOT INSIDE THE SAME SUBRANGES AS FULL WIDTHS TO SHOW THAT THEY ARE FRACTIONS.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,9], mask=specout[srx1:srx2,sry1:sry2,linen,9]>= 0.35 )
+vvmax=np.nanmax(mx)
+mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,9]<= 0.01 )
+vvmin=np.nanmin(mx)
 
-ab=plots[2,2].imshow(specout[230:400,65:195,linen,10],vmin=0.0,vmax=0.3)
+ab=plots[2,1].imshow(specout[srx1:srx2,sry1:sry2,linen,9],extent=rnge,vmin=0.1,vmax=vvmax,cmap='YlGnBu')
+plots[2,1].set_title('Line non-thermal width')
+colorbar(ab,title="[nm]")
+#plots[2,1].set_ylabel('Z [R$_\odot$]')
+plots[2,1].set_xlabel('Y [R$_\odot$]')
+############################################################
+
+
+ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.01,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,10]),cmap='YlOrRd')
 plots[2,2].set_title('Linear polarization fraction')
-colorbar(ab)
+colorbar(ab,title="L / I ratio")
+#plots[0,0].set_ylabel('Z [R$_\odot$]')
+plots[2,2].set_xlabel('Y [R$_\odot$]')
+############################################################
 
-ab=plots[2,3].imshow(specout[230:400,65:195,linen,11],vmin=0.0,vmax=0.3)
+
+ab=plots[2,3].imshow(specout[srx1:srx2,sry1:sry2,linen,11],extent=rnge,vmin=0.01,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,11]),cmap='YlOrRd')
 plots[2,3].set_title('Total polarization fraction')
-colorbar(ab)
+colorbar(ab,title="P / I ratio")
+#plots[2,3].set_ylabel('Z [R$_\odot$]')
+plots[2,3].set_xlabel('Y [R$_\odot$]')
+############################################################
+
 plt.tight_layout()
-plt.savefig(f"specout_2line_{datestamp}.pdf")
+
+plt.savefig(f"specout_1line_line{linen}_{datestamp}.pdf")
 
 
 # In[23]:
 
 
 ## Plot magnetic inversion
-
-soln=3 ## which solution to plot; range is [0:nsearch-1] where nsearch is defined in ctrlparams
 
 fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(10,12))
 ab=plots[0,0].imshow(invout[230:400,65:195,soln,0],vmin=0,vmax=5e7)
@@ -291,7 +409,7 @@ ab=plots[3,2].imshow(invout[230:400,65:195,soln,10],vmin=-400,vmax=400)
 plots[3,2].set_title('LOS cartesian B$_z$')
 colorbar(ab)
 plt.tight_layout()
-plt.savefig(f"invout_2line_{datestamp}.pdf")
+plt.savefig(f"invout_2line__sol{soln}_{datestamp}.pdf")
 
 
 # In[60]:
