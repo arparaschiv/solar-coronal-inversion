@@ -36,16 +36,16 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 ## sobsa is the combined 3 dipole output
 ## waveA and waveB are the wavelength arrays for the two Fe XIII lines
 
-with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
-    sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
-### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
-sobs1=sobs1[:,:,::-1,:]   
-sobs2=sobs2[:,:,::-1,:]
-sobs3=sobs3[:,:,::-1,:]
-sobsa=sobsa[:,:,::-1,:]
-waveA=waveA[::-1]
-waveB=waveB[::-1]
-## we test here using sobs1.
+# with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
+#     sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
+# ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
+# sobs1=sobs1[:,:,::-1,:]   
+# sobs2=sobs2[:,:,::-1,:]
+# sobs3=sobs3[:,:,::-1,:]
+# sobsa=sobsa[:,:,::-1,:]
+# waveA=waveA[::-1]
+# waveB=waveB[::-1]
+# ## we test here using sobs1.
 
 
 # In[4]:
@@ -53,14 +53,10 @@ waveB=waveB[::-1]
 
 ## load the fake observation muram data.
 ## FE XIII 1074+1079
-## sobs_a is normalized to first column (stokes I 1074)
-## RMS is 1 in this example; observation can be convoluted with noise if needed and re-normalized again
 
-# with open('obsstokes_avg_muram.pkl','rb') as f:
-#     f1aa,f2aa,sobs_a,yobs_a,rms,wvl,xxl,yyl = pickle.load(f)    
-
-# with open('obsstokes_avg_muram2.pkl','rb') as f:
-#     sobsa,yobsa,rms,xxl,yyl = pickle.load(f)    
+with open('obsstokes_avg_muram3.pkl','rb') as f:
+    sobsa = pickle.load(f) 
+sobsa=sobsa[0]  
 
 
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
