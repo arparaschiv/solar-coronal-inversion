@@ -135,3 +135,9 @@ outparams*.pkl
 specout*.pdf
 invout*.pdf
 blosout*.pdf
+
+##Databases
+CLEDB_BUILD/fe-xiii_1074/
+CLEDB_BUILD/fe-xiii_1079/
+CLEDB_BUILD/si-ix_3934/
+CLEDB_BUILD/si-x_1430/
