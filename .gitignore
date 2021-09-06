@@ -130,6 +130,7 @@ dmypy.json
 
 ## test datacubes; available via google drive.
 obsstokes*.pkl
+outparams*.pkl
 ## output plots
 specout*.pdf
 invout*.pdf

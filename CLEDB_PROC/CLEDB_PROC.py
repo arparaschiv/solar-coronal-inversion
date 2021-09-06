@@ -65,7 +65,7 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 
 # from scipy.io import FortranFile
 # from pylab import *
-# import time
+import time
 # import glob
 # import os
 # import sys
@@ -210,10 +210,26 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     nx,ny,nw = keyvals[0:3]
     nline = keyvals[3]
     tline = keyvals[4]
-
-    ## data arrays
+    crpix3 = keyvals[7]                                              ## The wavelength domains will be different for each input line. nl keeps the index of the line to solve.
+    crval3 = keyvals[10]
+    cdelt3 = keyvals[13]
+    
+    ## needed data arrays
     specout=np.zeros((nx,ny,2,12),dtype=np.float64)                  ## output array containing the spectroscopic products.
-    sobs_cal=np.zeros((nx,ny,nw,nline*4),dtype=np.float64)        ## define this as 0 to be able to later check if the calibs are performed or not.
+    wlarr=np.zeros((nw,nline),dtype=np.float64)                      ## wavelength array
+    sobs_cal=np.zeros((nx,ny,nw,nline*4),dtype=np.float64)           ## define this as 0 to be able to later check if the calibs are performed or not.
+    ##NOTE: sobs_cal output should be in the shape of an array; e.g. [x,y,w,4*nline]
+    
+    ## create a wavelength array based on keywords for each line to be processed
+    for i in range(nline):
+        if crpix3[i] == 0:                                          ## simple; just cycle and update
+            for j in range(nw):
+                wlarr[j,i]=crval3[i]+(j*cdelt3[i])
+        else:                                                       ## If reference pixel is not 0;  cycle for forwards and backwards from crpix3
+            for j in range(crpix3[i],nw):                           ## forward cycle
+                wlarr[j,i]=crval3[i]+((j-crpix3[i])*cdelt3[i])
+            for j in range(crpix3[i],-1,-1):                        ## Backwards cycle; -1 to fill the 0 index of the array
+                wlarr[j,i]=crval3[i]-((crpix3[i]-j)*cdelt3[i])
 
     ######################################################################
     ## placeholder for LEV2CALIB_WAVE
@@ -223,32 +239,52 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     #sobs_cal=lev2calib_wave(sobs_in,rms,params.verbose)
 
     ######################################################################
-    ## placeholder for LVE2CALIB_ABSINT
+    ## placeholder for LEV2CALIB_ABSINT
     ## level 2 absolute intensity calibration, using center to limb variation and close-to-limb on-disk flux measurements. 
     ## to be implemented after LEV1 data corrections are known and detailed (if needed).
 
-    #if np.count_nonzero(sobs_cal) != 0:
+    #if np.count_nonzero(sobs_cal) != 0:                           ## Check if LEV2CALIB_WAVE is performed
     #    sobs_cal=lev2calib_wave(sobs_cal,rms,params.verbose)      ## just update the wavelength calibrated sobs
     #else:
     #    sobs_cal=lev2calib_wave(sobs_in,rms,params.verbose)       ## apply the intensity calibration without the wavelength calibration
 
-    ##NOTE: sobs_cal output should be in the shape of an array; e.g. [x,y,w,4*nline]
-    if nline == 2:
-        if np.count_nonzero(sobs_cal) == 0:
-            sobs_cal=np.append(sobs_in[0],sobs_in[1],axis=3).reshape(nx,ny,nw,8)
-        #else: if sobs_cal should exist
-    else:
-        if np.count_nonzero(sobs_cal) == 0:
-            sobs_cal=sobs_in[0]
-        #else: if sobs_cal should exist
+    ######################################################################
+    ## define sobs_cal if no LEV2CALIB_ABSINT or LEV2CALIB_WAVE is performed
 
-    for nl in range(nline):
-        const=consts.Constants(tline[nl])                       ## for each line load the correct constants
+    if np.count_nonzero(sobs_cal) == 0:                       ## Check if any of LEV2CALIB_WAVE and/or LEV2CALIB_ABSINT is performed
+        if nline == 2:            
+            sobs_cal=np.append(sobs_in[0],sobs_in[1],axis=3).reshape(nx,ny,nw,8)
+        else:
+            sobs_cal=sobs_in[0]
+            
+
+    ######################################################################
+    ## process the spectroscopy          
+            
+#     for nl in range(nline):
+#         const=consts.Constants(tline[nl])                       ## for each line load the correct constants
+#         for xx in range(nx):
+#             for yy in prange(ny):
+#                 specout[xx,yy,nl,:] = cdf_statistics(sobs_cal[xx,yy,:,(4*nl):(4*nl)+4],sobs_tot[xx,yy,(4*nl):(4*nl)+4],\
+#                     background[xx,yy,(4*nl):(4*nl)+4],wlarr[:,nl],keyvals,const,nl,params.gaussfit,params.verbose)     ## compute the statistics for the intensity and/or wavelength calibrated sobs.              
+    start0=time.time()                
+    if nline == 2:                  
         for xx in range(nx):
             for yy in prange(ny):
-                specout[xx,yy,nl,:] = cdf_statistics(sobs_cal[xx,yy,:,(4*nl):(4*nl)+4],sobs_tot[xx,yy,(4*nl):(4*nl)+4],rms[xx,yy,(4*nl):(4*nl)+4],\
-                    background[xx,yy,(4*nl):(4*nl)+4],keyvals,const,nl,params.gaussfit,params.verbose)     ## compute the statistics for the intensity and/or wavelength calibrated sobs.
-                ##Note: cdf_statistics will alter sobs_cal!
+                specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                    background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
+                specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
+                    background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
+    else:
+        for xx in prange(nx):
+            start1=time.time()
+            for yy in prange(ny):
+                specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                    background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)        
+            print("{:4.6f}".format(time.time()-start1),'column ',xx,' time')   
+    print("{:4.6f}".format(time.time()-start0),'total time')            
+                
+                ##Note: cdf_statistics will alter sobs_cal, htough it is not outputed or used downstream!
 
     ######################################################################
     ## placeholder for ML_LOSDISENTANGLE
@@ -259,10 +295,11 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     ######################################################################
     ## [placeholder for issuemask]
 
-    ## NOTE: SPECOUT will always have to dimensions at exit to keep data dimensionality consistent. 
+    ## NOTE: SPECOUT will always have two dimensions at exit to keep data dimensionality consistent. 
     ##      In the case of just one line observations, the second dimension is not filled in.
     ##      The array can be reshaped outside of the numba enabled functions to drop the extra dimension if needed.
     if params.verbose >=1: print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY FINALIZED\n--------------------------------------')
+    
     return specout
 ###########################################################################
 ###########################################################################
@@ -273,11 +310,10 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 ###########################################################################
 ###########################################################################
 
-
 ###########################################################################
 ###########################################################################
 @jit(parallel=params.jitparallel,forceobj=True,looplift=True)
-def cdf_statistics(sobs_1pix,sobs_tot_1pix,rms_1pix,background_1pix,keyvals,const,nl,gaussfit,verbose):
+def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfit,verbose):
 ## compute the statistics of the Stokes I profiles using CDF methods and return results for 1 pixel.
 ## this is run for 1 ion (one set of IQUV). Outside loop controls which ion is fed.
 ## products are:
@@ -291,55 +327,46 @@ def cdf_statistics(sobs_1pix,sobs_tot_1pix,rms_1pix,background_1pix,keyvals,cons
 ## fraction of linear polarization;
 ## fraction of total polarization;
 
-    ####NO OBSERVATION --> NO RUN! ###########    
+    #### NO OBSERVATION --> NO RUN! ###########    
     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
     ##returns an array-like 0 vector of the dimensions of the requested output.
-    if np.isnan(sobs_1pix).all() or np.count_nonzero(sobs_1pix) == 0:
+    if np.isnan(sobs_cal).all() or np.count_nonzero(sobs_cal) == 0:
         nullout = np.zeros((12),dtype=np.float64)
-        if verbose >= 2: print("SPECTRO_PROC WARNING: No observation in voxel!")
+        if verbose >= 2: print("SPECTRO_PROC: FATAL! No observation in voxel!")
         return nullout
+    
+    ######################################################################    
+    ## variable unpacks and preprocesses
 
-
-    ## load what is needed from keyvals (these are unpacked so its clear what var np.count_nonzero(sobs_cal)iables are being used. One can just use keyvals[x] inline.)
-    nx,ny,nw = keyvals[0:3]
-    nline = keyvals[3]
-    crpix3 = keyvals[7][nl]     ## The wavelength domains will be different for each input line. nl keeps the index of the line to solve.
-    crval3 = keyvals[10][nl]
-    cdelt3 = keyvals[13][nl]
+    ## load what is needed from keyvals (these are unpacked so its clear what variables np.count_nonzero(sobs_cal) are being used. One can just use keyvals[x] inline.)
+    nw = keyvals[2]
+    cdelt3 = wlarr_1pix[1] - wlarr_1pix[0]                    ## computes cdelt3 locally;workaround to reduce the number of inputs variables; agnostic to which line it solves for
     instwidth = keyvals[15]
 
     # needed arrays
-    spec_1pix=np.zeros((12),dtype=np.float64)                  ## output array containing the spectroscopic products.
-
-    ## create a wavelength array based on keywords
-    wlarr=np.zeros((nw),dtype=np.float64)
-    if crpix3 == 0:
-        for i in range(nw):
-            wlarr[i]=crval3+(i*cdelt3)
-    else:                                                     ## cycle for forwards and backwards from crpix3
-        for i in range(crpix3,nw):
-            wlarr[i]=crval3+((i-crpix3)*cdelt3)
-        for i in range(crpix3,-1,-1):                         ## -1 to fill the 0 index of the array
-            wlarr[i]=crval3-((crpix3-i)*cdelt3)
-
-    #noise reduce the spectral input data
-    ## NOTE: convoluted process. 
-    ## background subtraction with Background and raw sobs_in arrays are processed here as part of cdf_statistics. This is technically a preprocess step
-    ## sobs_tot has background subtracted during the preprocess step in obs_integrate.
-    ## This is done this way because background is desired as an output product, so creating another background subtracted array from sobs_in is an un-necessary operation
+    spec_1pix=np.zeros((12),dtype=np.float64)                 ## output array containing the spectroscopic products.
+    issuemask=np.zeros(4,dtype=np.int32)                      ## temporary placeholder for issuemask
+ 
+    ######################################################################
+    ## Preprocess the spectral data
+    
+    ## Noise reduce the spectral input data NOTE: convoluted process.  This is technically a preprocess step.
+    ## background subtraction with Background and raw sobs_in arrays are processed here as part of cdf_statistics. 
+    ## sobs_tot has background subtracted with the preprocess module via obs_integrate. BUT it is also normalized for the invproc and blosproc modules. So not optimal here.
+    ## This is done this way because background is also desired as an output product, 
     for i in range(4):                                        ## range(4); only 1 line is fed at a time to cdf_statistics
-        sobs_1pix[:,i]=sobs_1pix[:,i]-background_1pix[i]
+        sobs_cal[:,i]=sobs_cal[:,i]-background[i]
 
     ## now recompute the cdf for the noise-reduced data
-    cdf=obs_cdf(sobs_1pix[:,0]) 
+    cdf=obs_cdf(sobs_cal[:,0]) 
 
     ## check if there is reliable signal to fit and analyze
     ##(1) we can fit a line to the cdf distribution and in case it does fit well, there is no (reliable) stokes profile to recover.
     ##the 1.4e-5 rest in correlation corresponds to a gaussion with a peak in intensity of <5% compared to the average signal across the spectral range.
-    co1=sps.pearsonr(wlarr,cdf)[0]
-    if 1.-co1 < 1.4e-5:
-        if verbose >=3: print("SPECTRO_PROC: No signal in pixel...")
-        ##issuemask[0]=1
+
+    if 1.- sps.pearsonr(wlarr_1pix,cdf)[0] < 1.4e-5:
+        if verbose >=3: print("SPECTRO_PROC: WARNING! No reliable Stokes I signal in pixel...")
+        issuemask[0]=1
 
     ## compute the center of the distribution, the line width, and the doppler shifts in wavelength and velocity.
     ## a normal distribution 0.5 is the average, sigma=34.13; FWHM=2*sqrt(2*alog(2))*sigma,
@@ -347,79 +374,85 @@ def cdf_statistics(sobs_1pix,sobs_tot_1pix,rms_1pix,background_1pix,keyvals,cons
     ## [3]left fwhm wave position, [4] fwhm center wave position, [5] fwhm right wave position;
     ## [6],[7],[8] just record the LEFT array indexes for recorded positions at [3], [4], [5];
     tmp=np.zeros((9),dtype=np.float64)                             ## use the tmp variable to store all the data;
-    tmp[0:3]=[0.5-2*np.sqrt(2*np.log(2))*34.13/2./100, 0.5, 0.5+2*np.sqrt(2*np.log(2))*34.13/2./100 ]      ## /2/100 comes from half width transformed to percentage
+    tmp[0:3]= 0.09815, 0.5, 0.90185  ## [0.5-2*np.sqrt(2*np.log(2))*34.13/2./100, 0.5, 0.5+2*np.sqrt(2*np.log(2))*34.13/2./100 ] ## /2/100 comes from half width --> percentage
 
     for j in range (0,3):
         for i in range (0,nw):   
-            if cdf[i] <= tmp[j] < cdf[i+1]:                        ## find between which bins the distribution centre is.
-                k1=2*(tmp[j]-cdf[i])/(cdf[i+1]-cdf[i])               ## find the normed difference to theoretical centre from the left bin.
-                tmp[j+3]=wlarr[i]+k1*cdelt3
+            if cdf[i] <= tmp[j] < cdf[i+1]:                          ## find between which bins the distribution centre is.
+                k1=2.*(tmp[j]-cdf[i])/(cdf[i+1]-cdf[i])               ## find the normed difference to theoretical centre from the left bin.
+                tmp[j+3]=wlarr_1pix[i]+k1*cdelt3
                 tmp[j+6]=i
             elif i == nw-1:
                 if j == 1:
-                    if verbose >=3: print("SPECTRO_PROC: Line center not found")
-                    #issuemask[2]=1
+                    if verbose >=3: print("SPECTRO_PROC: WARNING! Line center not found")
+                    issuemask[2]=1
                 if j == 0:
-                    if verbose >=3: print("SPECTRO_PROC: FWHM left margin not found")
-                    #issuemask[3]+=1
+                    if verbose >=3: print("SPECTRO_PROC: WARNING! FWHM left margin not found")
+                    issuemask[3]+=1
                 if j == 2:
-                    if verbose >=3: print("SPECTRO_PROC: FWHM right margin not found")
-                    #issuemask[3]+=1
+                    if verbose >=3: print("SPECTRO_PROC: WARNING! FWHM right margin not found")
+                    issuemask[3]+=1
     ## fudge for not doing repeated type conversions
     tmp6,tmp7,tmp8=np.int32(tmp[6:9])
 
     ## check if there is reliable signal to fit and analyze  (2) if the distribution is skewed, the inner part of it should not fit a line.
-    co2=sps.pearsonr(wlarr[tmp6:tmp8+1],cdf[tmp6:tmp8+1])[0] 
-    if 1.-co2 > 5e-3:
-        if verbose >=3: print("SPECTRO_PROC: Emission does not follow a normal distribution")
-        #mask[1]=1
+    if tmp8 - tmp6 >= 2: 
+        if 1. - sps.pearsonr(wlarr_1pix[tmp6:tmp8+1],cdf[tmp6:tmp8+1])[0] > 5e-3:
+            if verbose >=3: print("SPECTRO_PROC: WARNING! Emission does not follow a normal distribution")
+            issuemask[1]=1
+    else:
+    ## not reliable signal == no products! 
+        nullout = np.zeros((12),dtype=np.float64)
+        if verbose >= 2: print("SPECTRO_PROC: FATAL! Spectroscopy not resolvable in pixel")
+        return nullout            
 
-    ## The spectroscopic products for each line are computed here.
+    ######################################################################            
+    ## The spectroscopic products for each line are computed here.   
+    
+    ## core wavelength and width
     if gaussfit == 1:                                                                  ## GAUSS version; still need cdf for extra calculations
-        gfit,gcov = curve_fit(obs_gaussfit,wlarr,sobs_1pix[:,0],p0=[np.max(sobs_1pix[:,0]),const.line_ref,0.2/2.35,0.0],maxfev=10000)
-        ## line core wavelength
-        spec_1pix[0]=gfit[1]#+const.line_ref                                           ## line core wavelength
-        ##line widths (total)
-        spec_1pix[8]=2*np.sqrt(2*np.log(2))*gfit[2]                                    ## Total line width [nm]
-    if gaussfit ==0:                                                                   ## CDF version
-        ## line core wavelength
-        spec_1pix[0]=tmp[4]#+const.line_ref                                            ## line core wavelength
-        ##line widths (total)
+        gfit,gcov = curve_fit(obs_gaussfit,wlarr_1pix,sobs_cal[:,0],p0=[np.max(sobs_cal[:,0]),const.line_ref,0.2/2.3548,0.0],maxfev=5000)
+        spec_1pix[0]=gfit[1]                                                           ## line core wavelength
+        spec_1pix[8]=2.3548*gfit[2]                                                    ## Total line width [nm]; 2*np.sqrt(2*np.log(2))==2.3548
+    
+    if gaussfit == 0:                                                                  ## CDF only version
+        spec_1pix[0]=tmp[4]                                                            ## line core wavelength
         spec_1pix[8]=tmp[5]-tmp[3]                                                     ## Total line width [nm]
+    
     if gaussfit == 2:                                                                  ## CDF + GAUSS version;
-        gfit,gcov = curve_fit(obs_gaussfit,wlarr,sobs_1pix[:,0],p0=[np.max(sobs_1pix[:,0]),tmp[4],(tmp[5]-tmp[3])/2.35,0.0],maxfev=10000)
-        ## line core wavelength
-        spec_1pix[0]=gfit[1]#+const.line_ref                                           ## line core wavelength
-        ##line widths (total)
-        spec_1pix[8]=2*np.sqrt(2*np.log(2))*gfit[2]                                    ## Total line width [nm]
+        gfit,gcov = curve_fit(obs_gaussfit,wlarr_1pix,sobs_cal[:,0],p0=[np.max(sobs_cal[:,0]),tmp[4],(tmp[5]-tmp[3])/2.3548,0.0],maxfev=5000)
+        spec_1pix[0]=gfit[1]                                                           ## line core wavelength
+        spec_1pix[8]=2.3548*gfit[2]                                                    ## Total line width [nm]; 2*np.sqrt(2*np.log(2))==2.3548
 
 
     ## Doppler shifts
     spec_1pix[1]=spec_1pix[0]-const.line_ref                                           ## line  shift from reference position [nm]
     spec_1pix[2]=spec_1pix[1]*const.l_speed*1e-3/const.line_ref                        ## shift converted to velocities; km*s^-1
-    ## record the intensity of the central wavelength for each profile. Should be ~0 for V
-    spec_1pix[3]=(sobs_1pix[tmp7,0]+sobs_1pix[tmp7+1,0])/2.                            ## Stokes I core intensity
-    spec_1pix[4]=(sobs_1pix[tmp7,1]+sobs_1pix[tmp7+1,1])/2.                            ## Stokes Q core intensity
-    spec_1pix[5]=(sobs_1pix[tmp7,2]+sobs_1pix[tmp7+1,2])/2.                            ## Stokes U core intensity
-    ## Stokes V will count the min/max counts of the first (left) lobe.
-    ## Intensity will not match wavelength position of the other 3 quantities.
-    a=np.where(sobs_1pix[:,3] == np.min(sobs_1pix[:,3]))[0][ 0]                        ## check where the negative V lobe is located with respect to the line core position.
+    
+    ## record the intensity of the central wavelength for IQU profiles. 
+    spec_1pix[3]=(sobs_cal[tmp7,0]+sobs_cal[tmp7+1,0])/2.                              ## Stokes I core intensity
+    spec_1pix[4]=(sobs_cal[tmp7,1]+sobs_cal[tmp7+1,1])/2.                              ## Stokes Q core intensity
+    spec_1pix[5]=(sobs_cal[tmp7,2]+sobs_cal[tmp7+1,2])/2.                              ## Stokes U core intensity
+    ## Stokes V Intensity; It will count the min/max counts of the first (left) lobe and will not match wavelength position of the other 3 quantities.
+    a=np.where(sobs_cal[:,3] == np.min(sobs_cal[:,3]))[0][0]                           ## check where the negative V lobe is located with respect to the line core position.
     if a <= tmp7:
-        spec_1pix[6]=(sobs_1pix[a,3])                                                  ## is the negative V lobe is to the left, then Stokes V has a -+ shape
+        spec_1pix[6]=(sobs_cal[a,3])                                                   ## is the negative V lobe is to the left? then Stokes V has a -+ shape
     else:
-        b=np.where(sobs_1pix[:,3] == np.max(sobs_1pix[:,3]))[0][0]
-        spec_1pix[6]=(sobs_1pix[b,3])                                                  ## Otherwise, Stokes V has a +- shape; 
+        b=np.where(sobs_cal[:,3] == np.max(sobs_cal[:,3]))[0][0]
+        spec_1pix[6]=(sobs_cal[b,3])                                                   ## Otherwise, Stokes V has a +- shape; 
+    
     ##background counts
-    spec_1pix[7]=background_1pix[0]                                                    ## background intensity of stokes I. background in all other Stokes components is similar;
+    spec_1pix[7]=background[0]                                                         ## background intensity of stokes I. background in all other Stokes components is similar;
+    
     ##line widths (non-thermal)
-
     spec_1pix[9]=np.sqrt( (((((spec_1pix[8]*1e-9)**2)*(const.l_speed**2))\
         -(((instwidth*1e-9)**2)*((const.line_ref*1e-9)**2)))/(4*np.log(2)*((const.line_ref*1e-9)**2)))\
         -(const.kb*(10.**const.ion_temp)/const.ion_mass))*const.line_ref/const.l_speed ## Non-thermal component of the line width; dependent on instwidth
+    
     ## compute the polarization quantities
-    spec_1pix[10] =np.sqrt(sobs_tot_1pix[1]**2+sobs_tot_1pix[2]**2)/sobs_tot_1pix[0]   ## fraction of linear polarization with respect to intensity
-    spec_1pix[11] =np.sqrt(sobs_tot_1pix[1]**2+sobs_tot_1pix[2]**2\
-        +sobs_tot_1pix[3]**2)/sobs_tot_1pix[0]                                         ## fraction of total polarization with respect to intensity
+    spec_1pix[10] =np.sqrt(sobs_tot[1]**2+sobs_tot[2]**2)/sobs_tot[0]                  ## fraction of linear polarization with respect to intensity
+    spec_1pix[11] =np.sqrt(sobs_tot[1]**2+sobs_tot[2]**2\
+        +sobs_tot[3]**2)/sobs_tot[0]                                                   ## fraction of total polarization with respect to intensity
 
     return spec_1pix
 ###########################################################################

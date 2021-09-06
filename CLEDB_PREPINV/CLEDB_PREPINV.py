@@ -125,7 +125,6 @@ def sobs_preprocess(sobs_in,params):
                 elif tline[1] == "si-x_1430":
                     print('Line 2: Si IX   3934.3nm')
 
-
 ## check for the direction for the reference direction of linear polarization.
 ## angle direction is trigonometric; values are in radians
 ## 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU.
@@ -136,29 +135,43 @@ def sobs_preprocess(sobs_in,params):
 ## not clear at this point if this will be a constant or a varying keyword
     instwidth=0
 
+## MAIN ASUSMPTION IS THAT THE KEYWORDS COME AS ATTACHED TO THE ARRAY (E.G. ARRAY_EXTENDED METHOD)
 ## array dimensions! 
     nx,ny,nw=sobs_in[0].shape[0:3]     ## alternatively, these can be read from naxis[1-3] keywords
-
-    # if nline == 2:
-    #     ## we assume here that the input array is a list of 2 observations; e.g. [np.array[nx,ny,nw],np.array[nx,ny,nw]]
-    #     np.append(sobs_in[0],sobs_in[1]).reshape(nx,ny,nw,8)
 
 ## array coordinate keywords
 ## These needs to be changed based on observation. For CLE this is normally the information in GRID.DAT
 ## Values for the 3 dipole simulation
 ## these are in R_sun units. Production will most probably use arcsecond units. These should work without changes if things are kept consistent.
+
+    ## CASE 1: 3 DIPOLE CLE SIMULATION DATA
+#     crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
+#     crpix2 = 0
+#     crpix3 = [np.int32(nw/2)-1,np.int32(nw/2)-1]                      ## two lines have different wavelength parameters
+
+#     ##python stores arrays differently than normal, x dimension is second and y dimension is first. the reversal of /nx and /ny follows this issue.
+#     crval1 = -0.75#0.8                  ## solar coordinates at crpixn in r_sun
+#     crval2 = 0.8#-0.75
+#     crval3 = [1074.62686-0.0124, 1079.78047-0.0124]     ## from CLE outfile; reference wavelengths are in vacuum
+    
+#     cdelt1 = (0.75-(-0.75))/nx         ## from grid.dat; remember the python axis flipping
+#     cdelt2 = (1.5-0.8)/ny         
+#     cdelt3 = [0.0247, 0.0249]
+       
+    ## CASE 2: MURAM INPUT DATA
     crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
     crpix2 = 0
-    crpix3 = [np.int32(nw/2)-1,np.int32(nw/2)-1]                      ## two lines have different wavelength parameters
+    crpix3 = [0,0]                      ## two lines have different wavelength parameters
 
     ##python stores arrays differently than normal, x dimension is second and y dimension is first. the reversal of /nx and /ny follows this issue.
-    crval1 = -0.75#0.8                  ## solar coordinates at crpixn in r_sun
-    crval2 = 0.8#-0.75
-    crval3 = [1074.62686-0.0124, 1079.78047-0.0124]     ## from CLE outfile; reference wavelengths are in vacuum
+    crval1 = -0.071                     ## solar coordinates at crpixn in r_sun; from muram xvec and y vec arrays
+    crval2 = 0.989
+    crval3 = [1074.257137, 1079.420513] ## from MURAM wvvec1 and wvvec2 0 positions
 
-    cdelt2 = (1.5-0.8)/ny               ## from grid.dat
-    cdelt1 = (0.75-(-0.75))/nx
-    cdelt3 = [0.0247, 0.0249]
+    cdelt1 = 0.0001379                  ## from muram xvec, yvec, wvvec1 and wvvce2 arrays
+    cdelt2 = 0.0000689
+    cdelt3 = [0.0071641,0.0071985]    
+    
 ## pack the decoded keywords into a comfortable python list to feed to downstream functions/modules
     keyvals=(nx,ny,nw,nline,tline,crpix1,crpix2,crpix3,crval1,crval2,crval3,cdelt1,cdelt2,cdelt3,linpolref,instwidth)
 
