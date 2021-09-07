@@ -10,7 +10,7 @@
 ## Do not directly edit that version!
 
 
-# In[3]:
+# In[2]:
 
 
 ## Needed modules
@@ -28,7 +28,7 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 
 # ### 1. Import the synthetic CLE observation.
 
-# In[4]:
+# In[3]:
 
 
 ## observations of a 3 dipole coronal structure of a Fe XIII combined observation
@@ -69,7 +69,7 @@ sobsa=sobsa[0]
 import CLEDB_PREPINV.CLEDB_PREPINV as prepinv  ##imports from the CLEDB_PREPINV subdirectory
 
 
-# In[5]:
+# In[6]:
 
 
 ## arrange the two observation "files" in a simple list;
@@ -91,7 +91,7 @@ sobs_in = List()                              ## this is the List object impleme
 sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,params)
 
 
-# In[9]:
+# In[39]:
 
 
 ## select and pre-read the database files based on the observation preprocessing
@@ -106,7 +106,7 @@ db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[10]:
+# In[9]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -135,7 +135,7 @@ blosout=procinv.blos_proc(sobs_tot[:,:,0:4],rms[:,:,0:4],keyvals,consts,params)
 # In[ ]:
 
 
-# importlib.reload(procinv)       ## If module is modified, reload the contents
+importlib.reload(procinv)       ## If module is modified, reload the contents
 invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.reduced,params.verbose)
 ## WARNING: This step has a significantly long execution time.
 
@@ -157,19 +157,21 @@ if len(lst) >0:
     for i in range(len(lst)):
         os.remove(lst[i])
         
-## save the last run       
+## save the last run 
+datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
 with open(f'outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
     pickle.dump([specout,blosout,invout,sfound], f)
 
 
 # ### 5. PLOT the outputs (optional)
 
-# In[1]:
+# In[31]:
 
 
 ##needed libraries and functions
 from matplotlib import pyplot as plt
-#%matplotlib widget                ## interactive plotting; use only on local machines if installed
+## interactive plotting; use only on local machines if installed
+get_ipython().run_line_magic('matplotlib', 'widget')
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):

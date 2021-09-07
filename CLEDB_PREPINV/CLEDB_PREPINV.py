@@ -232,13 +232,14 @@ def sdb_preprocess(yobs,keyvals,params):
     ######################################################################
     ## Create a file encoding showing which database to read for which voxel
     ## the encoding labels at this stage do not have an order.
-    db_enc=np.zeros((nx,ny),dtype=np.int32)
+    db_enc=np.zeros((nx,ny),dtype=np.int32)         ## location in outputted database list; OUTPUT VARIABLE
+    db_enc_flnm=np.zeros((nx,ny),dtype=np.int32)    ## location in file list when read from disk; used only internally in sdb_preprocess
     
     for xx in range(nx):
         for yy in prange(ny):                     
-            db_enc[xx,yy]=sdb_findelongation(yobs[xx,yy],dbynumbers)   
+            db_enc_flnm[xx,yy]=sdb_findelongation(yobs[xx,yy],dbynumbers)   
     
-    db_uniq=np.unique(db_enc) ## makes a list of unique databases to read
+    db_uniq=np.unique(db_enc_flnm) ## makes a list of unique databases to read; the full list might have repeated entries
     if params.verbose >= 1: print("Load DB datafiles for",db_uniq.shape[0]," heights in memory for",nline,"line(s).\n------------------------------------")
     
     ######################################################################
@@ -274,7 +275,11 @@ def sdb_preprocess(yobs,keyvals,params):
 
     ## numpy large array implementation does not parallelize properly leading to a 5x increase in runtime per 1024 calculations
     ## reverted to use a list to feed the database set to the calculation
-
+    
+    ## Create a db_enc that is corresponding to the location in the outputted database list 
+    for kk in prange(db_uniq.shape[0]):
+        db_enc[np.where(db_enc_flnm == db_uniq[kk])] = kk
+    
     ## standard reflected lists will be deprecated in numba 0.54; currently running 0.53. this is a fix!
     database = List()                            ## this is the List object implemented by numba
     [database.append(x) for x in database0]   

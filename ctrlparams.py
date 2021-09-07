@@ -10,7 +10,7 @@
 class ctrlparams:
     def __init__(self):
         self.dbdir    = '/home/alin/Documents/physics_prog/cle/test_cle_degeneracy/db202_R0500/'   ## directory for database
-        self.verbose  = 0                                                                          ## verbosity parameter
+        self.verbose  = 1                                                                          ## verbosity parameter
         self.reduced  = 1                                                                          ## boolean parameter for reduced search
         self.nsearch  = 4                                                                          ## number of closest solutions to compute
         self.bcalc    = 0                                                                          ## control parameter for computing the B magnitude for two line observations.
