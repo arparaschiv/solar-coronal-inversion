@@ -261,11 +261,20 @@ Python class that unpacks control parameters used in all modules of the inversio
 		\item[ion\_mass]
 		float; Ion mass; SI [Kg];   
 		\item[line\_ref]
-		float; Theoretical line core wavelength position; [nm]				\item[width\_th] 
+		float; Theoretical line core wavelength position; [nm]					
+		\item[width\_th] 
 		float; Thermal width analytical approximation; [nm]
+		\item[F\_factor] 
+		float; Additional factor described by \citet{2020ApJ...889..109D}. Useful in calculating LOS products; [nm]		
+		\item[gu \& gl] 
+		float; LS coupling upper and lower energy levels factors ;
+		\item[ju \& jl]	
+		float; Upper and lower level angular momentum terms;
+		\item[g$_{eff}$]
+		float; LS coupling Effective Land\`{e} factor;
 \end{description}
 
-.
+
 
 \newpage
 \subsection*{CLEDB\_BUILD Database Generation}
