@@ -51,8 +51,8 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 # In[4]:
 
 
-## load the fake observation muram data.
-## FE XIII 1074+1079
+# load the fake observation muram data.
+# FE XIII 1074+1079
 
 with open('obsstokes_avg_muram3.pkl','rb') as f:
     sobsa = pickle.load(f) 
@@ -83,21 +83,20 @@ sobs_in = List()                              ## this is the List object impleme
 
 # ##### preprocess the observation "files"
 
-# In[7]:
+# In[9]:
 
 
-# importlib.reload(prepinv)       ## If module is modified, reload the contents
-
+#importlib.reload(prepinv)       ## If module is modified, reload the contents
 sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,params)
 
 
-# In[39]:
+# In[10]:
 
 
 ## select and pre-read the database files based on the observation preprocessing
 ## At this point, the database should be generated and properly linked.
 
-importlib.reload(prepinv)       ## If module is modified, reload the contents
+#importlib.reload(prepinv)       ## If module is modified, reload the contents
 db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 ## Warning, this might be memory consuming; see details in documentation
 
@@ -106,7 +105,7 @@ db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[9]:
+# In[11]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -132,10 +131,10 @@ blosout=procinv.blos_proc(sobs_tot[:,:,0:4],rms[:,:,0:4],keyvals,consts,params)
 
 # ##### Process the full vector magnetic field inversion products
 
-# In[ ]:
+# In[12]:
 
 
-importlib.reload(procinv)       ## If module is modified, reload the contents
+#importlib.reload(procinv)       ## If module is modified, reload the contents
 invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.reduced,params.verbose)
 ## WARNING: This step has a significantly long execution time.
 
@@ -165,13 +164,13 @@ with open(f'outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(...,
 
 # ### 5. PLOT the outputs (optional)
 
-# In[31]:
+# In[15]:
 
 
 ##needed libraries and functions
 from matplotlib import pyplot as plt
 ## interactive plotting; use only on local machines if installed
-get_ipython().run_line_magic('matplotlib', 'widget')
+#%matplotlib widget                
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):
@@ -370,59 +369,101 @@ plt.tight_layout()
 plt.savefig(f"specout_1line_line{linen}_{datestamp}.pdf")
 
 
-# In[23]:
+# In[ ]:
+
+
+## plot 1-line BLOS
+
+fig, plots = plt.subplots(nrows=2, ncols=2, figsize=(8,8))
+ab=plots[0,0].imshow(blosout[srx1:srx2,sry1:sry2,0]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=0)
+plots[0,0].set_title('1$^{st}$ degenerate magnetograph solution')
+colorbar(ab,title="B$_{LOS}$ [G]")
+plots[0,0].set_ylabel('Z [R$_\odot$]')
+#plots[0,0].set_xlabel('Y [R$_\odot$]')
+
+ab=plots[0,1].imshow(blosout[srx1:srx2,sry1:sry2,1]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=0)
+plots[0,1].set_title('2$^{nd}$ degenerate magnetograph solution')
+colorbar(ab,title="B$_{LOS}$ [G]")
+#plots[0,1].set_ylabel('Z [R$_\odot$]')
+#plots[0,1].set_xlabel('Y [R$_\odot$]')
+
+ab=plots[1,0].imshow(blosout[srx1:srx2,sry1:sry2,2]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=0)
+plots[1,0].set_title('Classic magnetograph solution')
+colorbar(ab,title="B$_{LOS}$ [G]")
+plots[1,0].set_ylabel('Z [R$_\odot$]')
+plots[1,0].set_xlabel('Y [R$_\odot$]')
+
+ab=plots[1,1].imshow(blosout[srx1:srx2,sry1:sry2,3],extent=rnge,cmap='twilight_shifted')
+plots[1,1].set_title('Magnetic Azimuth')
+colorbar(ab,title="B$_{LOS}$ [G]")
+plots[1,1].set_xlabel('Y [R$_\odot$]')
+plt.tight_layout()
+
+plt.savefig(f"blosout_1line_{datestamp}.pdf")
+
+
+# In[16]:
 
 
 ## Plot magnetic inversion
-
+soln=0    
 fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(10,12))
-ab=plots[0,0].imshow(invout[230:400,65:195,soln,0],vmin=0,vmax=5e7)
-plots[0,0].set_title('Database index')
-colorbar(ab)
 
-ab=plots[0,1].imshow(invout[230:400,65:195,soln,1],vmin=0,vmax=0.25)
-plots[0,1].set_title('Fit $\chi^2$')
-colorbar(ab)
+ab=plots[0,0].imshow(np.log10(invout[srx1:srx2,sry1:sry2,soln,0]),extent=rnge,cmap='Set1')#,vmin=1e6,vmax=11e6)
+plots[0,0].set_title(f'Database entry for sol. {soln}')
+colorbar(ab, title='Log of Index')
+plots[0,0].set_ylabel('Z [R$_\odot$]')
+
+ab=plots[0,1].imshow(invout[srx1:srx2,sry1:sry2,soln,1],extent=rnge,cmap='Reds',vmin=0,vmax=0.2)
+plots[0,1].set_title('Fit residual')
+colorbar(ab, title='$\chi^2$ metric')
 
 plots[0, 2].axis('off') ###leave one empty panel
 
-ab=plots[1,0].imshow(invout[230:400,65:195,soln,2],vmin=1,vmax=10)
-plots[1,0].set_title('Plasma density (Log)')
-colorbar(ab)
+ab=plots[1,0].imshow(invout[srx1:srx2,sry1:sry2,soln,2],cmap='Greens',extent=rnge,vmin=6,vmax=10)
+plots[1,0].set_title('Plasma density ')
+colorbar(ab, title='Log of N$_e$')
+plots[1,0].set_ylabel('Z [R$_\odot$]')
 
-ab=plots[1,1].imshow(invout[230:400,65:195,soln,3],vmin=0.9,vmax=1.5)
-plots[1,1].set_title('Computed height (R$_\odot$)')
-colorbar(ab)
+ab=plots[1,1].imshow(invout[srx1:srx2,sry1:sry2,soln,3],extent=rnge,cmap='OrRd',vmin=0.95,vmax=1.5)
+plots[1,1].set_title('Computed obs. height')
+colorbar(ab, title='R$_\odot$')
 
-ab=plots[1,2].imshow(invout[230:400,65:195,soln,4],vmin=-1.5,vmax=1.5)
-plots[1,2].set_title('LOS position (R$_\odot$')
-colorbar(ab)
+ab=plots[1,2].imshow(invout[srx1:srx2,sry1:sry2,soln,4],extent=rnge,cmap='RdBu',vmin=-1.5,vmax=1.5)
+plots[1,2].set_title('LOS position')
+colorbar(ab, title='Distance along X dimension R$_\odot$')
 
 
-ab=plots[2,0].imshow(invout[230:400,65:195,soln,5],vmin=0,vmax=700)
+ab=plots[2,0].imshow(invout[srx1:srx2,sry1:sry2,soln,5],extent=rnge,cmap='bone',vmin=0,vmax=80)
 plots[2,0].set_title('LVS field strength')
-colorbar(ab)
+colorbar(ab, title='|B| [G]')
+plots[2,0].set_ylabel('Z [R$_\odot$]')
 
-ab=plots[2,1].imshow(invout[230:400,65:195,soln,6],vmin=0,vmax=6.28)
+ab=plots[2,1].imshow(invout[srx1:srx2,sry1:sry2,soln,6],extent=rnge,vmin=0,vmax=6.28,cmap='twilight_shifted')
 plots[2,1].set_title('LVS B$_\phi$ [rad]')
-colorbar(ab)
+colorbar(ab, title='[rad]')
 
-ab=plots[2,2].imshow(invout[230:400,65:195,soln,7],vmin=0,vmax=3.14)
-plots[2,2].set_title('LVS B$_\Theta$ [rad]')
-colorbar(ab)
+ab=plots[2,2].imshow(invout[srx1:srx2,sry1:sry2,soln,7],extent=rnge,vmin=0,vmax=3.14,cmap='twilight_shifted')
+plots[2,2].set_title('LVS B$_\Theta$')
+colorbar(ab, title='[rad]')
 
 
-ab=plots[3,0].imshow(invout[230:400,65:195,soln,8],vmin=-500,vmax=500)
+ab=plots[3,0].imshow(invout[srx1:srx2,sry1:sry2,soln,8],extent=rnge,cmap='seismic',vmin=-60,vmax=60)
 plots[3,0].set_title('LOS cartesian B$_x$')
-colorbar(ab)
+colorbar(ab, title='[G]')
+plots[3,0].set_ylabel('Z [R$_\odot$]')
+plots[3,0].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,1].imshow(invout[230:400,65:195,soln,9],vmin=-400,vmax=400)
+ab=plots[3,1].imshow(invout[srx1:srx2,sry1:sry2,soln,9],extent=rnge,cmap='seismic',vmin=-60,vmax=60)
 plots[3,1].set_title('LOS cartesian B$_y$')
-colorbar(ab)
+colorbar(ab, title='[G]')
+plots[3,1].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,2].imshow(invout[230:400,65:195,soln,10],vmin=-400,vmax=400)
+ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',vmin=-60,vmax=60)
 plots[3,2].set_title('LOS cartesian B$_z$')
-colorbar(ab)
+colorbar(ab, title='[G]')
+plots[3,2].set_xlabel('Y [R$_\odot$]')
+
 plt.tight_layout()
 plt.savefig(f"invout_2line__sol{soln}_{datestamp}.pdf")
 

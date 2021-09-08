@@ -383,9 +383,3 @@ plt.tight_layout()
 
 plt.savefig(f"blosout_1line_{datestamp}.pdf")
 
-
-# In[ ]:
-
-
-
-

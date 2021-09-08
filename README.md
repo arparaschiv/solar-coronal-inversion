@@ -29,7 +29,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 4. Windows platform                       -- not tested.
 
 ### **Examples**
-Install the CLEDB distribution, generate databases, and update the database save location in the *ctrlparams.py* class, as describes in the [README-CODEDOC](./codedoc-latex/README-CODEDOC.pdf).
+Install the CLEDB distribution, generate databases, and update the database save location in the *ctrlparams.py* class, as described in the [README-CODEDOC](./codedoc-latex/README-CODEDOC.pdf).
 Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
 1. [test_1line.ipynb](./test_1line.ipynb)
