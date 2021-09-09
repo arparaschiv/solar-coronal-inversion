@@ -36,15 +36,15 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 ## sobsa is the combined 3 dipole output
 ## waveA and waveB are the wavelength arrays for the two Fe XIII lines
 
-# with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
-#     sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
-# ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
-# sobs1=sobs1[:,:,::-1,:]   
-# sobs2=sobs2[:,:,::-1,:]
-# sobs3=sobs3[:,:,::-1,:]
-# sobsa=sobsa[:,:,::-1,:]
-# #waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
-# #waveB=waveB[::-1]
+with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
+    sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
+### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
+sobs1=sobs1[:,:,::-1,:]   
+sobs2=sobs2[:,:,::-1,:]
+sobs3=sobs3[:,:,::-1,:]
+sobsa=sobsa[:,:,::-1,:]
+#waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
+#waveB=waveB[::-1]
 
 
 # In[4]:
@@ -53,9 +53,11 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 ## load the fake observation muram data.
 ## FE XIII 1074+1079
 
-with open('obsstokes_avg_muram3.pkl','rb') as f:
-    sobsa = pickle.load(f) 
-sobsa=sobsa[0]    ##needed because sobsa was saved as a 1 element list instead of pure np.array;
+# with open('obsstokes_avg_muram3.pkl','rb') as f:
+#     sobsa = pickle.load(f) 
+# sobsa=sobsa[0]    ##needed because sobsa was saved as a 1 element list instead of pure np.array;
+
+## muram data too big to include as test data!!!!
 
 
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
@@ -120,39 +122,23 @@ specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,para
 blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 
 
-# ### 4. DUMP results (optional)
+# ## All should be good if we reached this point; all the outputs should be computed and saved in memory.
 
-# In[18]:
+# ## 4. OPTIONAL tidbits
 
+# In[1]:
+
+
+##optionally needed libraries and functions
 
 from datetime import datetime
 import os
 import glob
 
-## Remove old file saves and keep just the last run
-lst=glob.glob('./outparams_1line*.pkl')
-if len(lst) >0:
-    for i in range(len(lst)):
-        os.remove(lst[i])
-        
-## save the last run       
-datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
-with open(f'outparams_1line_{datestamp}.pkl', 'wb') as f:  
-    pickle.dump([specout,blosout], f)
-
-
-# ##### All should be good if we reached this point; all the outputs should be computed and saved.
-
-# ### 5. PLOT the outputs (optional)
-
-# In[19]:
-
-
-##needed libraries and functions
 from matplotlib import pyplot as plt
-import numpy as np
-##interactive plotting;use only on local machines if available
-#%matplotlib widget                   
+## interactive plotting; use only on local machines if widget is installed
+#%matplotlib widget 
+       
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):
@@ -171,26 +157,50 @@ def colorbar(mappable,*args,**kwargs):
     return cbar
 
 
+# ### 4.a DUMP results (optional)
+
+# In[18]:
+
+
+## Remove old file saves and keep just the last run
+lst=glob.glob('./outparams_1line*.pkl')
+if len(lst) >0:
+    for i in range(len(lst)):
+        os.remove(lst[i])
+        
+## save the last run       
+datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")     
+
+if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+
+with open(f'./testrun_outputs/outparams_1line_{datestamp}.pkl', 'wb') as f:  
+    pickle.dump([specout,blosout], f)
+
+
+# ### 4.b PLOT the outputs (optional)
+
 # In[20]:
 
 
 ## Plot utils
 
 linen=0                ## choose which line to plot; range is [0:1] for 2 line input
+
 ## plot subranges for soome in snapshots
 # ## 3dipole
-# srx1=230
-# srx2=400
-# sry1=65
-# sry2=195
-#rnge=[0.8,1.5,-1.1,1.1]
+srx1=230
+srx2=400
+sry1=65
+sry2=195
+rnge=[0.8,1.5,-1.1,1.1]
 
-##muram
-srx1=0
-srx2=1023
-sry1=0
-sry2=1023
-rnge=[0.989,1.060,-0.071,0.071]
+##muram      ## muram data not offered as part of the test scripts due to large sizes.
+# srx1=0
+# srx2=1023
+# sry1=0
+# sry2=1023
+# rnge=[0.989,1.060,-0.071,0.071]
 
 
 # In[22]:
@@ -347,7 +357,10 @@ plots[2,3].set_xlabel('Y [R$_\odot$]')
 
 plt.tight_layout()
 
-plt.savefig(f"specout_1line_sol{linen}_{datestamp}.pdf")
+### Save the putput plots
+if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+plt.savefig(f"./testrun_outputs/specout_1line_sol{linen}_{datestamp}.pdf")
 
 
 # In[23]:
@@ -379,7 +392,11 @@ ab=plots[1,1].imshow(blosout[srx1:srx2,sry1:sry2,3],extent=rnge)
 plots[1,1].set_title('Magnetic Azimuth')
 colorbar(ab,title="B$_{LOS}$ [G]")
 plots[1,1].set_xlabel('Y [R$_\odot$]')
+
 plt.tight_layout()
 
-plt.savefig(f"blosout_1line_{datestamp}.pdf")
+### Save the putput plots
+if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+plt.savefig(f"./testrun_outputs/blosout_1line_{datestamp}.pdf")
 

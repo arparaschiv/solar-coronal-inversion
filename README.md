@@ -25,11 +25,11 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 
 1. Debian+derivatives Linux x64           -- all inversion modules are fully working.
 2. RC system CentOS linux x64             -- all inversion modules are fully working. Additional binary executable is provided. May require local compiling.
-3. OSX (Darwin x64) Catalina and Big Sur  -- all inversion modules are fully working; One additional homebrew package required. See README-CODEDOC.pdf.
+3. OSX (Darwin x64) Catalina and Big Sur  -- all inversion modules are fully working; One additional homebrew package required. See [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
 4. Windows platform                       -- not tested.
 
 ### **Examples**
-Install the CLEDB distribution, generate databases, and update the database save location in the *ctrlparams.py* class, as described in the [README-CODEDOC](./codedoc-latex/README-CODEDOC.pdf).
+Install the CLEDB distribution, generate databases, and update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [README-CODEDOC](./codedoc-latex/README-CODEDOC.pdf).
 Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
 1. [test_1line.ipynb](./test_1line.ipynb)
@@ -46,10 +46,10 @@ i. Load the following gdrive wrapper script into your bash directly, or introduc
 
 ii. Download the file using its gdrive FILE_ID from the download link (*test data FILE_ID = 1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m*):
 
-    gdrive_download FILE_ID local_path/local_name   (may need to be run two times!)
+    gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
 
-Note: The script versions of both tests *test_1line.py* and *test_2line.py* together with the *test_cledb_headless.sh* are slurm enabled to be used for headless RC system runs. 
-These offer the same functionality as the notebooks (from which they are directly derived from) See the dedicated [readme](./README_SLURM.md) for additional information.
+Note: The script versions of both tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs. 
+These offer the same functionality as the notebooks (from which they are directly derived from) See the dedicated [README_SLURM](./README_SLURM.md) for additional information.
 
 Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/0.53.1/) in a correct installation.
 

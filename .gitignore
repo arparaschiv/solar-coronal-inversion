@@ -135,7 +135,9 @@ outparams*.pkl
 specout*.pdf
 invout*.pdf
 blosout*.pdf
-
+## outplots directory
+testrun_outputs
+testrun_outputs/*
 ##Databases
 CLEDB_BUILD/fe-xiii_1074/
 CLEDB_BUILD/fe-xiii_1079/
@@ -147,6 +149,5 @@ codedoc-latex/*.log
 codedoc-latex/*.out
 codedoc-latex/*.gz
 codedoc-latex/*.bak
-
 codedoc-latex/*.bbl
 codedoc-latex/*.blg

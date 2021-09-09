@@ -80,6 +80,10 @@ case "$(uname -s)" in
     MINGW*)     dbexec='db*_linux';;
     *)          exit 1
 esac
+## additional case for the CU research computing systems;a 3rd executable exists for this
+uname -n | grep 'rc.int.colorado.edu' &> /dev/null
+if [ $? == 0 ]; then dbexec='db*_rclinux'; fi
+
 
 ### database and calculation configuration parameters
 ### please keep the DB.INPUT configuration as in example; including spaces and decimal numbers on line 5 for this to work

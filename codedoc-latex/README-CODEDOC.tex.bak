@@ -265,13 +265,13 @@ Python class that unpacks control parameters used in all modules of the inversio
 		\item[width\_th] 
 		float; Thermal width analytical approximation; [nm]
 		\item[F\_factor] 
-		float; Additional factor described by \citet{2020ApJ...889..109D}. Useful in calculating LOS products; [nm]		
-		\item[gu \& gl] 
-		float; LS coupling upper and lower energy levels factors ;
-		\item[ju \& jl]	
-		float; Upper and lower level angular momentum terms;
+		float; Additional factor described by \citet{2020ApJ...889..109D}. Useful in calculating LOS products;		
+		\item[g$_u$ \& g$_l$] 
+		float; Atomic upper and lower energy levels factors; LS coupling;
+		\item[j$_u$ \& j$_l$]	
+		float; Atomic upper and lower level angular momentum terms;
 		\item[g$_{eff}$]
-		float; LS coupling Effective Land\`{e} factor;
+		float; LS coupling effective Land\`{e} factor;
 \end{description}
 
 
@@ -295,7 +295,7 @@ Python class that unpacks control parameters used in all modules of the inversio
 	\item[GRID.DAT]
 	Defines the range and resolution of a CLE simulation. In the case of database building it has a very limited functionality and is only kept due to CLE's dependency on it.
 	\item[db"xxxx"\_"arch"]
-	Executable binaries for generating databases. "xxxx" is the current version of the FORTRAN code. arch is "Linux" or "Darwin". Both versions are provided in the distribution for cross-platform compatibility.	
+	Executable binaries for generating databases. "xxxx" is the current version of the FORTRAN code. arch is "linux", "rclinux" or "darwin". The different versions are provided in the distribution for cross-platform compatibility.	
 \end{description}
     
 \textbf{DB.INPUT parameters}

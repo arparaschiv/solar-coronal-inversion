@@ -36,27 +36,28 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 ## sobsa is the combined 3 dipole output
 ## waveA and waveB are the wavelength arrays for the two Fe XIII lines
 
-# with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
-#     sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
-# ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
-# sobs1=sobs1[:,:,::-1,:]   
-# sobs2=sobs2[:,:,::-1,:]
-# sobs3=sobs3[:,:,::-1,:]
-# sobsa=sobsa[:,:,::-1,:]
-# waveA=waveA[::-1]
-# waveB=waveB[::-1]
-# ## we test here using sobs1.
+with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
+    sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
+### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
+sobs1=sobs1[:,:,::-1,:]   
+sobs2=sobs2[:,:,::-1,:]
+sobs3=sobs3[:,:,::-1,:]
+sobsa=sobsa[:,:,::-1,:]
+#waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
+#waveB=waveB[::-1]
 
 
 # In[4]:
 
 
-# load the fake observation muram data.
+# load the fake observation muram data.             
 # FE XIII 1074+1079
 
-with open('obsstokes_avg_muram3.pkl','rb') as f:
-    sobsa = pickle.load(f) 
-sobsa=sobsa[0]  
+# with open('obsstokes_avg_muram3.pkl','rb') as f:
+#     sobsa = pickle.load(f) 
+# sobsa=sobsa[0]  
+
+## muram data too big to include as test data!!!!
 
 
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
@@ -139,38 +140,22 @@ invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,db
 ## WARNING: This step has a significantly long execution time.
 
 
-# ##### All should be good if we reached this point; all the outputs should be computed.
+# ## All should be good if we reached this point; all the outputs should be computed and saved in memory.
 
-# ### 4. DUMP results (optional)
+# ## 4. OPTIONAL tidbits
 
-# In[8]:
+# In[1]:
 
+
+##optionally needed libraries and functions
 
 from datetime import datetime
 import os
 import glob
 
-## Remove old file saves and keep just the last run
-lst=glob.glob('./outparams_2line*.pkl')
-if len(lst) >0:
-    for i in range(len(lst)):
-        os.remove(lst[i])
-        
-## save the last run 
-datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
-with open(f'outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-    pickle.dump([specout,blosout,invout,sfound], f)
-
-
-# ### 5. PLOT the outputs (optional)
-
-# In[15]:
-
-
-##needed libraries and functions
 from matplotlib import pyplot as plt
-## interactive plotting; use only on local machines if installed
-#%matplotlib widget                
+## interactive plotting; use only on local machines if widget is installed
+#%matplotlib widget      
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):
@@ -189,27 +174,51 @@ def colorbar(mappable,*args,**kwargs):
     return cbar
 
 
+# ### 4.a DUMP results (optional)
+
+# In[8]:
+
+
+
+## Remove old file saves and keep just the last run
+lst=glob.glob('./outparams_2line*.pkl')
+if len(lst) >0:
+    for i in range(len(lst)):
+        os.remove(lst[i])
+        
+## save the last run 
+datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
+
+if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+
+with open(f'./testrun_outputs/outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump([specout,blosout,invout,sfound], f)
+
+
+# ### 4.b PLOT the outputs (optional)
+
 # In[ ]:
 
 
 ## Plot utils
 
 linen=0                ## Specout: choose which line to plot; range is [0:1] for 2 line input
-soln=3                 ## Invout: which solution to plot; range is [0:nsearch-1] where nsearch is defined in ctrlparams
+
 ## plot subranges for soome in snapshots
 # ## 3dipole
-# srx1=230
-# srx2=400
-# sry1=65
-# sry2=195
-#rnge=[0.8,1.5,-1.1,1.1]
+srx1=230
+srx2=400
+sry1=65
+sry2=195
+rnge=[0.8,1.5,-1.1,1.1]
 
-##muram
-srx1=0
-srx2=1023
-sry1=0
-sry2=1023
-rnge=[0.989,1.060,-0.071,0.071]
+##muram   ## muram data not offered as part of the test scripts due to large sizes.
+# srx1=0
+# srx2=1023
+# sry1=0
+# sry2=1023
+# rnge=[0.989,1.060,-0.071,0.071]
 
 
 # In[2]:
@@ -366,7 +375,10 @@ plots[2,3].set_xlabel('Y [R$_\odot$]')
 
 plt.tight_layout()
 
-plt.savefig(f"specout_1line_line{linen}_{datestamp}.pdf")
+### Save the putput plots
+if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+plt.savefig(f"./testrun_outputs/specout_1line_line{linen}_{datestamp}.pdf")
 
 
 # In[ ]:
@@ -397,16 +409,22 @@ ab=plots[1,1].imshow(blosout[srx1:srx2,sry1:sry2,3],extent=rnge,cmap='twilight_s
 plots[1,1].set_title('Magnetic Azimuth')
 colorbar(ab,title="B$_{LOS}$ [G]")
 plots[1,1].set_xlabel('Y [R$_\odot$]')
+
 plt.tight_layout()
 
-plt.savefig(f"blosout_1line_{datestamp}.pdf")
+### Save the putput plots
+if not os.path.exists('./testrun_outputs'):              ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+plt.savefig(f"./testrun_outputs/blosout_1line_{datestamp}.pdf")
 
 
 # In[16]:
 
 
 ## Plot magnetic inversion
-soln=0    
+
+soln=0    ## selects the colution to plot < nsearch
+
 fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(10,12))
 
 ab=plots[0,0].imshow(np.log10(invout[srx1:srx2,sry1:sry2,soln,0]),extent=rnge,cmap='Set1')#,vmin=1e6,vmax=11e6)
@@ -465,7 +483,11 @@ colorbar(ab, title='[G]')
 plots[3,2].set_xlabel('Y [R$_\odot$]')
 
 plt.tight_layout()
-plt.savefig(f"invout_2line__sol{soln}_{datestamp}.pdf")
+
+### Save the putput plots
+if not os.path.exists('./testrun_outputs'):              ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
+plt.savefig(f"./testrun_outputs/invout_2line__sol{soln}_{datestamp}.pdf")
 
 
 # In[60]:
