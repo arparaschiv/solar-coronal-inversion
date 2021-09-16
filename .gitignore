@@ -148,6 +148,7 @@ codedoc-latex/*.aux
 codedoc-latex/*.log
 codedoc-latex/*.out
 codedoc-latex/*.gz
+codedoc-latex/*.tex.bak
 codedoc-latex/*.bak
 codedoc-latex/*.bbl
 codedoc-latex/*.blg

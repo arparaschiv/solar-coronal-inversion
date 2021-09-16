@@ -20,7 +20,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available in a dedicated documentation write-up. [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README_SLURM.md](./README_SLURM.md).
-4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents current issues and functions to be implemented in the near future.
+4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
 ### **System platform compatibility**
 
 1. Debian+derivatives Linux x64           -- all inversion modules are fully working.

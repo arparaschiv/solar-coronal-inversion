@@ -114,23 +114,23 @@ After installing all packages the environment can be activated via:
 
 (The user can return to the standard python package base by running \emph{\color{red}conda deactivate}.)
 
-The "CLEDBenv" anaconda environment installs specific version packages. Updating the python packages inside the environment is not recommended and might break functionality. If problems arise, CLEDBenv can be deleted:
+The "CLEDBenv" anaconda environment installs specific version packages. Updating the python packages inside the environment is not recommended and might break functionality. If problems arise, CLEDBenv can be deleted and recreated with the default packages from the .yml.
 
 \emph{\color{red}conda remove --name CLEDBenv --all}
 
-and recreated with the default packages from the .yml as exemplified above.
+Databases can be built with:
+
+\emph{\color{red}./rundb\_1line.sh} 
+
+See detailed database build instructions via the dedicated readme in the CLEDB\_BUILD directory.
 
 Two examples of running the full inversion package (assuming databases are already built) are provided as Jupyter notebooks and/or lab sessions.
 
 \emph{\color{red}jupyter-lab test\_1line.ipynb}\\
 \emph{\color{red}jupyter-lab test\_2line.ipynb}
 
-%The inversion module can be run with the wrapper function
-
-%\emph{\color{red}terminal\_wrap.py,sobs\_in,header}
-
 \textbf{\large External python modules:\\}
-To ensure optimal numerical computation efficiency, the CLEDB distribution heavily relies on the Numpy and Numba python packages. 
+For numerical computation efficiency, the CLEDB distribution heavily relies on the Numpy and Numba packages. 
 \begin{description} [font=\normalfont,leftmargin=0.6in,style=multiline]
 	\item[Numpy]
 Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.20) documentation is \href{https://numpy.org/doc/1.20/}{found here.}

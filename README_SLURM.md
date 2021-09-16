@@ -69,8 +69,6 @@ The ion to generate the database and the number of cores (that do not exceed xx 
 
 This version of the script will perform disk I/O on $SCRATCH partitions. Databases should be moved back to the /projects/$USER/ directories after executing (automatic moving back not yet implemented).
 
-
 The bash *[rundb_1line_slurm.sh](./CLEBD_BUILD/rundb_1line_slurm.sh)* wrapper script should be used here. It calls one of the two above mentioned .py scripts based on a decision tree.
-
 
 To be updated when production scripts are ready.
