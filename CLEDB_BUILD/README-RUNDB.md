@@ -33,14 +33,18 @@ To fix try:
 
         xattr -d com.apple.quarantine /path/to/file
 
-- (Optional) for RC systems, the correct modules may need to be preloaded in order for scripts to execute:
+- (Optional) for interactive jobs on RC systems, the correct modules may need to be preloaded in order for scripts to execute. 
 
-        module load gcc/10.2.0
+        module load slurm/blanca
+        module load gcc/10.2.0                (gcc is preloaded automatically in the batch version of the script.)
 
-- run with:
+- run interactive jobs with:
 
-        ./rundb_1line
-        ./rundb_1line_slurm
+        ./rundb_1line.sh
+
+- run batch/headless jobs with:
+
+        sbatch rundb_1line_slurm.sh
 
 #### **NOTES:**
 
@@ -60,7 +64,7 @@ To fix try:
         3:    Si X    1430.1nm
         4:    Si IX   3934.3nm
 
-- The batch *[rundb_1line_slurm.sh](./rundb_1line_slurm.sh)* script has no keyboard inputs, but has two manually defined variables that control threads and the ions to generate.
+- The batch *[rundb_1line_slurm.sh](./rundb_1line_slurm.sh)* script has no keyboard inputs, but has manually defined variables that control the ions to generate and system paths.
 
 - Most directory and file pointers are dynamically linked to the CLEDB distribution directory. Local runs should run without interference
   Some directory/system containing variables are defined to be compatible with the CURC system (scratch, project, etc. dirs). These may need to be updated for different systems.

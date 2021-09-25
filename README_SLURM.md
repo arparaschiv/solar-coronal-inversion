@@ -66,9 +66,13 @@ Note: Install inside the sinteractive run or a compile node following the CURC g
 
 #### 2.b Batch/headless runs
 
-- The database generating scripts in CLEDB_BUILD directory have a dedicated headless run script *[rundb_1line_slurm.sh](./CLEBD_BUILD/rundb_1line_slurm.sh)* which has slurm headers and all user inputs disabled
-The ion to generate the database and the number of cores (that should mirror xx from #SBATCH --ntasks=xx line), along with some path variables may need to be manually edited in the script before running. This version of the database generation script will perform disk I/O on $SCRATCH partitions. Databases will be moved back to the /projects/$USER/ directories after computations are finished.
+- The database generating scripts in CLEDB_BUILD directory have a dedicated headless run script *[rundb_1line_slurm.sh](./CLEBD_BUILD/rundb_1line_slurm.sh)* which has slurm headers and all where user inputs are disabled.
+RC resources are asked via the sbatch commands in the script header. The ion to generate the database along with some path variables need to be manually edited in the script before running. This version of the database generation script will perform disk I/O on $SCRATCH partitions, and not on local directories. Databases will be moved back to the /projects/$USER/ directories after computations are finished.
+
+- Call it using sbatch after editing for the ion and paths to generate for each ion (multiple sbatch commends can be run concurrently if resources are available):
+        
+        sbatch rundb_1line_slurm.sh 
 
 - The bash *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* wrapper script is a starting point for running test/production headless runs via the sbatch command. It provisionally calls one of the two above mentioned .py scripts based on a decision tree.
 
-- The script is be updated/finalized when production runs are ready and data and header ingestion procedures are known.
+- The script is to be *updated/finalized* when production runs are ready and data and header ingestion procedures are known.
