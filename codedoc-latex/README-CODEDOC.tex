@@ -22,21 +22,21 @@
     \newcommand{\Dsh}{\rotatebox[origin=c]{180}{$\Lsh$}} 
 
 \begin{document}
-\section*{CLEDB - CORONAL FIELD DATABASE INVERSION \\ ALGORITHM NOTES}
+\section*{Coronal Line Emission DataBase inversion - CLEDB \\ A coronal magnetic field inferral tool \\~\\ ALGORITHM NOTES}
 
-\textbf{Contact:} Alin Paraschiv arparaschiv@nso.edu, paraschiv.alinrazvan+cledb@gmail.com
+\textbf{Contact:} Alin Paraschiv - arparaschiv@ucar.edu, paraschiv.alinrazvan+cledb@gmail.com
 
 ~
 
 ~
 
 \textbf{Purpose:\\} 
-Describe the main algorithm concepts, functions, and variables, comprising the CLEDB inversion algorithm for coronal magnetic fields.
+This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for coronal magnetic fields.
 
 ~
 
 \textbf{Main synopsis:\\} 
-The aim is to invert coronal magnetic field information from observations of polarized light. The algorithm takes arrays of one or two sets of Spectroscopic Stokes IQUV observations [sobs\_in] along with their header information. The data and metadata are pre-processed, and optimal corresponding sets of databases are selected and read from disk storage. 
+CLEDB aims to invert coronal magnetic field information from observations of polarized light. The algorithm takes arrays of one or two sets of Spectro-polarimetric Stokes IQUV observations [sobs\_in] along with their header information. The data and metadata are pre-processed, and optimal corresponding sets of databases resulting from forward calculations are selected and read from disk storage. 
 
 The data analysis is split into two branches, based on the available polarized coronal Stokes observations: 
 \begin{itemize}
@@ -44,18 +44,18 @@ The data analysis is split into two branches, based on the available polarized c
 \item \textbf{2-line branch:} 8 input I$_1$Q$_1$U$_1$V$_1$I$_2$Q$_2$U$_2$V$_2$ observations (two coronal emission lines).
 \end{itemize} 
 
-Spectroscopic analysis products are computed for both 1-line or 2-line branches.
+Spectroscopic analysis products are computed for each line for both 1-line or 2-line branches.
 
-The 1-line branch employs analytical approximations to calculate line of sight (LOS) integrated magnetic field products, while the 2-line branch offer access to additional invertible magnetic field products. This second case benefits from more degrees of freedom allowing us to break degeneracies intrinsic in the inversion. Thus, the two-line algorithm branch uses a $\chi^2$ fitting method between the observation and a forward modeled database to recover full 3D vector magnetic field components.  
+The 1-line branch employs analytical approximations to calculate line of sight (LOS) integrated magnetic field products, while the 2-line branch offers access to additional magnetic field products. This second case benefits from more degrees of freedom allowing us to break degeneracies intrinsic in the inversion. Thus, the two-line algorithm branch uses a $\chi^2$ fitting method between the observation and a forward modeled database to recover full 3D vector magnetic field components.  
 
-The database is generated via forward modeling of combinations of input magnetic field and geometric parameters.  Databases are not computed dynamically for each observation and are used as a static input with respect to the inversion scheme.
+The databases are generated via forward modeling of combinations of input magnetic field and geometric parameters.  Databases are not computed dynamically for each observation and are used as a static input with respect to the inversion scheme.
 
 ~
 
 \textbf{Motivation for approach:\\}
 By utilizing 2-line observations, we recover the 3D magnetic field information for single point voxels using a $\chi^2$ fitting approach. Generating forward calculation in the order of 10$^7$-10$^9$ atomic plasma and magnetic configurations are needed in order to satisfy solution resolution criteria. Forward modeling such solutions in a dynamic fashion is time consuming. Such a calculation (e.g. iterating for 1 pixel) has execution times in the order of 10 hours, on a single thread, with a fast FORTRAN implementation of CLE code. 
 
-Building a separate database (the CLEDB\_BUILD module in our algorithm) to store a vast set of synthetic Stokes observations, along with the input plasma and magnetic field configurations responsible for producing polarized emission, proved to be a significantly more feasible approach. Additionally, the database theoretical calculations gain intrinsic access to otherwise un-observables input parameters (e.g. atomic alignment $\sigma_0^2$) that can be used to break inherent degeneracies encountered when attempting analytical inversions (as implemented in the 1-line branch). The dimensionality of the problem at hand can be further reduced by 1-2 orders of magnitude by using native symmetries when building and querying databases. More details on the physics aspects of dimensionality reduction and degeneracy breaking effects can be found in \citet{2020ApJ...889..109D,2021ApJ...912...18J}, and \citet{par2021}.
+Building a separate database (the CLEDB\_BUILD module in our algorithm) to store a vast set of synthetic Stokes observations, along with the input plasma and magnetic field configurations responsible for producing polarized emission, proved to be a significantly more feasible approach. Additionally, the database theoretical calculations gain intrinsic access to otherwise un-observables input parameters (e.g. atomic alignment $\sigma_0^2$, angle in magnetic field frame $\vartheta_B$, etc.) that can be used to break inherent degeneracies encountered when attempting analytical inversions (as implemented in the 1-line branch). The dimensionality of the problem at hand can be further reduced by 1-2 orders of magnitude by using native symmetries when building and querying databases. More details on the physics aspects of dimensionality reduction and degeneracy breaking effects can be found in \citet{2020ApJ...889..109D,2021ApJ...912...18J}, \citet{schiffmann2021} and \citet{par2022}.
 
 \newpage
 
@@ -66,9 +66,9 @@ The algorithm is split into three parts:
 \begin{itemize} 
 \item CLEDB\_BUILD - The BUILD module contains pre-configured scripts for generating a database used downstream to fit the observations. FORTRAN binaries and bash scripting is used by this module. Running the default configured "\emph{rundb\_1line.sh}" script for each line on the observation is enough in most cases. Please see the dedicated README\_RUNDB for more detailed instructions.
  
-\item CLEDB\_PREPINV - The PREPINV module prepares the data for analysis and matches required databases to read(for the 2-line branch). The ctrlparams anc constants classes are imported separately and fed to the module.
+\item CLEDB\_PREPINV - The PREPINV module prepares the data for analysis and matches required databases to read(for the 2-line branch). The \emph{ctrlparams} and \emph{constants} classes are imported separately and fed to the module.
 
-\item  SPECTRO\_PROC, BLOS\_PROC, and/or CLEDB\_INVPROC are the third step data analysis modules. These perform analytical or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (the OUTPUTS).
+\item  SPECTRO\_PROC, BLOS\_PROC, and/or CLEDB\_INVPROC are the data analysis modules. These perform analytical or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (the OUTPUTS).
 \end{itemize} 
 
 \textbf{Algorithm schematic definitions:\\} 
@@ -98,7 +98,7 @@ To create a local deployment use the git clone function:
 \emph{\color{red} git clone https://github.com/arparaschiv/solar-coronal-inversion}
 
 CLEDB\_BUILD uses precompiled GNU compatible FORTRAN binary executable files to generate databases. The module is run by utilizing a bash script that enables parallel runs of serial computations. Binaries for both Darwin and Linux architectures are provided. More details will follow in the section describing the CLEDB\_BUILD module.
-Note: The FORTRAN source code is based on CLE, and not included in this package. A separate repository will be created in the near future. The source code is meant to be publicly available and can be requested from us.
+Note: The FORTRAN source code is based on CLE, and not included in this package. A separate repository will be created in the near future. The source code is meant to be publicly available and can be requested from the authors.
 
 
 The two other modules of CLEDB are written in Python. 
@@ -135,7 +135,7 @@ For numerical computation efficiency, the CLEDB distribution heavily relies on t
 	\item[Numpy]
 Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.20) documentation is \href{https://numpy.org/doc/1.20/}{found here.}
 	\item[Numba]
-Numba implements just in time (JIT) compilation decorators and attempts to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode will maximize optimization and runtime speed, but is significantly limited in terms of python and/or  numpy function compatibility. The CLEDB\_PREPINV module can only be compiled in object-mode due to disk I/O operations that are not implemented in non-python mode.
+Numba implements just in time (JIT) compilation decorators and attempts to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode will maximize optimization and runtime speed, but is significantly limited in terms of python and/or numpy function compatibility. The CLEDB\_PREPINV module can only be compiled in object-mode due to disk I/O operations that are not implemented in non-python mode.
 
 A Numba enabled implementation can utilize only a small subset of Python and Numpy functions. Significant data sanitation and statically defined function input/output are required in order to enable runtime optimization and parallelization. Due to these sacrifices, coding implementations are not always clear and straightforward. Extensive documentation, python and numpy function lists, and examples can be found in the Numba documentation. The version specific (0.53.1) documentation is \href{https://numba.readthedocs.io/en/0.53.1/}{found here.}
 	\item[Others]
@@ -149,11 +149,10 @@ time and sys are used during debug runs with high level of verbosity.
 \subsection*{CLEDB Inversion input variables and parameters:}
 
 \textbf{A. Input data and metadata to process:}
-
 \begin{description}
     [font=\normalfont,leftmargin=1.5in,style=multiline]
     \item[header *keys]
-        Set of input header metadata information that should describe the sobs\_in list. Expected keywords with simplified naming are detailed in this section. Detailed keyword information can be found in the case of DKIST observations in the SPEC\_0214 and SPEC\_0230 reference documents.
+        Set of input header metadata information that should describe the sobs\_in list. Expected keywords with simplified naming are detailed in this section. Detailed keyword information can be found for DKIST observations in the SPEC\_0214 and SPEC\_0230 reference documents.
     \item[*keys to crpixn]
         int; Reference pixel along x y or w(wavelength) direction.
     \item[*keys to crvaln]
@@ -193,7 +192,9 @@ Python class that unpacks control parameters used in all modules of the inversio
 	\item[dbdir]
 	string; Directory where the database is stored after being built with CLEDB\_BUILD. This is the main directory, and not one of the individual ion subdirectories (e.g. fe-xiii\_1074, etc.).
 	\item[reduced]
-	boolean; Control parameter to reduce the database size before searching for solutions by using the linear polarization measurements. Dimensionality of db is reduced by over 1 order of magnitude and runtimes are significantly sped-up. Solution ordering might be slightly altered in certain circumstances.
+	boolean; Control parameter to reduce the database size before searching for solutions by using the linear polarization measurements. Dimensionality of db is reduced by over 1 order of magnitude for significant sped-ups. Solution ordering might be slightly altered in certain circumstances.
+	\item[integrated]
+	boolean; If default calibrated COMP/UCOMP data is used, the profiles are integrated across the line sampling points. This defaults to 0, as applicable to spectroscopic data such as DKIST. 
 	\item[nsearch]
 	uint; number of solutions to compute and return for each voxel. 
 	\item[gaussfit]
@@ -289,7 +290,7 @@ Python class that unpacks control parameters used in all modules of the inversio
     \item[ATOM.ion]
     	These files contain the atomic configuration data to be used for calculations. These are reduced level calculations that mimic the IQUV fluxes from a full level calculation in the selected infrared coronal lines. In general, users should not modify these files.
 	\item[INPUT.ion(a/b)]
-	These are input and configuration files that are read when generating databases. The \emph{wlmin} and \emph{wlmax} parameters control which lines described in the ATOM.ion files are outputed. In the case of Fe XIII, a separate INPUT configuration is needed for each line. In general, users should not modify these files.   
+	These are input and configuration files that are read when generating databases. The \emph{wlmin} and \emph{wlmax} parameters control which lines described in the ATOM.ion files are processed. In the case of Fe XIII, a separate INPUT configuration is needed for each line. In general, users should not modify these files.   
 	\item[IONEQ]
 	Ionization equilibrium data from CHIANTI.
 	\item[GRID.DAT]
@@ -377,11 +378,11 @@ Generating $\sim 5\cdot 10^8$ calculations per line for two lines will occupy $\
     \item[$\Dsh$ OBS\_CALCHEIGHT]
         Calculates height map of the same xy dimensions as the input array. each pixel encodes the solar height in units of $R_\odot$.
     \item[$\Dsh$ OBS\_INTEGRATE]
-        Estimates background counts using a cumulative distribution function (CDF) statistical method, then integrates along the wavelength dimension, in all IQUV components of all input lines. Profile integration is required because the database dimensionality and inversion computational times are not feasible when attempting to process full spectra observations. See \citet{par2021} for additional information.  
+        Estimates background counts using a cumulative distribution function (CDF) statistical method, then integrates along the wavelength dimension, in all IQUV components of all input lines. Profile integration is required because the database dimensionality and inversion computational times are not feasible when attempting to process full spectra observations. See \citet{par2022} for additional information.  
     \item[$\Dsh \Dsh$ OBS\_CDF] 
     Computes the CDF distribution from one spectra. 
     \item[$\Dsh$ OBS\_QUROTATE]
-        If we ingested a two-line observation, the Stokes Q and U components are rotated to match the instrument's reference direction for linear polarization (The reference direction should be read as input from the header information). This enables of using a 1D database computation (along y heights) to match the observed 2D stokes profiles with applied rotational transforms. See \citet{par2021} for additional information.      
+        If we ingested a two-line observation, the Stokes Q and U components are rotated to match the instrument's reference direction for linear polarization (The reference direction should be read as input from the header information). This enables of using a 1D database computation (along y heights) to match the observed 2D stokes profiles with applied rotational transforms. See \citet{par2022} for additional information.      
       
     \item[SDB\_PREPROCESS]
         Main function for selecting and reading into memory the optimal database calculations that are compatible with the observations processed via SOBS\_PREPROCESS.

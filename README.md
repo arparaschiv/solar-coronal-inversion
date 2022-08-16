@@ -3,13 +3,13 @@
 
 Main repository for **CLEDB**; the Coronal Line Emission DataBase inversion code distribution.
 
-**Authors:** Alin Paraschiv & Philip Judge. National Solar Observatory & High Altitude Observatory
+**Authors:** Alin Paraschiv & Philip Judge.  High Altitude Observatory & National Solar Observatory 
 
-**Contact:** arparaschiv "at" nso.edu; paraschiv.alinrazvan+cledb "at" gmail.com
+**Contact:** arparaschiv "at" ucar.edu; paraschiv.alinrazvan+cledb "at" gmail.com
 
 #### **Main aim:** 
 Invert coronal vector magnetic field products from observations of polarized light. 
-The algorithm takes arrays of one or two sets of spectroscopic Stokes IQUV observations
+The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations
 to derive line of sight and/or full vector magnetic field products.
 
 #### **Applications:** 
@@ -21,6 +21,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README_SLURM.md](./README_SLURM.md).
 4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
+
 ### **System platform compatibility**
 
 1. Debian+derivatives Linux x64           -- all inversion modules are fully working.
@@ -40,7 +41,7 @@ The synthetic CLE test data is [hosted separately here](https://drive.google.com
 
 For terminal only compute systems the test data can be downloaded via the shell interface with the following method:
 
-i. Load the following gdrive wrapper script into your bash directly, or introduce it in your .bash_alias setup.
+i. Load the following gdrive wrapper script into your bash window directly, or introduce it in your .bash_alias setup.
 
     function gdrive_download () {   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p');   wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2;   rm -rf /tmp/cookies.txt; }
 
@@ -55,11 +56,11 @@ Both test examples are expected to fully execute with parallel job spawning via 
 
 
 ### **Scholarly works supporting the CLEDB inversion**
-1. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) 
-discusses the importance of scattering geometry when solving for coronal magnetic fields.
-2. [Paraschiv & Judge, in prep A, 2021](No link yet) covers the scientific justification of the algorithm, and the setup of the CLEDB inversion.
-3. [Paraschiv & Judge, in prep B, 2021](No link yet) performs synthetic observation benchmarks of the CLEDB algorithm.
-4. [Ali, Paraschiv, & Reardon, in prep, 2021](no link yet) spectroscopically explored the infrared regions of 
-    the emission lines available for inversion with CLEDB. 
-5. The CLEDB inversion evolved from the CLE fortran code written by Philip Judge and Roberto Casini. 
-The theoretical formulation of the coronal inversion problem is best described in [Casini & Judge, ApJ, 1999](https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract)
+
+1. [Paraschiv & Judge, SolPhys, 2022](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract) covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
+2. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) discussed the importance of scattering geometry when solving for coronal magnetic fields.
+3. [Ali, Paraschiv, Reardon, & Judge, ApJ, 2022](https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract) performed a spectroscopic exploration of the infrared regions of 
+    the emission lines available for inversion with CLEDB.   
+4. [Dima & Schad, Apj, 2020](https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract) discussed potential degeneracies in using certain line combinations. The one-line CLEDB inversion utilizes the methods and results described in this work.
+5. [Schiffmann, Brage, Judge, Paraschiv & Wang](https://ui.adsabs.harvard.edu/abs/2021ApJ...923..186S/abstract) performed large-scale Lande g factor calculations for ions of interest and discusses degeneracies in context of their results.
+6. [Casini & Judge, ApJ, 1999](https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract) and [Judge & Casini, ASP proc., 2001](https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract) described the theoretical line formation process and present CLE, the coronal forward synthesis Fortran code that is currently utilized by CLEDB. 

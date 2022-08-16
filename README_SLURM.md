@@ -2,6 +2,8 @@
 
 ### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
 
+**Contact:** arparaschiv "at" ucar.edu; paraschiv.alinrazvan+cledb "at" gmail.com
+
 ### **SLURM ENABLED RESEARCH COMPUTING INTERACTIVE OR HEADLESS RUNS**
 
 Detailed instructions for setting up and running the CLEDB inversion distribution on research computing (RC) systems.
@@ -12,15 +14,14 @@ Detailed instructions for setting up and running the CLEDB inversion distributio
 - [test_1line.py](./test_1line.py)
 - [test_2line.py](./test_2line.py)
 
-Note: the *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* scripts are plain script versions of the test code.
-These are directly exported from the Jupyter .ipynb notebooks.
-All changes in the notebook examples should be reflected here.
+Note: the *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* scripts are plain script versions of the test notebooks.
+These are directly exported from the Jupyter .ipynb notebooks. All changes to the notebooks should be exported to the scripts.
 
 ### 2. Installation and run instructions for RC systems
 
-Instructions are following the [CURC system guidelines](https://curc.readthedocs.io/en/latest/index.html) and scripts are provisioned to be compatible with the blanca-nso compute nodes.
+These instructions are following the [CURC system guidelines](https://curc.readthedocs.io/en/latest/index.html) and scripts are provisioned to be compatible with the blanca-nso compute nodes.
 
-- Activate the blanca/slurm module with: 
+- Activate the slurm/blanca module with: 
 
         module load slurm/blanca 
 
@@ -32,7 +33,7 @@ Instructions are following the [CURC system guidelines](https://curc.readthedocs
 
 - Install **CLEBD** via git clone in the /projects/$USER/ directory following the instructions in [README-codedoc.PDF](./codedoc-latex/README-CODEDOC.pdf).
 
-- Create or update a .condarc file so that anaconda environments and packages install to your /projects/$USER/ directory instead of /home/$USER/ directory due to lack of storage space.
+- Create or update a .condarc file with the following contents so that anaconda environments and packages install to your /projects/$USER/ directory instead of /home/$USER/ directory due to lack of storage space.
 
         pkgs_dirs:
         - /projects/$USER/.conda_pkgs
@@ -67,9 +68,9 @@ Note: Install inside the sinteractive run or a compile node following the CURC g
 #### 2.b Batch/headless runs
 
 - The database generating scripts in CLEDB_BUILD directory have a dedicated headless run script *[rundb_1line_slurm.sh](./CLEBD_BUILD/rundb_1line_slurm.sh)* which has slurm headers and all where user inputs are disabled.
-RC resources are asked via the sbatch commands in the script header. The ion to generate the database along with some path variables need to be manually edited in the script before running. This version of the database generation script will perform disk I/O on $SCRATCH partitions, and not on local directories. Databases will be moved back to the /projects/$USER/ directories after computations are finished.
+RC resources are requested via the sbatch commands in the script header. The ion to generate the database along with some path variables need to be manually edited in the script before running. This version of the database generation script will perform disk I/O on $SCRATCH partitions, and not on local directories. Databases will be moved back to the /projects/$USER/ directories after computations are finished.
 
-- Call it using sbatch after editing for the ion and paths to generate for each ion (multiple sbatch commends can be run concurrently if resources are available):
+- Call it using sbatch after editing for the ion and paths to generate for each ion (multiple sbatch commands can be run concurrently if resources are available):
         
         sbatch rundb_1line_slurm.sh 
 

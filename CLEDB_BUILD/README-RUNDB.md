@@ -76,7 +76,7 @@ To fix try:
 
 - Outside of the two batch scripts, the only user editable file is the [config/DB.INPUT](./config/DB.INPUT) that configures the database number of calculations (parameter resolution).
 
-- Database output, header, and logs will be written in the correspondent ion subdirectory. Intermediary folders and files will be deleted upon completion.
+- Database output, header, and logs will be written in the correspondent ion sub-directory. Intermediary folders and files will be deleted upon completion.
   The logs are dynamically written and calculation status can be checked anytime with *tail*; e.g.
 
         tail BASHJOB_0.LOG 
@@ -98,7 +98,7 @@ To fix try:
 
         brew install gnu-sed
 
-- The script cuts and appends midline on the DB.INPUT file, when setting the ymin and ymax ranges for each CPU thread.
+- The script cuts and appends midline on the DB.INPUT file, to set the ymin and ymax ranges for each CPU thread.
   The number of decimals for all variables and 3 spaces in between them need to be kept in the configuration file in order to not introduce bugs.
 
 - Executables (dbxxx) need to be build (from CLE) on the current architecture: ELF(linux) or Mach-O(OSX) 

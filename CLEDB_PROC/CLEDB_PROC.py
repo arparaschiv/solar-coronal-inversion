@@ -485,12 +485,13 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
 
     ## Geometric solution is based on a reduced chi^2 measure fit.
     ## Number of observables for geometry solver
-    ndata = 4*2-1-2       ## ndata = -2 comes from not using the two V components, as V is independent of the observation geometry.
+    ndata = 4*2-1         ## ndata = -2 comes from not using the two V components, as V is independent of the observation geometry.
     ndof = 4              ## ndof = number of degree of freedom in model: ne, x, bphi, btheta
     denom = ndata-ndof ## Denominator used below in reduced chi^2
 
     ##normalize the input data to the strongest component
-    sobs_1pix[:]=sobs_1pix[:]/sobs_1pix[np.where(sobs_1pix == np.max(sobs_1pix))[0][0]]
+    norm_fact=sobs_1pix[np.where(sobs_1pix == np.max(sobs_1pix))[0][0]]
+    sobs_1pix[:]=sobs_1pix[:]/norm_fact
 
     ## match sobs data with database_sel using the reduced chi^2 method
     ## We do not use Stokes V to define the geometry. Therefore we use a subset (1,2,4,5,6) 
@@ -498,11 +499,29 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
 
     ## These two below lines are the slowest of this function due to requiring two operations.
     ## A better numba COMPATIBLE alternative was not found
-    diff = np.zeros((database_sel.shape[0],8),dtype=np.float64)
-    #diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) / rms[1:3]
-    #diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) / rms[4:7]
-    diff = (database_sel[:,:8] - sobs_1pix)# / rms
-    diff *= diff ## pure python multiplication was found to be faster than numpy or any power function applied.
+    #--------------------------------------------------------
+#     diff = np.zeros((database_sel.shape[0],8),dtype=np.float64)
+#     #diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) / rms[1:3]
+#     #diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) / rms[4:7]
+#     diff = (database_sel[:,:8] - sobs_1pix)# / rms
+#     diff *= diff ## pure python multiplication was found to be faster than numpy or any power function applied.
+#     chisq = np.zeros((diff.shape[0]),dtype=np.float64)
+    #----------------------------------------------------------
+#     diff = np.zeros((database_sel.shape[0],5),dtype=np.float64)
+#     diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) * (database_sel[:,1:3] - sobs_1pix[1:3]) #/ (rms[1:3]*rms[1:3])
+#     diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) * (database_sel[:,4:7] - sobs_1pix[4:7]) #/ (rms[4:7]*rms[4:7])
+ 
+#     diff = np.zeros((database_sel.shape[0],6),dtype=np.float64)
+#     diff[:,0:3] = (database_sel[:,0:3] - sobs_1pix[0:3]) * (database_sel[:,0:3] - sobs_1pix[0:3]) #/ (rms[0:3]*rms[0:3])
+#     diff[:,3:] = (database_sel[:,4:7] - sobs_1pix[4:7]) * (database_sel[:,4:7] - sobs_1pix[4:7]) #/ (rms[4:7]*rms[4:7])    
+       
+    
+#     diff = np.zeros((database_sel.shape[0],8),dtype=np.float64)
+#     diff[:,:8] = (database_sel[:,:8] - sobs_1pix) * (database_sel[:,:8] - sobs_1pix) #/ (rms*rms)  
+
+    diff = np.zeros((database_sel.shape[0],7),dtype=np.float64)
+    diff[:,:7] = (database_sel[:,1:8] - sobs_1pix[1:8]) * (database_sel[:,1:8] - sobs_1pix[1:8]) #/ (rms*rms)  
+
     chisq = np.zeros((diff.shape[0]),dtype=np.float64)
     np.round_( np.sum( diff, axis=1)/denom,15,chisq)
     ## Unorthodox definition: chisq needs to be initialized separately, because np.round_ is not supported as a addressable function
@@ -562,7 +581,7 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
 
             ## matching profiles to compare with the original observation
             smatch[si,:] = database_sel[ixr,:]                  ## if database is reduced ixr is the right index; otherwise ixr=ix
-            smatch[si,:] = cledb_quderotate(smatch[si,:],aobs_1pix)
+            smatch[si,:] = cledb_quderotate(smatch[si,:],aobs_1pix,norm_fact)
 
             # here if reduced we must get the original value of ix  to write to output (if required!).
             if reduced == 1:
@@ -574,8 +593,7 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
             ##update the inversion output array
             out[si,0]=ix
             out[si,1]=ixrchisq
-            out[si,2:]=cledb_phys(ix,yobs_1pix,dbhdr,bfield)
-
+            out[si,2:]=cledb_phys(ix,yobs_1pix,aobs_1pix,dbhdr,bfield)
 
     ######################################################################
     ## [placeholder for issuemask]
@@ -595,8 +613,8 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
     bthetamin, bthetamax, nline, wavel  = dbhdr 
 
     ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
-    datasel = np.zeros((ned,ngx,nbphi,4*nsearch,8),dtype=np.float64)
-    outredindex = np.zeros((nbphi,4*nsearch),dtype=np.float64)
+    datasel = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float64)
+    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float64)
     ##NOTE: the sorting done here only takes into account the linear polarization tangent of the observation. This sorting is not 1:1 equivalent with the main chi^2 sorting.
     ##      To be sure all compatible solutions are captured nsearch*4 solutions must be enforced here, and further refined in cledb_match
 
@@ -618,15 +636,15 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
         ttp = tt * np.sin(bphir[ir])
         diffa = np.abs(tphib_obs - ttp)                       ## this is an array over btheta at each bphi
         diffb = np.abs(tphib_deg_obs - ttp)                   ## this is an array over btheta at each bphi (degenerate branch)
-        srta=cledb_partsort(diffa,2*nsearch)                  ## NOTE: no speed gain to use np.sort here as the arrays are small.
-        srtb=cledb_partsort(diffb,2*nsearch)
+        srta=cledb_partsort(diffa,nsearch)                    ## NOTE: no speed gain to use np.sort here as the arrays are small.
+        srtb=cledb_partsort(diffb,nsearch)
         ## advanced slicing is not available, the for jj enumeration comes from numba requirements
         if ir + srta[0] > 0 or  ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
-            for jj in range(2*nsearch):                                            ## NOTE: nsearch = srt.shape[0]
-                datasel[:,:,ir,jj,:]=database_sel[:,:,ir,srta[jj],:]               ## Record those indices compatible with phib observed
-                outredindex[ir,jj]=srta[jj]
-                datasel[:,:,ir,jj+(2*nsearch),:]=database_sel[:,:,ir,srtb[jj],:]   ## Record those indices compatible with phib observed (degenerate branch)
-                outredindex[ir,jj+(2*nsearch)]=srtb[jj]
+            for jj in range(nsearch):                                              ## NOTE: nsearch = srt.shape[0]
+                datasel[:,:,ir,jj,:]           = database_sel[:,:,ir,srta[jj],:]   ## Record those indices compatible with phib observed
+                outredindex[ir,jj]             = srta[jj]
+                datasel[:,:,ir,jj+(nsearch),:] = database_sel[:,:,ir,srtb[jj],:]   ## Record those indices compatible with phib observed (degenerate branch)
+                outredindex[ir,jj+(nsearch)]   = srtb[jj]
 
     ##Note: the above block is both faster and more accurate than concatenating the diff arrays + sorting only once + one subscription for datasel and outredindex.
 
@@ -635,21 +653,22 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
     if verbose >= 3: 
         print('Search over theta reduced by a factor: ', np.int32(nbtheta/nsearch),". New db size: (",ned*ngx*nbphi*nsearch,",8)")
         #if verbose >= 3: print(dt,' SECONDS FOR REDUCE (loop phi) CALC') 
-    return np.reshape(datasel,(ned*ngx*nbphi*4*nsearch,8)),outredindex
+    return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
 @njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
-def cledb_quderotate(dbarr,ang):
-## derotates the matched database entry to make it compatible with the observation
+def cledb_quderotate(dbarr,ang,nf):
+## derotates the matched database entry to make it compatible with the observation; 
+## same Mueller transform as obs_qurotate, but applied with the oposite angle as we just want to compare the DB stokes profiles with the observed ones.
 
-    arr=np.copy(dbarr) ## to not alter exterior arrays
-    arr[1]=arr[1]*np.cos(ang) - arr[2]*np.sin(ang)
-    arr[2]=arr[1]*np.sin(ang) - arr[2]*np.cos(ang)
-    arr[5]=arr[5]*np.cos(ang) - arr[6]*np.sin(ang)
-    arr[6]=arr[5]*np.sin(ang) - arr[6]*np.cos(ang)
+    arr=np.copy(dbarr)*nf ## to not alter exterior arrays; use dbarr for updating as to not use modified arr[1] and arr[5] values for arr[2] and arr[6]
+    arr[1]=dbarr[1]*nf*np.cos(-2*ang) - dbarr[2]*nf*np.sin(-2*ang)
+    arr[2]=dbarr[1]*nf*np.sin(-2*ang) + dbarr[2]*nf*np.cos(-2*ang)
+    arr[5]=dbarr[5]*nf*np.cos(-2*ang) - dbarr[6]*nf*np.sin(-2*ang)
+    arr[6]=dbarr[5]*nf*np.sin(-2*ang) + dbarr[6]*nf*np.cos(-2*ang)
 
     return arr
 ###########################################################################
@@ -740,16 +759,16 @@ def cledb_elecdens(r):
 ###########################################################################
 ###########################################################################
 @njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
-def cledb_phys(index,gy,dbhdr,b):
+def cledb_phys(index,gy,ga,dbhdr,b):
 ## Returns the lvs and LOS geometry and magnetic field physics
 ## this is kept separate from cledb_physlvs because it computes projections transformations of the database variables recovered via cledb_physlvs
 
     phs=cledb_physlvs(index,gy,dbhdr)
-    bphi=phs[3]
+    bphi=phs[3]#np.abs(phs[3] - ga)                            ## derotate by azimuth rotation(ga) applied to Q and U profiles; does it not need disentangling?
     btheta=phs[4]
-    bx=b*np.sin(btheta)*np.cos(bphi)
-    by=b*np.sin(btheta)*np.sin(bphi)
-    bz=b*np.cos(btheta)
+    bx=np.abs(b)*np.sin(btheta)*np.cos(bphi)
+    by=np.abs(b)*np.sin(btheta)*np.sin(bphi)
+    bz=np.abs(b)*np.cos(btheta)
 
     return np.array((phs[0],phs[1],phs[2],b,bphi,btheta,bx,by,bz),dtype=np.float64)
 ###########################################################################

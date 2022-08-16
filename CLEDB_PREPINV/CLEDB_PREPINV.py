@@ -157,6 +157,20 @@ def sobs_preprocess(sobs_in,params):
     cdelt1 = (0.75-(-0.75))/nx         ## from grid.dat; remember the python axis flipping
     cdelt2 = (1.5-0.8)/ny         
     cdelt3 = [0.0247, 0.0249]
+    
+#    ## CASE 1b: SHEETSLOS CLE SIMULATION DATA
+#    crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
+#    crpix2 = 0
+#    crpix3 = [np.int32(nw/2)-1,np.int32(nw/2)-1]                      ## two lines have different wavelength parameters
+#
+#    ##python stores arrays differently than normal, x dimension is second and y dimension is first. the reversal of /nx and /ny follows this issue.
+#    crval1 = -0.5#0.8                  ## solar coordinates at crpixn in r_sun
+#    crval2 = 0.8#-0.75
+#    crval3 = [1074.62686-0.0124, 1079.78047-0.0124]     ## from CLE outfile; reference wavelengths are in vacuum
+#    
+#    cdelt1 = (0.5-(-0.5))/nx         ## from grid.dat; remember the python axis flipping
+#    cdelt2 = (1.5-0.8)/ny         
+#    cdelt3 = [0.0247, 0.0249]
        
     ## CASE 2: MURAM INPUT DATA
 #     crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
@@ -177,13 +191,20 @@ def sobs_preprocess(sobs_in,params):
 
 ##calculate an observation height and integrate the stokes profiles
     yobs=obs_calcheight(keyvals)
-    sobs_tot,rms,background=obs_integrate(sobs_in,keyvals)
-
+    if params.integrated != 1:                                  ##If using comp/ucomp, the profiles are already integrated
+        sobs_tot,rms,background=obs_integrate(sobs_in,keyvals)        
+        
+    else:   ## for COMP/UCOMP set some arrays to -1 because they can't be computed
+        sobs_tot   = np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
+        rms        = np.zeros((nx,ny,nline*4),dtype=np.float64)-1
+        background = np.zeros((nx,ny,nline*4),dtype=np.float64)-1
+        sobs_totrot= np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
+        aobs       = np.zeros((nx,ny),dtype=np.float64)
 
     if nline == 2:
-        ## for two-line inversions we require a rotation of the linear polarization Q and U components
-        sobs_totrot,aobs=obs_qurotate(sobs_tot,yobs,keyvals)
-
+    ## for two-line inversions we require a rotation of the linear polarization Q and U components
+        sobs_totrot,aobs=obs_qurotate(sobs_tot,yobs,keyvals)        
+        
         ## placeholder for [update issuemask]
 
 
@@ -606,7 +627,10 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
 
     for xx in range(nx):
         for yy in prange(ny):
-            aobs[xx,yy]=2*np.pi-2*np.pi-linpolref + np.arcsin((crval1 +xx*cdelt1)/yobs[xx,yy]) ## assuming the standard convention for arcsecond coordinates <--> trigonometric circle
+            #aobs[xx,yy]=2*np.pi-2*np.pi-linpolref + np.arccos((crval1 +xx*cdelt1)/yobs[xx,yy])
+            aobs[xx,yy]= - np.arctan2((crval1 +xx*cdelt1),(crval2 +yy*cdelt2)) ## assuming the standard convention for arcsecond coordinates <--> trigonometric circle
+            if (aobs[xx,yy] <0):
+                aobs[xx,yy] =2*np.pi + aobs[xx,yy]
             ## if reference direction is horizontal/trigonometric, angle will >360; 
             ## reduce the angle to 1 trigonometric cirle unit for easier reading.
             if aobs[xx,yy] < linpolref:
@@ -614,11 +638,13 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
             else:
                 aobs[xx,yy] = aobs[xx,yy]+linpolref
 
-            ## update the rotated arrays using eq. 7 & 8 from paraschiv & judge 2021
-            sobs_totrot[xx,yy,1]=sobs_totrot[xx,yy,1]*np.cos(2*aobs[xx,yy])-sobs_totrot[xx,yy,2]*np.sin(2*aobs[xx,yy])
-            sobs_totrot[xx,yy,2]=sobs_totrot[xx,yy,1]*np.sin(2*aobs[xx,yy])-sobs_totrot[xx,yy,2]*np.cos(2*aobs[xx,yy])
-            sobs_totrot[xx,yy,5]=sobs_totrot[xx,yy,5]*np.cos(2*aobs[xx,yy])-sobs_totrot[xx,yy,6]*np.sin(2*aobs[xx,yy])
-            sobs_totrot[xx,yy,6]=sobs_totrot[xx,yy,5]*np.sin(2*aobs[xx,yy])-sobs_totrot[xx,yy,6]*np.cos(2*aobs[xx,yy])
+            ## update the rotated arrays using eq. 9 & 10 from Paraschiv & Judge 2022
+            ## Use sobs_tot for filling up as to not update the final array in between operations
+            ## The 0,3,4,7 subscripts remain the same as sobs_tot
+            sobs_totrot[xx,yy,1]=sobs_tot[xx,yy,1]*np.cos(2*aobs[xx,yy])-sobs_tot[xx,yy,2]*np.sin(2*aobs[xx,yy])
+            sobs_totrot[xx,yy,2]=sobs_tot[xx,yy,1]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,2]*np.cos(2*aobs[xx,yy])
+            sobs_totrot[xx,yy,5]=sobs_tot[xx,yy,5]*np.cos(2*aobs[xx,yy])-sobs_tot[xx,yy,6]*np.sin(2*aobs[xx,yy])
+            sobs_totrot[xx,yy,6]=sobs_tot[xx,yy,5]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,6]*np.cos(2*aobs[xx,yy])
 
     #if verbose >= 1: print("\n Observation Q and U intensities are rotated by",linpolref,"degrees around the unit circle.")
     return sobs_totrot,aobs

@@ -1,9 +1,4 @@
 #!/bin/bash
-##  TESTS the 1 line setup for CLEDB inversion.
-
-# module load slurm/blanca
-# sbatch rundb_1line_slurm.bash
-
 #SBATCH --nodes=1
 #SBATCH --ntasks=36
 #SBATCH --partition=blanca-nso
@@ -11,7 +6,17 @@
 #SBATCH --job-name=CLEDB_database_invert
 #SBATCH --output=CLEDBINV_JOBLOG.log
 
+##  This script tests the 1-line setup for CLEDB inversion on slurm enabled systems.
+
+### USAGE EXAMPLE (script runs directly from login node)
+# module load slurm/blanca
+# sbatch test_cledb_slurm.sh
+
   module purge
+
+  source /curc/sw/anaconda3/latest
+  conda activate CLEDBenv
+
   SCRATCH=${SLURM_SCRATCH}
 
   echo NodeName: $SLURMD_NODENAME
@@ -28,12 +33,12 @@
       echo Continuing..
   fi
 
-## nline controls the number of lines to be inverted. This just switched between the 1-line and 2-line setups which are fundamentally different
+## nline controls the number of lines to be inverted. This just switched between the 1-line and 2-line setups which are procedurally different
 nline=1
 
 if (($nline -eq 1)); then
     python3 test_1line.py
   fi
-if (($nline -eq 1)); then
+if (($nline -neq 1)); then
     python3 test_2line.py
   fi
