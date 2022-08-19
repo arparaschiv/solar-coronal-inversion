@@ -1,7 +1,7 @@
 README for running CLE database calculations on multiple CPU threads.
 ### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
 
-Contact: Alin Paraschiv (arparaschiv@nso.edu)
+Contact: Alin Paraschiv (arparaschiv@ucar.edu)
 
 #### **History:**
 - ARP: 20210617 - initial release 
@@ -38,7 +38,7 @@ To fix try:
         module load slurm/blanca
         module load gcc/10.2.0                (gcc is preloaded automatically in the batch version of the script.)
 
-- run interactive jobs with:
+- run interactive jobs with (after starting the interactive node; see README_SLURM):
 
         ./rundb_1line.sh
 

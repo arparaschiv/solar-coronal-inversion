@@ -7,6 +7,7 @@
 #SBATCH --output=SLURM_JOBLOG_%j.log
 
 module load gcc/10.2.0
+module load slurm/blanca
 
 #####  THIS SCRIPT SPLITS THE DATABASE GENERATION JOBS INTO AVAILABLE CPU THREADS (SLURM version for BLANCA CURC system) ######
 

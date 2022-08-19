@@ -10,7 +10,7 @@
 ## Do not directly edit that version!
 
 
-# In[14]:
+# In[2]:
 
 
 ## Needed modules
@@ -98,7 +98,7 @@ sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(so
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[13]:
+# In[8]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -106,7 +106,7 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 
 # ##### Process the spectroscopy outputs
 
-# In[16]:
+# In[48]:
 
 
 #importlib.reload(procinv)       ## If module is modified, reload the contents 
@@ -115,10 +115,10 @@ specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,para
 
 # ##### Process the LOS vector magnetic field inversion products (Analythical solution)
 
-# In[17]:
+# In[55]:
 
 
-#importlib.reload(procinv)       ## If module is modified, reload the contents 
+importlib.reload(procinv)       ## If module is modified, reload the contents 
 blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 
 
@@ -126,7 +126,7 @@ blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 
 # ## 4. OPTIONAL tidbits
 
-# In[1]:
+# In[50]:
 
 
 ##optionally needed libraries and functions
@@ -134,10 +134,11 @@ blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 from datetime import datetime
 import os
 import glob
+import numpy as np
 
 from matplotlib import pyplot as plt
 ## interactive plotting; use only on local machines if widget is installed
-#%matplotlib widget 
+get_ipython().run_line_magic('matplotlib', 'widget')
        
 
 # colorbar function to have nice colorbars in figures with title
@@ -159,7 +160,7 @@ def colorbar(mappable,*args,**kwargs):
 
 # ### 4.a DUMP results (optional)
 
-# In[18]:
+# In[51]:
 
 
 ## Remove old file saves and keep just the last run
@@ -180,11 +181,11 @@ with open(f'./testrun_outputs/outparams_1line_{datestamp}.pkl', 'wb') as f:
 
 # ### 4.b PLOT the outputs (optional)
 
-# In[20]:
+# In[52]:
 
 
 ## Plot utils
-
+import numpy as np
 linen=0                ## choose which line to plot; range is [0:1] for 2 line input
 
 ## plot subranges for soome in snapshots
@@ -203,12 +204,12 @@ rnge=[0.8,1.5,-1.1,1.1]
 # rnge=[0.989,1.060,-0.071,0.071]
 
 
-# In[22]:
+# In[53]:
 
 
 ##Plot spectroscopy
 
-fig, plots = plt.subplots(nrows=3, ncols=4, figsize=(12,10))
+fig, plots = plt.subplots(nrows=3, ncols=4, figsize=(12,12))
 
 ## remove the 0 values and unreasonable/outlier values.
 mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,0], mask=specout[srx1:srx2,sry1:sry2,linen,0]==0)
@@ -298,8 +299,8 @@ colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
 #plots[1,2].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,5])
-vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,5])
+vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,6])
+vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,6])
 if np.abs(vvmin) >  np.abs(vvmax):
     vr=np.abs(vvmin)
 else:
@@ -340,7 +341,7 @@ plots[2,1].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
 
-ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.01,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,10]),cmap='YlOrRd')
+ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.01,vmax=0.5*np.max(specout[srx1:srx2,sry1:sry2,linen,10]),cmap='YlOrRd')
 plots[2,2].set_title('Linear polarization fraction')
 colorbar(ab,title="L / I ratio")
 #plots[0,0].set_ylabel('Z [R$_\odot$]')
@@ -363,13 +364,13 @@ if not os.path.exists('./testrun_outputs'):               ## make an output dire
 plt.savefig(f"./testrun_outputs/specout_1line_sol{linen}_{datestamp}.pdf")
 
 
-# In[23]:
+# In[57]:
 
 
 ## plot 1-line BLOS
 
 
-fig, plots = plt.subplots(nrows=2, ncols=2, figsize=(8,8))
+fig, plots = plt.subplots(nrows=2, ncols=2, figsize=(8,10))
 ab=plots[0,0].imshow(blosout[srx1:srx2,sry1:sry2,0],extent=rnge)
 plots[0,0].set_title('1$^{st}$ degenerate magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
@@ -399,4 +400,16 @@ plt.tight_layout()
 if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
     os.makedirs('./testrun_outputs')
 plt.savefig(f"./testrun_outputs/blosout_1line_{datestamp}.pdf")
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 

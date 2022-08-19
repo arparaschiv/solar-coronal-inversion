@@ -32,7 +32,7 @@ uname -n | grep $RCsystem &> /dev/null                                     ## ch
 if [ $? == 0 ]; then
 		dbexec='db*_rclinux';                                              ## a 3rd executable exists for this; compiled with gcc/10.2.0 available on the CURC Blanca system
 		jobid=$(echo $(squeue -j -u $(whoami)) | cut -c 58-65);            ## get the job id of the running interactive job
-		ncaval=$(scontrol show job $jobid | grep TRES | cut -c 38-);       ## number of processors/threads in system if running on research computing systems
+		ncaval=$(scontrol show job $jobid | grep TRES | cut -c 39-);       ## number of processors/threads in system if running on research computing systems
 	else
 		ncaval=$(getconf _NPROCESSORS_ONLN);                               ## number of processors/threads in system if running on local machines
 	fi

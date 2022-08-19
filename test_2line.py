@@ -50,6 +50,21 @@ sobsa=sobsa[:,:,::-1,:]
 # In[4]:
 
 
+## observations of sheetlos coronal structure of a Fe XIII combined observation
+## sobsa is the combined 5 dipole output
+## waveA and waveB are the wavelength arrays for the two Fe XIII lines
+
+# with open('obsstokes_sheetslos_hires_fullspectra.pkl','rb') as f:
+#    sobsa,waveA,waveB = pickle.load(f)  
+### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
+# sobsa=sobsa[:,:,::-1,:]
+# waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
+# waveB=waveB[::-1]
+
+
+# In[5]:
+
+
 # load the fake observation muram data.             
 # FE XIII 1074+1079
 
@@ -64,13 +79,13 @@ sobsa=sobsa[:,:,::-1,:]
 
 # ##### Remember to set your personal options and database paths in the ctrlparams class (in the parent directory) before continuing.
 
-# In[5]:
+# In[6]:
 
 
 import CLEDB_PREPINV.CLEDB_PREPINV as prepinv  ##imports from the CLEDB_PREPINV subdirectory
 
 
-# In[6]:
+# In[7]:
 
 
 ## arrange the two observation "files" in a simple list;
@@ -84,7 +99,7 @@ sobs_in = List()                              ## this is the List object impleme
 
 # ##### preprocess the observation "files"
 
-# In[9]:
+# In[8]:
 
 
 #importlib.reload(prepinv)       ## If module is modified, reload the contents
@@ -106,7 +121,7 @@ db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[11]:
+# In[12]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -114,7 +129,7 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 
 # ##### Process the spectroscopy outputs
 
-# In[11]:
+# In[13]:
 
 
 #importlib.reload(procinv)       ## If module is modified, reload the contents 
@@ -123,7 +138,7 @@ specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,para
 
 # #####Process the LOS magnetic fields from the first line
 
-# In[ ]:
+# In[14]:
 
 
 #importlib.reload(procinv)       ## If module is modified, reload the contents 
@@ -132,7 +147,7 @@ blosout=procinv.blos_proc(sobs_tot[:,:,0:4],rms[:,:,0:4],keyvals,consts,params)
 
 # ##### Process the full vector magnetic field inversion products
 
-# In[12]:
+# In[15]:
 
 
 #importlib.reload(procinv)       ## If module is modified, reload the contents
@@ -144,7 +159,7 @@ invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,db
 
 # ## 4. OPTIONAL tidbits
 
-# In[1]:
+# In[16]:
 
 
 ##optionally needed libraries and functions
@@ -152,10 +167,11 @@ invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,db
 from datetime import datetime
 import os
 import glob
+import numpy as np
 
 from matplotlib import pyplot as plt
 ## interactive plotting; use only on local machines if widget is installed
-#%matplotlib widget      
+#%matplotlib widget       
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):
@@ -176,7 +192,7 @@ def colorbar(mappable,*args,**kwargs):
 
 # ### 4.a DUMP results (optional)
 
-# In[8]:
+# In[17]:
 
 
 
@@ -198,12 +214,12 @@ with open(f'./testrun_outputs/outparams_2line_{datestamp}.pkl', 'wb') as f:  # P
 
 # ### 4.b PLOT the outputs (optional)
 
-# In[ ]:
+# In[18]:
 
 
 ## Plot utils
 
-linen=0                ## Specout: choose which line to plot; range is [0:1] for 2 line input
+linen=0                ## choose which line to plot; range is [0:1] for 2 line input
 
 ## plot subranges for soome in snapshots
 # ## 3dipole
@@ -213,7 +229,7 @@ sry1=65
 sry2=195
 rnge=[0.8,1.5,-1.1,1.1]
 
-##muram   ## muram data not offered as part of the test scripts due to large sizes.
+##muram      ## muram data not offered as part of the test scripts due to large sizes.
 # srx1=0
 # srx2=1023
 # sry1=0
@@ -221,7 +237,7 @@ rnge=[0.8,1.5,-1.1,1.1]
 # rnge=[0.989,1.060,-0.071,0.071]
 
 
-# In[2]:
+# In[19]:
 
 
 ##Plot spectroscopy
@@ -316,8 +332,8 @@ colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
 #plots[1,2].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,5])
-vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,5])
+vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,6])
+vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,6])
 if np.abs(vvmin) >  np.abs(vvmax):
     vr=np.abs(vvmin)
 else:
@@ -358,7 +374,7 @@ plots[2,1].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
 
-ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.01,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,10]),cmap='YlOrRd')
+ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.00,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,10]),cmap='YlOrRd')
 plots[2,2].set_title('Linear polarization fraction')
 colorbar(ab,title="L / I ratio")
 #plots[0,0].set_ylabel('Z [R$_\odot$]')
@@ -381,7 +397,7 @@ if not os.path.exists('./testrun_outputs'):               ## make an output dire
 plt.savefig(f"./testrun_outputs/specout_1line_line{linen}_{datestamp}.pdf")
 
 
-# In[ ]:
+# In[20]:
 
 
 ## plot 1-line BLOS
@@ -418,12 +434,12 @@ if not os.path.exists('./testrun_outputs'):              ## make an output direc
 plt.savefig(f"./testrun_outputs/blosout_1line_{datestamp}.pdf")
 
 
-# In[16]:
+# In[21]:
 
 
 ## Plot magnetic inversion
 
-soln=0    ## selects the colution to plot < nsearch
+soln=1    ## selects the colution to plot < nsearch
 
 fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(10,12))
 
@@ -477,7 +493,7 @@ plots[3,1].set_title('LOS cartesian B$_y$')
 colorbar(ab, title='[G]')
 plots[3,1].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',vmin=-60,vmax=60)
+ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',vmin=-1000,vmax=1000)
 plots[3,2].set_title('LOS cartesian B$_z$')
 colorbar(ab, title='[G]')
 plots[3,2].set_xlabel('Y [R$_\odot$]')
@@ -490,18 +506,18 @@ if not os.path.exists('./testrun_outputs'):              ## make an output direc
 plt.savefig(f"./testrun_outputs/invout_2line__sol{soln}_{datestamp}.pdf")
 
 
-# In[60]:
+# In[23]:
 
 
 ##Print inversion solution in a human readable way
 
-# np.set_printoptions(linewidth=200,suppress=False)   ## Suppress can be set to true to disable exponential notation.
-# xx=310      ## x pixel position
-# yy=105      ## y pixel positions
+np.set_printoptions(linewidth=200,suppress=False)   ## Suppress can be set to true to disable exponential notation.
+xx=310      ## x pixel position
+yy=105      ## y pixel positions
 
 
-# print("||    DB Index   ||     chi^2    ||  ne density  ||  y (height)  || x (LOS pos.) ||      B       ||    B_theta   ||    B_phi     ||      Bx      ||      By      ||     Bz       ||")
-# print(invout[xx,yy,:,:])
+print("||    DB Index   ||     chi^2    ||  ne density  ||  y (height)  || x (LOS pos.) ||      B       ||    B_theta   ||    B_phi     ||      Bx      ||      By      ||     Bz       ||")
+print(invout[xx,yy,:,:])
 
 
 # In[ ]:
