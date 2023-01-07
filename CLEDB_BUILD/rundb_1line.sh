@@ -63,7 +63,6 @@ case "$linesel" in
     4*)     dbdir='si-ix_3934'   inp='si09';;
 esac
 
-
 ### database and calculation configuration parameters
 ### please keep the DB.INPUT configuration as in example; including spaces and decimal numbers on line 5 for this to work
 dbconf=$(sed -n 3p config/DB.INPUT)                               ## read database parameter configuration
@@ -71,18 +70,23 @@ yh=$(echo $dbconf | sed -n 's/^[^0-9]*\([0-9]\{1,\}\).*$/\1/p')   ## requested n
 ln=$(sed -n 5p config/DB.INPUT)                                   ## parse parameter ranges line
 ymin=$(echo "${ln[@]:16:5}")                                      ## requested minimum Y height
 ymax=$(echo "${ln[@]:24:5}")                                      ## requested maximum Y height
+dy=$(echo "scale=4 ; ($ymax - $ymin) / ($yh-1) " | bc)            ## delta for DB spacing resolution
 
+if (($yh % 2 == 0)); then
+	echo "Warning: even number of "$yh" height calculations selected"
+	echo "Odd number of calculations will better match the requested YMAX"
+fi
 
-## main section to send calculations to cpu threads
+### MAIN LOOP; sends calculations to cpu threads
 mkdir -p $dbdir                                                                                            ## go to the new database directory
 cd $dbdir
 rm -r ./*  2> /dev/null                                                                                    ## REMOVE ALL OLDER CALCULATIONS AND LOGS
 
-if (($yh >= $ncore)); then                                                                                 ## if generating more database heights than available threads
+if (($yh > $ncore)); then                                                                                  ## if generating more database heights than available threads
 	subcalc=$(echo "scale=0 ; $yh / $ncore " | bc)                                                         ## minimum number of Y subcalculations for each CPU thread.
-	subcalc1=$(echo "scale=0 ; $subcalc +1 " | bc);                                                        ## number of Y subcalculations +1 for each CPU thread.
-	rescalc=$(echo "scale=0 ; $yh % $ncore " | bc)                                                         ## residual calculations to add to the first created threads
-
+	subcalc1=$(echo "scale=0 ; $subcalc +1 " | bc)                                                         ## number of Y subcalculations +1 for each CPU thread.
+	rescalc=$(echo "scale=0 ; $yh % $ncore " | bc)     
+	                                                    ## residual calculations to add to the first created threads
 	for e in `seq 0 $(echo "scale=0 ; $ncore - 1 " | bc)`; do                                              ## cycle through available threads
 		mkdir $e;
 		cd $e;
@@ -93,13 +97,15 @@ if (($yh >= $ncore)); then                                                      
 
 		##tasks will not evenly split between CPU threads; first rescalc number of threads will spawn subcalc+1 calculations
 		if (($e < ($yh % $ncore ))); then                                                                  ## loop for first threads with 1 extra calculation each
-			ymin_c=$(echo "scale=4; $ymin+0.001 + ( $e      *$subcalc1 )*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');     ## min and max y height of each CPU thread subtask
-			ymax_c=$(echo "scale=4; $ymin+        (($e+1)   *$subcalc1 )*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');
+			ymin_c=$(echo "scale=4; $ymin + ( $e      * $subcalc1 )* $dy       " | bc | awk '{printf("%.3f",$1)}');     ## min and max y height of each CPU thread subtask
+			ymax_c=$(echo "scale=4; $ymin + (($e+1)   * $subcalc1 )* $dy - $dy " | bc | awk '{printf("%.3f",$1)}');
 			dbconf_new="$subcalc1"${dbconf[@]:2}"";                                                        ## amended DB configuration to write to each thread (with the subcalc1 thread)
+			#echo $ymin_c,$ymax_c,$dbconf_new
 		else                                                                                               ## loop for remaining threads that do subcalc number of calculations
-			ymin_c=$(echo "scale=4; $ymin+0.001 + (( $e      *$subcalc) +$rescalc )*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');  ## min and max y height of each CPU thread subtask
-			ymax_c=$(echo "scale=4; $ymin+        ((($e+1)   *$subcalc) +$rescalc )*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');  ## add rescalc to index heights correctly
+			ymin_c=$(echo "scale=4; $ymin + (( $e      * $subcalc ) +$rescalc )* $dy       " | bc | awk '{printf("%.3f",$1)}');  ## min and max y height of each CPU thread subtask
+			ymax_c=$(echo "scale=4; $ymin + ((($e+1)   * $subcalc ) +$rescalc )* $dy - $dy " | bc | awk '{printf("%.3f",$1)}');  ## add rescalc to index heights correctly
 			dbconf_new="$subcalc"${dbconf[@]:2}"";                                                         ## amended DB configuration to write to each thread
+		    #echo $ymin_c,$ymax_c,$dbconf_new
 		fi
 
 		sedi '3d' DB.INPUT;                                                                                ## add computed number of subcalculations to DB.INPUT
@@ -118,8 +124,8 @@ if (($yh >= $ncore)); then                                                      
 		cd ..
 	done
 else                                                                                                       ## when there are less tasks than threads
-	echo "Warning: Number of requested heights smaller than number of threads!" 
-	echo "Not all requested threads will be used!"
+	echo "Warning: Number of requested heights <= than number of threads!" 
+	echo "Less than requested threads might be used!"
 	subcalc=1                                                                                              ## subcalc is 1 here
 	for e in `seq 0 $(echo "scale=0 ; $yh - 1 " | bc)`; do
 		mkdir $e;
@@ -129,9 +135,10 @@ else                                                                            
 		\cp '../../config/'INPUT.${inp[@]:0:5} ./INPUT;
 		\cp '../../config/'$dbexec ./dbrun;                                                                ## executable is just dbrun
 
-		ymin_c=$(echo "scale=4; $ymin+0.001 + ( $e      *$subcalc )*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');  ## min and max y height of each CPU thread subtask
-		ymax_c=$(echo "scale=4; $ymin+        (($e+1)   *$subcalc )*(($ymax - $ymin) / $yh)  " | bc | awk '{printf("%.3f",$1)}');
+		ymin_c=$(echo "scale=4; $ymin + ( $e      *$subcalc )* $dy       " | bc | awk '{printf("%.3f",$1)}');   ## min and max y height of each CPU thread subtask
+		ymax_c=$(echo "scale=4; $ymin + (($e+1)   *$subcalc )* $dy - $dy " | bc | awk '{printf("%.3f",$1)}');
 		dbconf_new="$subcalc"${dbconf[@]:2}"";                                                             ## amended DB configuration to write to each thread
+		#echo $ymin_c,$ymax_c,$dbconf_new
 
 		sedi '3d' DB.INPUT;                                                                                ## add computed number of subcalculations to DB.INPUT
 		sedi "3i\\
@@ -155,7 +162,7 @@ fi
 ## e.g. if the second PID finishes before the first, we only find out after the first PID finishes.
 for pid in ${pids[*]}; do
     wait $pid
-    echo "process "$pid" completed!"
+    echo "Process "$pid" completed!"
 done
 
 ## after processes complete, append the CLEDB joblogs to the bash joblogs
@@ -166,7 +173,7 @@ if (($yh >= $ncore)); then
 		cat ./${e}/JOBLOG >> ./BASHJOB_${e}.LOG
 	done
 else
-	for e in `seq 0 $yh`; do
+	for e in `seq 0 $(echo "scale=0 ; $yh - 1 " | bc)`; do
 		echo "CLEDB JOBLOG:" >> ./BASHJOB_${e}.LOG
 		cat ./${e}/JOBLOG >> ./BASHJOB_${e}.LOG
 	done
@@ -176,3 +183,4 @@ find . -name 'DB*.DAT' -exec mv -f {} ./ \;                                     
 \cp ./0/db.hdr ./db.hdr                                                                                ## save the database header
 rm -r */                                                                                               ## remove the thread directories and other junk
 cd ..
+echo "All calculations are completed!"

@@ -4,19 +4,17 @@
 ### Parallel implementation of utilities for CLEDB_PREPINV                  ###
 ###############################################################################
 
-
-#Contact: Alin Paraschiv, National Solar Observatory
-#         arparaschiv@nso.edu
+#Contact: Alin Paraschiv, High Altitude Observatory
+#         arparaschiv@ucar.edu
 #         paraschiv.alinrazvan+cledb@gmail.com
 
-
 ### Tested Requirements  ################################################
-### CLEDB database as configured in CLE V2.0.2; (db2021 executable) 
-# python                    3.8.5 
-# scipy                     1.6.2
-# numpy                     1.20.1 
-# numba                     0.53.1 
-# llvmlite                  0.36.0 (as numba dependency probably does not need separate installing)
+### CLEDB database as configured in CLE V2.0.3; (db203 executable) 
+# python                    3.10.8 
+# scipy                     1.9.3
+# numpy                     1.23.4 
+# numba                     0.56.4 
+# llvmlite                  0.39.1 (as numba dependency probably does not need separate installing)
 
 ### Other used packages of secondary importance that will probably not become code-breaking 
 # pylab    ## Check if still needed
@@ -81,127 +79,34 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
-def sobs_preprocess(sobs_in,params):
-## Main script to read data and prepare it for analysis.
+#@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)  ### numba incompatible due to obs_headstructproc
+def sobs_preprocess(sobs_in,headkeys,params):
+## Main script to read data and header information to prepare it for analysis.
 
     if params.verbose >=1: 
         print('------------------------------------\n--------OBS PROCESSING START--------\n------------------------------------')
         if params.verbose >= 3:start0=time.time()        
 
-## unpacks the header metadata information from the observation
-## Not fully implemented due to data and header structure not existing.
-    if len(sobs_in) ==2:
-        nline=2                                 ## static! not implemented
-        tline=["fe-xiii_1074","fe-xiii_1079"]   ## static! not implemented
-    elif len(sobs_in) ==1:
-        nline=1                                 ## static! not implemented
-        tline=["fe-xiii_1074"               ]   ## static! not implemented
-    ## check if nline is correct. the downstream inversion modules are contingent on this keyword
-    if nline != 1 and nline != 2:
-        print("Not a one or two line observation; aborting")
-        # placeholder for [update issuemask]
-        #catastrophic output
-        return 
-
-    if params.verbose >=1: 
-        print('We are inverting observations of',nline,'coronal line(s) ')
-        if nline >= 1:
-            if   tline[0] == "fe-xiii_1074":
-                print('Line 1: Fe XIII 1074.7nm')
-            elif tline[0] == "fe-xiii_1079":
-                print('Line 1: Fe XIII 1079.8nm')
-            elif tline[0] == "si-ix_3934":
-                print('Line 1: Si X    1430.1nm')
-            elif tline[0] == "si-x_1430":
-                print('Line 1: Si IX   3934.3nm')
-            if nline == 2:
-                if   tline[1] == "fe-xiii_1074":
-                    print('Line 2: Fe XIII 1074.7nm')
-                elif tline[1] == "fe-xiii_1079":
-                    print('Line 2: Fe XIII 1079.8nm')
-                elif tline[1] == "si-ix_3934":
-                    print('Line 2: Si X    1430.1nm')
-                elif tline[1] == "si-x_1430":
-                    print('Line 2: Si IX   3934.3nm')
-
-## check for the direction for the reference direction of linear polarization.
-## angle direction is trigonometric; values are in radians
-## 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU.
-    linpolref=0#np.pi/2. 
-## linpolref=np.pi/2 <-- reference used in paraschiv & Judge 2021 for the direction used in computing the database (along Z axis)
-
-## Cryo-NIRSP instrumental width should be read and quantified here
-## not clear at this point if this will be a constant or a varying keyword
-    instwidth=0
-
-## MAIN ASUSMPTION IS THAT THE KEYWORDS COME AS ATTACHED TO THE ARRAY (E.G. ARRAY_EXTENDED METHOD)
-## array dimensions! 
-    nx,ny,nw=sobs_in[0].shape[0:3]     ## alternatively, these can be read from naxis[1-3] keywords
-
-## array coordinate keywords
-## These needs to be changed based on observation. For CLE this is normally the information in GRID.DAT
-## Values for the 3 dipole simulation
-## these are in R_sun units. Production will most probably use arcsecond units. These should work without changes if things are kept consistent.
-
-    ## CASE 1: 3 DIPOLE CLE SIMULATION DATA
-    crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
-    crpix2 = 0
-    crpix3 = [np.int32(nw/2)-1,np.int32(nw/2)-1]                      ## two lines have different wavelength parameters
-
-    ##python stores arrays differently than normal, x dimension is second and y dimension is first. the reversal of /nx and /ny follows this issue.
-    crval1 = -0.75#0.8                  ## solar coordinates at crpixn in r_sun
-    crval2 = 0.8#-0.75
-    crval3 = [1074.62686-0.0124, 1079.78047-0.0124]     ## from CLE outfile; reference wavelengths are in vacuum
+## unpack the minimal number of header keywords
+    keyvals=obs_headstructproc(sobs_in,headkeys,params)
+    if(keyvals == -1):
+        if params.verbose >=1: 
+            print('------------------------------------\n-----OBS KEYWORD PROCESSING FAIL----\n------------------------------------')
+        return -1
     
-    cdelt1 = (0.75-(-0.75))/nx         ## from grid.dat; remember the python axis flipping
-    cdelt2 = (1.5-0.8)/ny         
-    cdelt3 = [0.0247, 0.0249]
-    
-#    ## CASE 1b: SHEETSLOS CLE SIMULATION DATA
-#    crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
-#    crpix2 = 0
-#    crpix3 = [np.int32(nw/2)-1,np.int32(nw/2)-1]                      ## two lines have different wavelength parameters
-#
-#    ##python stores arrays differently than normal, x dimension is second and y dimension is first. the reversal of /nx and /ny follows this issue.
-#    crval1 = -0.5#0.8                  ## solar coordinates at crpixn in r_sun
-#    crval2 = 0.8#-0.75
-#    crval3 = [1074.62686-0.0124, 1079.78047-0.0124]     ## from CLE outfile; reference wavelengths are in vacuum
-#    
-#    cdelt1 = (0.5-(-0.5))/nx         ## from grid.dat; remember the python axis flipping
-#    cdelt2 = (1.5-0.8)/ny         
-#    cdelt3 = [0.0247, 0.0249]
-       
-    ## CASE 2: MURAM INPUT DATA
-#     crpix1 = 0                          ## assuming the reference pixel is in the left bottom of the array
-#     crpix2 = 0
-#     crpix3 = [0,0]                      ## two lines have different wavelength parameters
-
-#     ##python stores arrays differently than normal, x dimension is second and y dimension is first. the reversal of /nx and /ny follows this issue.
-#     crval1 = -0.071                     ## solar coordinates at crpixn in r_sun; from muram xvec and y vec arrays
-#     crval2 = 0.989
-#     crval3 = [1074.257137, 1079.420513] ## from MURAM wvvec1 and wvvec2 0 positions
-
-#     cdelt1 = 0.0001379                  ## from muram xvec, yvec, wvvec1 and wvvce2 arrays
-#     cdelt2 = 0.0000689
-#     cdelt3 = [0.0071641,0.0071985]    
-    
-## pack the decoded keywords into a comfortable python list to feed to downstream functions/modules
-    keyvals=(nx,ny,nw,nline,tline,crpix1,crpix2,crpix3,crval1,crval2,crval3,cdelt1,cdelt2,cdelt3,linpolref,instwidth)
-
 ##calculate an observation height and integrate the stokes profiles
     yobs=obs_calcheight(keyvals)
-    if params.integrated != 1:                                  ##If using comp/ucomp, the profiles are already integrated
-        sobs_tot,rms,background=obs_integrate(sobs_in,keyvals)        
+    if params.integrated != True:
+        sobs_tot,rms,background=obs_integrate(sobs_in,keyvals)
         
-    else:   ## for COMP/UCOMP set some arrays to -1 because they can't be computed
+    else:   ## set the arrays to -1 because they can't be computed
         sobs_tot   = np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
-        rms        = np.zeros((nx,ny,nline*4),dtype=np.float64)-1
-        background = np.zeros((nx,ny,nline*4),dtype=np.float64)-1
-        sobs_totrot= np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
-        aobs       = np.zeros((nx,ny),dtype=np.float64)
+        rms        = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1
+        background = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1
+        sobs_totrot= np.copy(sobs_tot)
+        aobs       = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
 
-    if nline == 2:
+    if keyvals[3] == 2:
     ## for two-line inversions we require a rotation of the linear polarization Q and U components
         sobs_totrot,aobs=obs_qurotate(sobs_tot,yobs,keyvals)        
         
@@ -223,13 +128,13 @@ def sobs_preprocess(sobs_in,params):
                 print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL OBS PREPROCESS AND INTEGRATION')
             print('------------------------------------\n-----OBS PREPROCESS FINALIZED-------\n------------------------------------')
 
-        return sobs_tot,yobs,rms,background,keyvals,np.zeros((sobs_tot.shape)),np.zeros((yobs.shape)) ## return the 0 arrays to keep returns consistent (it helps numba/jit).
+        return sobs_tot,yobs,rms,background,keyvals,np.zeros((sobs_tot.shape)),np.zeros((yobs.shape)) ## return the 0 arrays to keep returns consistent between 1 and 2 line inputs (it helps numba/jit).
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True)    
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)    
 def sdb_preprocess(yobs,keyvals,params):
 ## Main script to find and preload all necessary databases. 
 ## Returns databases as a list along with an encoding corresponding to each voxel of the observation
@@ -316,7 +221,6 @@ def sdb_preprocess(yobs,keyvals,params):
 ###########################################################################
 ###########################################################################
 
-
 ###########################################################################
 ###########################################################################
 ### Helper functions ######################################################
@@ -325,7 +229,7 @@ def sdb_preprocess(yobs,keyvals,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
 def sdb_fileingest(dbdir,nline,tline,verbose):  
 #returns filename and index of elongation y in database  
 ## This prepares the database directory files outside of numba non-python..
@@ -391,7 +295,7 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)               ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)               ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_findelongation(y,dbynumbers):
 # returns index of elongation y in database
 # The calculation is faster ingested as a function rather than an inline calculation! 
@@ -401,7 +305,7 @@ def sdb_findelongation(y,dbynumbers):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=False,forceobj=True)  ## don't try to parallelize things that don't need as the overhead will slow everything down
+@jit(parallel=False,forceobj=True,cache=params.jitcache)  ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_parseheader(dbheaderfile):
 ## reads and parses the header and returns the parameters contained in the db.hdr of a database directory           
 ## db.hdr text file needs to have the specific version format described in the CLEDB 2.0.2 readme
@@ -415,17 +319,17 @@ def sdb_parseheader(dbheaderfile):
     ngx=np.int32(g[1])
     nbphi=np.int32(g[2])
     nbtheta=np.int32(g[3])
-    emin=np.float64(g[4])
-    emax=np.float64(g[5])
+    emin=np.float32(g[4])
+    emax=np.float32(g[5])
     xed=sdb_lcgrid(emin,emax,ned)    # Ne is log
-    gxmin=np.float64(g[6])
-    gxmax=np.float64(g[7])
-    bphimin=np.float64(g[8])
-    bphimax=np.float64(g[9])
-    bthetamin=np.float64(g[10])
-    bthetamax=np.float64(g[11])
+    gxmin=np.float32(g[6])
+    gxmax=np.float32(g[7])
+    bphimin=np.float32(g[8])
+    bphimax=np.float32(g[9])
+    bthetamin=np.float32(g[10])
+    bthetamax=np.float32(g[11])
     nline=np.int32(g[12])
-    wavel=np.empty(nline,dtype=np.float64)
+    wavel=np.empty(nline,dtype=np.float32)
     
     for k in range(0,nline): wavel[k]=g[13+k]    
 
@@ -436,7 +340,7 @@ def sdb_parseheader(dbheaderfile):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=False,forceobj=True)   # don't try to parallelize things that don't need as the overhead will slow everything down
+@jit(parallel=False,forceobj=True,cache=params.jitcache)   # don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_read(fildb,dbhdr,verbose):
 ## here reading data is done and stored in variable database of size (ncalc,line,4)
 ## due to calling dcompress nad np.fromfile, this is incompatible with numba    
@@ -452,9 +356,10 @@ def sdb_read(fildb,dbhdr,verbose):
 
     if verbose >=1:
         print("INDIVIDUAL DB file location:", fildb)      
-   
-    db=sdb_dcompress(np.fromfile(fildb, dtype=np.int16),verbose)
-
+       
+    #db=sdb_dcompress(np.fromfile(fildb, dtype=np.int16),verbose)
+    db=np.fromfile(fildb, dtype=np.float32)
+    
     if verbose >= 3: print("{:4.6f}".format(time.time()-start),' SECONDS FOR INDIVIDUAL DB READ\n----------')
 
     #return np.reshape(db,(ned*ngx*nbphi*nbtheta,nline*4))
@@ -464,7 +369,7 @@ def sdb_read(fildb,dbhdr,verbose):
 
 ###########################################################################
 ###########################################################################
-#@jit(parallel=False,forceobj=True) # don't try to parallelize things that don't need as the overhead will slow everything down
+#@jit(parallel=False,forceobj=True,cache=params.jitcache) # don't try to parallelize things that don't need as the overhead will slow everything down
 ##The del command makes this incompatible with numba. The del command is needed.
 def sdb_dcompress(i,verbose):
 ## helper routine for sdb_read
@@ -473,6 +378,7 @@ def sdb_dcompress(i,verbose):
 
     cnst=-2.302585092994046*15./32767.
     ## Constants here must correspond to those in dbe.f in the CLE main directory
+    ## c=-2.302585092994046 is the constant for the exponential; e.g. e^c=0.1
     ## 32767 is the limit of 4-byte ints
     ## 15 is the number of orders of magnitude for the range of intensities
 
@@ -494,12 +400,12 @@ def sdb_dcompress(i,verbose):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)                              ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)                              ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_lcgrid(mn,mx,n):
 ## grid for ned densities from mn to mx logarithms of density.
 
     ff=10.** ((mx-mn)/(n-1))
-    xf=np.empty(n,np.float64)
+    xf=np.empty(n,np.float32)
     xf[0]=10.**mn
     for k in range(1,n): xf[k]=xf[k-1]*ff
 
@@ -509,7 +415,121 @@ def sdb_lcgrid(mn,mx,n):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=params.jitparallel)
+#@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache) ## Numba not compatible with object datatypes
+def obs_headstructproc(sobs_in,headkeys,params):
+## This is the ingestion for a minimal number of needed keywords from the observation headerfile
+## Most keywords are defined statically as DKIST specs were not available at the time of this update. Dummy headkeys input should be used
+## CoMP ingests most infoormation from its header
+
+## unpacks the header metadata information from the observation
+## Not fully implemented due to data and header structure not existing for DKIST.
+    linestr = ["fe-xiii_1074","fe-xiii_1079","si-x_1430","si-ix_3934"]
+    if len(sobs_in) == 2:
+        nline = 2
+        if params.integrated == True:                   ## for CoMP/uCoMP/COSMO
+            if hasattr(headkeys[0],'wavetype') and hasattr(headkeys[1],'wavetype'):
+                tline=[[i for i in linestr if str(headkeys[0].wavetype[0],'UTF-8') in i][0],[i for i in linestr if str(headkeys[1].wavetype[0],'UTF-8') in i][0]] 
+                ## searches for the "wavetype" substring in the linestr list of available lines.
+                ## the headkey is a bytes type so conversion to UTF-8 is needed 
+                ## the [0] unpacks the one element lists where used. 
+            else:
+                print("Can't read line information from keywords; aborting")
+                return -1     #catastrophic exit
+        else:
+            tline=[linestr[0],linestr[1]]   ## for Cryo-NIRSP; static! no keywords yet implemented
+    elif len(sobs_in) == 1:
+        nline=1                                
+        tline=["fe-xiii_1074"]   ## for Cryo-NIRSP; static! no keywords yet implemented
+        ##Placeholder: one line setup for integrated or iuqd CoMP/uCoMP/COSMO data not yet implemented
+        
+    ## check if nline is correct. the downstream inversion modules are contingent on this keyword
+    if nline != 1 and nline != 2:
+        print("Not a one or two line observation; aborting")
+        # placeholder for [update issuemask]
+        return -1        #catastrophic exit
+
+    if params.verbose >=1: 
+        print('We are inverting observations of',nline,'coronal line(s) ')
+        if nline >= 1:
+            if   tline[0] == linestr[0]:
+                print('Line 1: Fe XIII 1074.7nm')
+            elif tline[0] == linestr[1]:
+                print('Line 1: Fe XIII 1079.8nm')
+            elif tline[0] == linestr[2]:
+                print('Line 1: Si X    1430.1nm')
+            elif tline[0] == linestr[3]:
+                print('Line 1: Si IX   3934.3nm')
+            if nline == 2:
+                if   tline[1] == linestr[0]:
+                    print('Line 2: Fe XIII 1074.7nm')
+                elif tline[1] == linestr[1]:
+                    print('Line 2: Fe XIII 1079.8nm')
+                elif tline[1] == linestr[2]:
+                    print('Line 2: Si X    1430.1nm')
+                elif tline[1] == linestr[3]:
+                    print('Line 2: Si IX   3934.3nm')
+
+## array dimensions! 
+    nx,ny=sobs_in[0].shape[0:2] 
+    #nx,ny=sobs_in[0].shape[0:2] if sobs_in[0].shape[0] == headkeys[0].naxis1[0] and sobs_in[0].shape[1] == headkeys[0].naxis2[0] else print("Mismatch in array shapes; Fix before continuing") ## alternatively, these can be read from naxis[1-3]; Will be updfated when keywords are known for all sources
+    if params.integrated != True:
+        nw=sobs_in[0].shape[2]
+        #nw=sobs_in[0].shape[2] if sobs_in[0].shape[2] == headkeys[0].naxis3[0] else print("Mismatch in array shapes; Fix before continuing")
+    else:
+        nw=1                        ## For line-integrated data; dont set 0 or arrays cant initialize
+
+## array coordinate keywords
+## These needs to be changed based on observation. For CLE this is normally the information in GRID.DAT
+    if headkeys[0].instrume == "CLE-SIM" or headkeys[0].instrume  == "MUR-SIM":   #CASE 1: Simulated OBSERVATIONS  
+        crpix1 = headkeys[0].crpix1                                                           ## Rerefence pixels along all dimensions
+        crpix2 = headkeys[0].crpix2
+        crpix3 = [np.int32(headkeys[0].crpix3),np.int32(headkeys[1].crpix3)]              ## two lines have different wavelength parameters
+
+
+        crval1 = np.float32(headkeys[0].crval1)                                               ## solar/wavelength coordinates at crpixn in r_sun/angstrom; 
+        crval2 = np.float32(headkeys[0].crval2)
+        crval3 = [np.float32(headkeys[0].crval3), np.float32(headkeys[1].crval3)] 
+
+        cdelt1 = np.float32(headkeys[0].cdelt1)                                               ## spatial/spectral resolution in R_sun/angstrom
+        cdelt2 = np.float32(headkeys[0].cdelt2)
+        cdelt3 = [np.float32(headkeys[0].cdelt3), np.float32(headkeys[1].cdelt3)]                                 
+
+    elif (str(headkeys[0].instrume[0], "UTF-8") == "COMP"):                       #CASE 2: COMP OBSERVATIONS
+
+        crpix1 = headkeys[0].crpix1[0]                                                        ## Comp takes reference at center
+        crpix2 = headkeys[0].crpix2[0]
+        crpix3 = [0,0]                                                                        ## not used here ## two lines have different wavelength parameters
+
+        crval1 = np.float32(headkeys[0].crval1[0]*720/695700.0)                               ## solar coordinates at crpixn in r_sun; from -310.5*4.46 ##arcsec to R_sun conversion via 720/695700
+        crval2 = np.float32(headkeys[0].crval2[0]*720/695700.0) 
+        crval3 = [np.float32(headkeys[0].wave_ref[0]), np.float32(headkeys[1].wave_ref[0])]   ## not really used
+
+        cdelt1 = np.float32(headkeys[0].cdelt1[0]*720/695700.0)                               ## COMP Cdelt in R_sun
+        cdelt2 = np.float32(headkeys[0].cdelt2[0]*720/695700.0) 
+        cdelt3 = [0.0,0.0]                                                                    ## not used for integrated data such as CoMP
+    elif (str(headkeys[0].instrume[0], "UTF-8") == "Cryo-NIRSP"):                 #CASE 3: Cryo-NIRSP OBSERVATIONS
+        ##To be updated
+        print("Cryo-NIRSP header not yet implemented")
+    else: print("Observation keywords not recognised.")                                       ## only CoMP, MURAM, and CLE examples are currently implemented
+
+## Additional keywords of importance thatm ight or might not be included in observations.
+## check for the direction for the reference direction of linear polarization.
+## angle direction is trigonometric; values are in radians
+## 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU.
+    linpolref = 0 #np.pi/2. <-- reference used in paraschiv & Judge 2022 for the direction used in computing the database (along Z axis)
+
+## instrumental line broadening/width should be read and quantified here
+## not clear at this point if this will be a constant or a varying keyword
+    instwidth=0
+
+    ## pack the decoded keywords into a comfortable python list variable to feed to downstream functions/modules
+    return nx,ny,nw,nline,tline,crpix1,crpix2,crpix3,crval1,crval2,crval3,cdelt1,cdelt2,cdelt3,linpolref,instwidth
+###########################################################################
+###########################################################################
+
+###########################################################################
+###########################################################################
+@njit(parallel=params.jitparallel,cache=params.jitcache)
 def obs_calcheight(keyvals):
 ## helper function for observation preprocessing.
 ## calculates the off-limb heights corresponding to each voxel.
@@ -526,7 +546,7 @@ def obs_calcheight(keyvals):
     if crpix2 != 0:
         crval2 = crval2 - (crpix2 * cdelt2)
 
-    yobs=np.empty((nx,ny),dtype=np.float64)
+    yobs=np.empty((nx,ny),dtype=np.float32)
     for xx in range(nx):
         for yy in prange(ny):
             yobs[xx,yy]=np.sqrt((crval1+(xx*cdelt1))**2+(crval2+(yy*cdelt2))**2 )
@@ -537,7 +557,7 @@ def obs_calcheight(keyvals):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=params.jitparallel)
+@njit(parallel=params.jitparallel,cache=params.jitcache)
 def obs_integrate(sobs_in,keyvals):
 ## reads the background and peak emission of lines, subtracts the background and integrates the signal
 
@@ -546,11 +566,11 @@ def obs_integrate(sobs_in,keyvals):
     nx,ny,nw = keyvals[0:3]
     nline = keyvals[3]
 
-    sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float64)
-    cdf=np.empty((nx,ny,nw),dtype=np.float64)
-    background=np.zeros((nx,ny,nline*4),dtype=np.float64)    ## array to record the background levels in stokes I,Q,U,V, in that order.
+    sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float32)
+    cdf=np.empty((nx,ny,nw),dtype=np.float32)
+    background=np.zeros((nx,ny,nline*4),dtype=np.float32)    ## array to record the background levels in stokes I,Q,U,V, in that order.
     mask=np.zeros((4),dtype=np.int32)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
-    rms=np.ones((nx,ny,nline*4),dtype=np.float64)
+    rms=np.ones((nx,ny,nline*4),dtype=np.float32)
 
 ######################################################################
 ##integrate for total profiles.
@@ -570,6 +590,7 @@ def obs_integrate(sobs_in,keyvals):
                     for i in range(4):
                         ## remove the background noise from the profile. the 4 positions denote the IQUV measurements, in order.
                         background[xx,yy,i+(4*zz)]=(sobs_in[zz][xx,yy,0:l0+1,i].mean()+sobs_in[zz][xx,yy,r0:,i].mean())/2.
+                        #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.)
                         tmp=sobs_in[zz][xx,yy,:,i]-background[xx,yy,i+(4*zz)]
                         ##now fix the possible negative values resulted from the background averaging in case of stokes I
                         if i == 0:
@@ -589,12 +610,12 @@ def obs_integrate(sobs_in,keyvals):
                         #print("{:4.6f}".format(time.time()-start),' SUBSET: SECONDS FOR INTEGRATE')
 
                         ## Compute the rms for each quantity. Ideally the background should be the same in all 4 measurements corresponding to one line.
-                        # First, here is variance of each state with detector/physical counts
-                        # Here is variance varis in ((I+S) - (I-S))/2 = S, in counts
+                        ## First, here is variance of each state with detector/physical counts
+                        ## Here is variance varis in ((I+S) - (I-S))/2 = S, in counts
                         variance = np.abs((background[xx,yy,0] +background[xx,yy,0])/2.)
-                        # here is the variance in y = S/I:  var(y)/y^2 = var(S)/S^2 + var(I)/I^2
-                        var =  variance/(sobs_tot[xx,yy,i+(4*zz)]**2) + variance/(sobs_tot[xx,yy,0+(4*zz)]**2)
-                        #var *= (sobs_tot[xx,yy,i+(4*zz)]/sobs_tot[xx,yy,0+(4*zz)])**2 ## this is  form of normalization that is not required as the data is not normalized here.
+                        ## here is the variance in y = S/I:  var(y)/y^2 = var(S)/S^2 + var(I)/I^2
+                        var =  variance/sobs_tot[xx,yy,i+(4*zz)]**2 + variance/sobs_tot[xx,yy,0]**2
+                        var *= (sobs_tot[xx,yy,i+(4*zz)]/sobs_tot[xx,yy,0])**2 ## this is  form of normalization that is not required as the data is not normalized here.
                         rms[xx,yy,i+(4*zz)]=np.sqrt(var)
                         #print("{:4.6f}".format(time.time()-start),' SUBSET: SECONDS FOR VARIANCE')
 
@@ -604,7 +625,7 @@ def obs_integrate(sobs_in,keyvals):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=params.jitparallel)
+@njit(parallel=params.jitparallel,cache=params.jitcache)
 def obs_qurotate(sobs_tot,yobs,keyvals):
 ## rotates the linear polarization components with the corresponding angle
 ## this implicitly assumes that yobs is kept in the same units as the header keys, either R_sun or arcsec.
@@ -621,7 +642,7 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
     if crpix2 != 0:
         crval2 = crval2 - (crpix2 * cdelt2)
 
-    aobs=np.empty((nx,ny),dtype=np.float64)
+    aobs=np.empty((nx,ny),dtype=np.float32)
     ## copy the sobs array 
     sobs_totrot=np.copy(sobs_tot)
 
@@ -653,10 +674,10 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=params.jitparallel)
+@njit(parallel=params.jitparallel,cache=params.jitcache)
 def obs_cdf(spectr):
 ## computes the cdf distribution for a spectra
-    cdf=np.zeros((spectr.shape[0]),dtype=np.float64)
+    cdf=np.zeros((spectr.shape[0]),dtype=np.float32)
     for i in prange (0,spectr.shape[0]):
         cdf[i]=np.sum(spectr[0:i+1])        ## need to check if should start from 0 or not.
     cdf=cdf[:]/cdf[-1]                      ## norm the cdf to simplify interpretation

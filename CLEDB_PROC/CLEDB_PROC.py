@@ -4,18 +4,17 @@
 ### Parallel implementation of utilities for CLEDB_PROC                     ###
 ###############################################################################
 
-#Contact: Alin Paraschiv, National Solar Observatory
-#         arparaschiv@nso.edu
+#Contact: Alin Paraschiv, High Altitude Observatory
+#         arparaschiv@ucar.edu
 #         paraschiv.alinrazvan+cledb@gmail.com
 
-
 ### Tested Requirements  ################################################
-### CLEDB database as configured in CLE V2.0.2; (db2021 executable) 
-# python                    3.8.5 
-# scipy                     1.6.2
-# numpy                     1.20.1 
-# numba                     0.53.1 
-# llvmlite                  0.36.0 (as numba dependency probably does not need separate installing)
+### CLEDB database as configured in CLE V2.0.3; (db203 executable) 
+# python                    3.10.8 
+# scipy                     1.9.3
+# numpy                     1.23.4 
+# numba                     0.56.4 
+# llvmlite                  0.39.1 (as numba dependency probably does not need separate installing)
 
 
 ### Auxiliary, only used in verbose mode
@@ -76,8 +75,8 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=params.jitparallel)
-def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearch,maxchisq,bcalc,reduced,verbose):
+@jit(parallel=params.jitparallel,cache=params.jitcache)
+def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearch,maxchisq,bcalc,iqud,reduced,verbose):
 
     if verbose >=1: print('--------------------------------------\nCLEDB_IVPROC: TWO LINE INVERSION START\n--------------------------------------')
     
@@ -85,8 +84,8 @@ def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearc
     nx,ny = keyvals[0:2]
     
     ##Output variables
-    invout = np.zeros((nx,ny,nsearch,11),dtype=np.float64)
-    sfound = np.zeros((nx,ny,nsearch,8),dtype=np.float64)
+    invout = np.zeros((nx,ny,nsearch,11),dtype=np.float32)
+    sfound = np.zeros((nx,ny,nsearch,8),dtype=np.float32)
     
     ## Number of degrees of freedom >4; we require a two line full IQUV observation.
     ## assume the last dimension of sobs is the number of observables; 2 lines=8
@@ -97,18 +96,48 @@ def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearc
             print("Shapes are: ", sobs_totrot.shape," and ",database[0].shape)
         invout[:,:,:,0]=np.full((nx,ny,nsearch),-1) ### index is -1 for failed runs!
         return invout,sfound
-
-    if verbose >= 1:      
-        for xx in range(nx):
-            print("CLEDB_INVPROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
-            for yy in prange(ny):
-                invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_match(sobs_totrot[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
-                    nsearch,maxchisq,bcalc,reduced,verbose)
+    
+    ### NO wave observation and matching for IQUD --> NO RUN  ######
+    if (iqud == True and bcalc != 3) or (iqud != True and bcalc == 3):
+        invout[:,:,:,0]=np.full((nx,ny,nsearch),-1) ### index is -1 for failed runs!
+        if verbose >= 1: 
+            print("WARNING (CLEDB_MATCH): Field strength calculation incompatible with requested input data! Check bcalc and iqud keywords")
+        return invout,sfound
+    
+    ## We use the iqud keyword to run the matching function.
+    if iqud == True:
+        if verbose >= 1:      
+            for xx in range(nx): #range(301,303): #
+                print("CLEDB_INVPROC (IQUD): Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
+                for yy in prange(ny): #prange(100,200): #
+                    invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_matchiqud(sobs_totrot[xx,yy,:],sobs_dopp[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
+                                                                        nsearch,maxchisq,bcalc,reduced,verbose)
+        else:
+            for xx in range(nx):
+                for yy in prange(ny):
+                    invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_matchiqud(sobs_totrot[xx,yy,:],sobs_dopp[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
+                                                                    nsearch,maxchisq,bcalc,reduced,verbose)
     else:
-        for xx in range(nx):
-            for yy in prange(ny):
-                invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_match(sobs_totrot[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
-                    nsearch,maxchisq,bcalc,reduced,verbose)
+        if verbose >= 1:      
+            for xx in range(nx): #range(301,303): #
+                print("CLEDB_INVPROC (IQUV): Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
+                for yy in prange(ny): #prange(100,200): #
+                    # if xx == 301 and yy == 105:
+                    #     sobs_totrot[xx,yy,:]=np.array((1.00000000e+00, 3.16772669e-04, 1.52991570e-03, 5.63795435e-06, 6.24271335e-01, 1.66090059e-05, 8.02164495e-05, 3.53448432e-06),dtype=np.float32) ##5,25,52,70 or 5269750
+                    #     print(database[db_enc[xx,yy]][5,25,52,70,:])
+                    #     print(sfound[xx,yy,:,:]/sfound[xx,yy,:,0])
+                    #     print(invout[xx,yy,:,0:2])
+                    # else:
+                    #     invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_matchiquv(sobs_totrot[xx,yy,:],sobs_dopp[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
+                    #                                                     nsearch,maxchisq,bcalc,iqud,reduced,verbose)             
+                    invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_matchiquv(sobs_totrot[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
+                                                                        nsearch,maxchisq,bcalc,reduced,verbose)
+        else:
+            for xx in range(nx):
+                for yy in prange(ny):
+                    invout[xx,yy,:,:],sfound[xx,yy,:,:]=cledb_matchiquv(sobs_totrot[xx,yy,:],yobs[xx,yy],aobs[xx,yy],database[db_enc[xx,yy]],dbhdr,rms[xx,yy,:],\
+                                                                    nsearch,maxchisq,bcalc,reduced,verbose)
+
 
     if verbose >=1:
         #if params.verbose >=3: print("{:4.6f}".format(time.time()-start),' TOTAL SECONDS FOR DBINVERT ')
@@ -123,7 +152,7 @@ def cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,nsearc
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
 def blos_proc(sobs_tot,rms,keyvals,consts,params):
 ## Uses the "improved" magnetograph formulation in eq 40 Casini &Judge 99, eq 14 of Plowman 2014, and eq 17 and 18 of Dima & Schad 2020
 ## Follows the discussion in the three papers and adopts different implementations based on the line combination used
@@ -176,7 +205,7 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
 def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 ## calculates 12 spectroscopic products
 ## Background is used both as an output product and as a preprocess parameter. More details in cdf_statistics comments.
@@ -191,9 +220,9 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     cdelt3 = keyvals[13]
     
     ## needed data arrays
-    specout=np.zeros((nx,ny,2,12),dtype=np.float64)                  ## output array containing the spectroscopic products.
-    wlarr=np.zeros((nw,nline),dtype=np.float64)                      ## wavelength array
-    sobs_cal=np.zeros((nx,ny,nw,nline*4),dtype=np.float64)           ## define this as 0 to be able to later check if the calibs are performed or not.
+    specout=np.zeros((nx,ny,2,12),dtype=np.float32)                  ## output array containing the spectroscopic products.
+    wlarr=np.zeros((nw,nline),dtype=np.float32)                      ## wavelength array
+    sobs_cal=np.zeros((nx,ny,nw,nline*4),dtype=np.float32)           ## define this as 0 to be able to later check if the calibs are performed or not.
     ##NOTE: sobs_cal output should be in the shape of an array; e.g. [x,y,w,4*nline]
     
     ## create a wavelength array based on keywords for each line to be processed
@@ -235,9 +264,7 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
             
 
     ######################################################################
-    ## process the spectroscopy          
-                        
-               
+    ## process the spectroscopy                     
     if params.verbose >= 1: 
         if nline == 2:                  
             for xx in range(nx):
@@ -248,7 +275,7 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
                     specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
                         background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
         else:
-            for xx in prange(nx):
+            for xx in range(nx):
                 print("SPECTRO_PROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
                 for yy in prange(ny):
                     specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
@@ -262,12 +289,12 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
                     specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
                         background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
         else:
-            for xx in prange(nx):
+            for xx in range(nx):
                 for yy in prange(ny):
                     specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
                         background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)             
                 
-                ##Note: cdf_statistics will alter sobs_cal, htough it is not outputed or used downstream!
+                ##Note: cdf_statistics will alter sobs_cal; It is not outputed or used downstream, so no issues should appear!
 
     ######################################################################
     ## placeholder for ML_LOSDISENTANGLE
@@ -294,7 +321,7 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True)
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
 def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfit,verbose):
 ## compute the statistics of the Stokes I profiles using CDF methods and return results for 1 pixel.
 ## this is run for 1 ion (one set of IQUV). Outside loop controls which ion is fed.
@@ -313,7 +340,7 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
     ##returns an array-like 0 vector of the dimensions of the requested output.
     if np.isnan(sobs_cal).all() or np.count_nonzero(sobs_cal) == 0:
-        nullout = np.zeros((12),dtype=np.float64)
+        nullout = np.zeros((12),dtype=np.float32)
         if verbose >= 2: print("SPECTRO_PROC: FATAL! No observation in voxel!")
         return nullout
     
@@ -326,7 +353,7 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
     instwidth = keyvals[15]
 
     # needed arrays
-    spec_1pix=np.zeros((12),dtype=np.float64)                 ## output array containing the spectroscopic products.
+    spec_1pix=np.zeros((12),dtype=np.float32)                 ## output array containing the spectroscopic products.
     issuemask=np.zeros(4,dtype=np.int32)                      ## temporary placeholder for issuemask
  
     ######################################################################
@@ -355,7 +382,7 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
     ## [0] left stat fwhm, [1] center stat fwhm, [2] right stat fwhm;
     ## [3]left fwhm wave position, [4] fwhm center wave position, [5] fwhm right wave position;
     ## [6],[7],[8] just record the LEFT array indexes for recorded positions at [3], [4], [5];
-    tmp=np.zeros((9),dtype=np.float64)                             ## use the tmp variable to store all the data;
+    tmp=np.zeros((9),dtype=np.float32)                             ## use the tmp variable to store all the data;
     tmp[0:3]= 0.09815, 0.5, 0.90185  ## [0.5-2*np.sqrt(2*np.log(2))*34.13/2./100, 0.5, 0.5+2*np.sqrt(2*np.log(2))*34.13/2./100 ] ## /2/100 comes from half width --> percentage
 
     for j in range (0,3):
@@ -384,7 +411,7 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
             issuemask[1]=1
     else:
     ## not reliable signal == no products! 
-        nullout = np.zeros((12),dtype=np.float64)
+        nullout = np.zeros((12),dtype=np.float32)
         if verbose >= 2: print("SPECTRO_PROC: FATAL! Spectroscopy not resolvable in pixel")
         return nullout            
 
@@ -442,10 +469,10 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
-def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,maxchisq,bcalc,reduced,verbose):
-## main solver for the geometry and magnetic field strength
-## Returns matched database index, double IQUV vector, and chi^2 fitting residual
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,maxchisq,bcalc,reduced,verbose):
+## main solver for the geometry and magnetic field strength version for full stokes vector
+## Returns matched database index, double line IQUV vector, and chi^2 fitting residual
 ## Returns matched observation physics:
 ## Y(radial) position and X(LOS) position;
 ## B_phi and B_theta angles in L.V.S geometry;
@@ -460,74 +487,50 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
     ##returns an array-like 0 vector of the dimensions of the requested output.
     ## the index is set to -1 to warn about the missing entry
     if np.isnan(sobs_1pix).all() or np.count_nonzero(sobs_1pix) == 0:
-        nullout = np.zeros((nsearch,11),dtype=np.float64)
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
         if verbose >= 2: print("WARNING (CLEDB_MATCH): No observation in voxel!")
-        return nullout,np.zeros((nsearch,8),dtype=np.float64)
+        return nullout,np.zeros((nsearch,8),dtype=np.float32)
 
     ##  Read the database in full or reduced mode  
-    if reduced == 1:
+    if reduced == True:
         ## database_sel becomes the reduced database in this case
         ## outredindex is the corresponding index for reduced, this is different from the full index. they need to be matched later.
         ## cledb_getsubset will reshape database_sel to [index,nline*4] shape
         database_sel,outredindex = cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose) 
         if verbose >= 3:print("CLEDB_MATCH: using reduced DB:",database_sel.shape,outredindex.shape)
+        
     else:
-        ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
-        ## In this branch, outredindex is never used, but numba does not properly compile  because the array is returned at the end
-        outredindex = np.empty((nbphi,nsearch))
-        database_sel = np.reshape(database_sel,(ned*ngx*nbphi*nbtheta,8))
+        outredindex = np.empty((nbphi,nsearch),dtype=np.float32)                       ## In this branch, outredindex is never used, but numba does not properly compile because the array is presumably presumably used for matching.
+        database_sel = np.reshape(database_sel,(ned*ngx*nbphi*nbtheta,8))              ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
+        outargs=np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3]) )[:,0]     ## keeps the argument for the reduced entry based on the sign of Stokes V.
+        database_sel = database_sel[np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3])]   ## check and presort the sign along the first line 
 
         if verbose >= 2:
             if (database_sel.shape[0] > 1000000):
                 print("WARNING (CLEDB_MATCH): Full database match will be significantly slower with no proven benefits!")
             if verbose >= 3:print("CLEDB_MATCH: using full DB:",database_sel.shape,outredindex.shape)
 
-    ## Geometric solution is based on a reduced chi^2 measure fit.
-    ## Number of observables for geometry solver
-    ndata = 4*2-1         ## ndata = -2 comes from not using the two V components, as V is independent of the observation geometry.
-    ndof = 4              ## ndof = number of degree of freedom in model: ne, x, bphi, btheta
-    denom = ndata-ndof ## Denominator used below in reduced chi^2
-
     ##normalize the input data to the strongest component
     norm_fact=sobs_1pix[np.where(sobs_1pix == np.max(sobs_1pix))[0][0]]
     sobs_1pix[:]=sobs_1pix[:]/norm_fact
-
+        
+    ## Geometric solution is based on a reduced chi^2 measure fit.
     ## match sobs data with database_sel using the reduced chi^2 method
-    ## We do not use Stokes V to define the geometry. Therefore we use a subset (1,2,4,5,6) 
-    ## of Stokes parameters QU (line 1) and IQU (line 2); total=5
+    ## If Observation has Stokes V, we include it in the difference for the chi^2 measurement
+    diff = np.zeros((database_sel.shape[0],8),dtype=np.float32)
+    diff = (database_sel[:,:8] - sobs_1pix) /rms#/ (rms / norm_fact)
+    ndata = 4*2-1         ## Number of observables
 
-    ## These two below lines are the slowest of this function due to requiring two operations.
-    ## A better numba COMPATIBLE alternative was not found
-    #--------------------------------------------------------
-#     diff = np.zeros((database_sel.shape[0],8),dtype=np.float64)
-#     #diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) / rms[1:3]
-#     #diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) / rms[4:7]
-#     diff = (database_sel[:,:8] - sobs_1pix)# / rms
-#     diff *= diff ## pure python multiplication was found to be faster than numpy or any power function applied.
-#     chisq = np.zeros((diff.shape[0]),dtype=np.float64)
-    #----------------------------------------------------------
-#     diff = np.zeros((database_sel.shape[0],5),dtype=np.float64)
-#     diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) * (database_sel[:,1:3] - sobs_1pix[1:3]) #/ (rms[1:3]*rms[1:3])
-#     diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) * (database_sel[:,4:7] - sobs_1pix[4:7]) #/ (rms[4:7]*rms[4:7])
- 
-#     diff = np.zeros((database_sel.shape[0],6),dtype=np.float64)
-#     diff[:,0:3] = (database_sel[:,0:3] - sobs_1pix[0:3]) * (database_sel[:,0:3] - sobs_1pix[0:3]) #/ (rms[0:3]*rms[0:3])
-#     diff[:,3:] = (database_sel[:,4:7] - sobs_1pix[4:7]) * (database_sel[:,4:7] - sobs_1pix[4:7]) #/ (rms[4:7]*rms[4:7])    
-       
-    
-#     diff = np.zeros((database_sel.shape[0],8),dtype=np.float64)
-#     diff[:,:8] = (database_sel[:,:8] - sobs_1pix) * (database_sel[:,:8] - sobs_1pix) #/ (rms*rms)  
-
-    diff = np.zeros((database_sel.shape[0],7),dtype=np.float64)
-    diff[:,:7] = (database_sel[:,1:8] - sobs_1pix[1:8]) * (database_sel[:,1:8] - sobs_1pix[1:8]) #/ (rms*rms)  
-
-    chisq = np.zeros((diff.shape[0]),dtype=np.float64)
+          
+    denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
+    diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
+    chisq = np.zeros((diff.shape[0]),dtype=np.float32)
     np.round_( np.sum( diff, axis=1)/denom,15,chisq)
     ## Unorthodox definition: chisq needs to be initialized separately, because np.round_ is not supported as a addressable function
     ## This is the only numba compatible implementation possible with current numba implementation.
     ## Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced. 
-    ## if no rms and counts are present, the truncation is beyond a float64 without this decimal fix.
+    ## if no rms and counts are present, the truncation is beyond a float32 without this decimal fix.
 
     ## Need to use a manual numba compatible fast sorting as np.argpartition is not numba implemented!
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
@@ -538,7 +541,7 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
     else:
         if verbose >= 2: print("WARNING (CLEDB_MATCH): High number of solutions requested. Expect slow runtime. Using a full array sort!")
         asrt =np.argsort(chisq)[0:nsearch]
-
+    
     ## the for loop will compute the first nsearch solutions;
     ## OR
     ## solutions that have chi^2 less than maxchisq; 
@@ -554,15 +557,15 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
     ## the index is set to -1 to warn about the missing entry
     ## the index is set to -1 to warn about the missing entry
     if chisq[ixr] > maxchisq:
-        nullout = np.zeros((nsearch,11),dtype=np.float64)
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
         if verbose >= 2: print("WARNING (CLEDB_MATCH): No solutions compatible with the maximum Chi^2 constraint.")
-        return nullout,np.zeros((nsearch,8),dtype=np.float64) 
+        return nullout,np.zeros((nsearch,8),dtype=np.float32) 
 
     ## arrays for storing the results
-    out=np.zeros((nsearch,11),dtype=np.float64)
+    out=np.zeros((nsearch,11),dtype=np.float32)
     out[:,0]=np.full(nsearch,-1)                  ## start all indexes as not found, then update as you go
-    smatch=np.zeros((nsearch,8),dtype=np.float64)
+    smatch=np.zeros((nsearch,8),dtype=np.float32)
 
     ## calculate the physics from the database and fill the output arrays
     for si in range(nsearch):
@@ -571,29 +574,33 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
         ixrchisq = chisq[ixr]             ## the chisq should correspond to the data array(ixr), be it reduced or not
         if ixrchisq <= maxchisq:          ## Are we still computing this si entry?
 
-            # Magnetic field strength from ratio of database with V/I ratios of observation and database
+            # Magnetic field strength from ratio of database with V/I ratios or wave data of observations and database
             if bcalc == 0: ## using first line
                 bfield = sobs_1pix[3]/(database_sel[ixr,3]+1e-8) ## for division operation precision when bfields are close to 0;
             if bcalc == 1: ## using second line
                 bfield = sobs_1pix[7]/(database_sel[ixr,7]+1e-8)
             if bcalc == 2: ## using the average of the two lines
                 bfield = 0.5*(sobs_1pix[3]/(database_sel[ixr,3]+1e-8) + sobs_1pix[7]/(database_sel[ixr,7]+1e-8) )
+            ## No bcalc == 3 in a full stokes inversion 
 
             ## matching profiles to compare with the original observation
-            smatch[si,:] = database_sel[ixr,:]                  ## if database is reduced ixr is the right index; otherwise ixr=ix
+            smatch[si,:] = database_sel[ixr,:]                                              ## if database is reduced ixr is the right index; otherwise ixr=ix
             smatch[si,:] = cledb_quderotate(smatch[si,:],aobs_1pix,norm_fact)
 
             # here if reduced we must get the original value of ix  to write to output (if required!).
-            if reduced == 1:
-                i,j,k,l = cledb_params(ixr,np.array((dbcgrid[0],dbcgrid[1],dbcgrid[2],4*nsearch,0,0,0,0,0,0,0,0,0,0))) ## extremely ugly but fast. 0 are just to reproduce the shape of dbcgrid
-                ix = cledb_invparams(i,j,k,np.int64(outredindex[k,l]),dbcgrid) # = original value ix using the reduced outredindex to replace "l"
+            if reduced == True:
+                i,j,k,l = cledb_params(ixr,np.array((dbcgrid[0],dbcgrid[1],dbcgrid[2],outredindex.shape[1],0,0,0,0,0,0,0,0,0,0),dtype=np.float32))   ## extremely ugly but fast. 0 are just to reproduce the shape of dbcgrid
+                ix = cledb_invparams(i,j,k,np.int64(outredindex[k,l]),dbcgrid)                                                      ## = original value ix using the reduced outredindex to replace "l"
+                ##update the inversion output array
+                out[si,0]=ix
+                out[si,1]=ixrchisq
+                out[si,2:]=cledb_phys(ix,yobs_1pix,aobs_1pix,dbhdr,bfield)
             else:
                 ix = asrt[si]                     ## this is updated if reduced is used
-
-            ##update the inversion output array
-            out[si,0]=ix
-            out[si,1]=ixrchisq
-            out[si,2:]=cledb_phys(ix,yobs_1pix,aobs_1pix,dbhdr,bfield)
+                ##update the inversion output array
+                out[si,0]=outargs[ix]                               ### uses args to produce the correct physics
+                out[si,1]=ixrchisq
+                out[si,2:]=cledb_phys(outargs[ix],yobs_1pix,aobs_1pix,dbhdr,bfield)
 
     ######################################################################
     ## [placeholder for issuemask]
@@ -604,7 +611,149 @@ def cledb_match(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,max
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,maxchisq,bcalc,reduced,verbose):
+## main solver for the geometry and magnetic field strength -- Version with linear polarization+doppler data.
+## Returns matched database index, double line IQU vector, and chi^2 fitting residual
+## Returns matched observation physics:
+## Y(radial) position and X(LOS) position;
+## B_phi and B_theta angles in L.V.S geometry;
+## Bx, By, Bx in LOS geometry (L.V.S. transform to cartesian);
+## B field strength.
+
+    ## unpack dbcgrid parameters from the database accompanying db.hdr file 
+    dbcgrid, ned, ngx, nbphi, nbtheta,  xed, gxmin,gxmax, bphimin, bphimax, \
+        bthetamin, bthetamax, nline, wavel  = dbhdr
+    ####NO OBSERVATION --> NO RUN! ###########    
+    ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
+    ##returns an array-like 0 vector of the dimensions of the requested output.
+    ## the index is set to -1 to warn about the missing entry
+    if np.isnan(sobs_1pix).all() or np.count_nonzero(sobs_1pix) == 0:
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
+        nullout[:,0] = np.full(nsearch,-1)
+        if verbose >= 2: print("WARNING (CLEDB_MATCH): No observation in voxel!")
+        return nullout,np.zeros((nsearch,8),dtype=np.float32)
+
+    ##  Read the database in full or reduced mode  
+    if reduced == True:
+        ## database_sel becomes the reduced database in this case
+        ## outredindex is the corresponding index for reduced, this is different from the full index. they need to be matched later.
+        ## cledb_getsubset will reshape database_sel to [index,nline*4] shape
+        database_sel,outredindex = cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose) 
+        if verbose >= 3:print("CLEDB_MATCH: using reduced DB:",database_sel.shape,outredindex.shape)
+        
+    else:
+        outredindex = np.empty((nbphi,nsearch),dtype=np.float32)                ## In this branch, outredindex is never used, but numba does not properly compile because the array is presumably presumably used for matching.
+        database_sel = np.reshape(database_sel,(ned*ngx*nbphi*nbtheta,8))       ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
+        ## Different from IQUV implementation
+        outargs=np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobsd_1pix[2]+1e-7) )[:,0]   ## keeps the argument for the reduced entry based on the sign from doppler waves.
+        database_sel = database_sel[np.sign(database_sel[:,3]) == np.sign(sobsd_1pix[2]+1e-8)]  ## check the sign of the stokes observation used to compute blos
+
+
+        if verbose >= 2:
+            if (database_sel.shape[0] > 1000000):
+                print("WARNING (CLEDB_MATCH): Full database match will be significantly slower with no proven benefits!")
+            if verbose >= 3:print("CLEDB_MATCH: using full DB:",database_sel.shape,outredindex.shape)
+
+    ##normalize the input data to the strongest component
+    norm_fact=sobs_1pix[np.where(sobs_1pix == np.max(sobs_1pix))[0][0]]
+    sobs_1pix[:]=sobs_1pix[:]/norm_fact
+        
+    ## Geometric solution is based on a reduced chi^2 measure fit.
+    ## match sobs data with database_sel using the reduced chi^2 method                                                
+    ## Different from IQUV implementation
+    ## We do not use Stokes V to define the geometry. Therefore we use a subset (1,2,4,5,6) 
+    ## of Stokes parameters QU (line 1) and IQU (line 2); total=5
+    diff = np.zeros((database_sel.shape[0],6),dtype=np.float32)
+    ## These two below lines are the slowest of this function due to requiring two operations.
+    ## A better numba COMPATIBLE alternative was not found
+    diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) #/ np.abs(rms[1:3])
+    diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) #/ np.abs(rms[4:7])
+    ndata = 4*2-1-2          ## Number of observables for geometry solver ## ndata = -2 comes from not using the two V components (missing in IQUD).    
+
+    denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
+    diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
+    chisq = np.zeros((diff.shape[0]),dtype=np.float32)
+    np.round_( np.sum( diff, axis=1)/denom,15,chisq)
+    ## Unorthodox definition: chisq needs to be initialized separately, because np.round_ is not supported as a addressable function
+    ## This is the only numba compatible implementation possible with current numba implementation.
+    ## Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced. 
+    ## if no rms and counts are present, the truncation is beyond a float32 without this decimal fix.
+
+    ## Need to use a manual numba compatible fast sorting as np.argpartition is not numba implemented!
+    ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
+    ## it just does a standard sorting search, but sorts just the first nsearch elements, making it much faster than np.argsort for few solutions.
+    ## for a lot of solutions, a full sort will perform better
+    if nsearch <= 50:
+        asrt = cledb_partsort(chisq,nsearch) 
+    else:
+        if verbose >= 2: print("WARNING (CLEDB_MATCH): High number of solutions requested. Expect slow runtime. Using a full array sort!")
+        asrt =np.argsort(chisq)[0:nsearch]
+    
+    ## the for loop will compute the first nsearch solutions;
+    ## OR
+    ## solutions that have chi^2 less than maxchisq; 
+    ## whichever comes first!!
+
+    ## initialize return indices and chisq of nearest solutions
+    si = 0
+    ix = asrt[0]
+    ixr = asrt[0]
+    ixrchisq = chisq[ixr]
+
+    ## returns an array-like 0 vector of the dimensions of the requested output.
+    ## the index is set to -1 to warn about the missing entry
+    if chisq[ixr] > maxchisq:
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
+        nullout[:,0] = np.full(nsearch,-1)
+        if verbose >= 2: print("WARNING (CLEDB_MATCH): No solutions compatible with the maximum Chi^2 constraint.")
+        return nullout,np.zeros((nsearch,8),dtype=np.float32) 
+
+    ## arrays for storing the results
+    out=np.zeros((nsearch,11),dtype=np.float32)
+    out[:,0]=np.full(nsearch,-1)                  ## start all indexes as not found, then update as you go
+    smatch=np.zeros((nsearch,8),dtype=np.float32)
+
+    ## calculate the physics from the database and fill the output arrays
+    for si in range(nsearch):
+
+        ixr = asrt[si]                    ## index in (presumably reduced) databasex
+        ixrchisq = chisq[ixr]             ## the chisq should correspond to the data array(ixr), be it reduced or not
+        if ixrchisq <= maxchisq:          ## Are we still computing this si entry?
+
+            # Magnetic field strength from ratio of database with sign from wave tracking
+            if bcalc == 3: ## using the fieldstrength from the wave tracking
+                bfield = sobsd_1pix[0]*np.sign(sobsd_1pix[2]+1e-8)
+
+            ## matching profiles to compare with the original observation
+            smatch[si,:] = database_sel[ixr,:]                                              ## if database is reduced ixr is the right index; otherwise ixr=ix
+            smatch[si,:] = cledb_quderotate(smatch[si,:],aobs_1pix,norm_fact)
+
+            # here if reduced we must get the original value of ix  to write to output (if required!).
+            if reduced == True:
+                i,j,k,l = cledb_params(ixr,np.array((dbcgrid[0],dbcgrid[1],dbcgrid[2],outredindex.shape[1],0,0,0,0,0,0,0,0,0,0),dtype=np.float32))   ## extremely ugly but fast. 0 are just to reproduce the shape of dbcgrid
+                ix = cledb_invparams(i,j,k,np.int64(outredindex[k,l]),dbcgrid)                                                      ## = original value ix using the reduced outredindex to replace "l"
+                ##update the inversion output array
+                out[si,0]=ix
+                out[si,1]=ixrchisq
+                out[si,2:]=cledb_phys(ix,yobs_1pix,aobs_1pix,dbhdr,bfield)
+            else:
+                ix = asrt[si]                     ## this is updated if reduced is used
+                ##update the inversion output array
+                out[si,0]=outargs[ix]                               ### uses outargs to produce the correct physics
+                out[si,1]=ixrchisq
+                out[si,2:]=cledb_phys(outargs[ix],yobs_1pix,aobs_1pix,dbhdr,bfield)
+
+    ######################################################################
+    ## [placeholder for issuemask]
+
+    return out,smatch
+###########################################################################
+###########################################################################
+
+###########################################################################
+###########################################################################
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose): 
 ## returns a subset of the sdb array compatible with the height in yobs
 
@@ -613,8 +762,8 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
     bthetamin, bthetamax, nline, wavel  = dbhdr 
 
     ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
-    datasel = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float64)
-    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float64)
+    datasel = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
+    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float32)
     ##NOTE: the sorting done here only takes into account the linear polarization tangent of the observation. This sorting is not 1:1 equivalent with the main chi^2 sorting.
     ##      To be sure all compatible solutions are captured nsearch*4 solutions must be enforced here, and further refined in cledb_match
 
@@ -659,16 +808,16 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_quderotate(dbarr,ang,nf):
 ## derotates the matched database entry to make it compatible with the observation; 
 ## same Mueller transform as obs_qurotate, but applied with the oposite angle as we just want to compare the DB stokes profiles with the observed ones.
 
     arr=np.copy(dbarr)*nf ## to not alter exterior arrays; use dbarr for updating as to not use modified arr[1] and arr[5] values for arr[2] and arr[6]
-    arr[1]=dbarr[1]*nf*np.cos(-2*ang) - dbarr[2]*nf*np.sin(-2*ang)
-    arr[2]=dbarr[1]*nf*np.sin(-2*ang) + dbarr[2]*nf*np.cos(-2*ang)
-    arr[5]=dbarr[5]*nf*np.cos(-2*ang) - dbarr[6]*nf*np.sin(-2*ang)
-    arr[6]=dbarr[5]*nf*np.sin(-2*ang) + dbarr[6]*nf*np.cos(-2*ang)
+    arr[1]=dbarr[1]*nf*np.cos(-2.*ang) - dbarr[2]*nf*np.sin(-2.*ang)
+    arr[2]=dbarr[1]*nf*np.sin(-2.*ang) + dbarr[2]*nf*np.cos(-2.*ang)
+    arr[5]=dbarr[5]*nf*np.cos(-2.*ang) - dbarr[6]*nf*np.sin(-2.*ang)
+    arr[6]=dbarr[5]*nf*np.sin(-2.*ang) + dbarr[6]*nf*np.cos(-2.*ang)
 
     return arr
 ###########################################################################
@@ -676,7 +825,7 @@ def cledb_quderotate(dbarr,ang,nf):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_partsort(arr,nsearch):
 ## cledb_partsort is a parallel function that produces an output similar to np.argpartition with sort.
 ## Simplest possible substitution partial sort. It just returns the first nsearch sorted indexes similar to np.argpartition.
@@ -702,7 +851,7 @@ def cledb_partsort(arr,nsearch):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_params(index,dbcgrid):
 ## This function is used with the database header to help compute the physics associated to the i, j, k, l entry
 ## for index, get i,j,k,l indices in a database
@@ -728,7 +877,7 @@ def cledb_params(index,dbcgrid):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_invparams(i,j,k,l,dbcgrid):
 ## This function is used with the database header to help compute the physics associated to the index entry
 ## Reverse function of params_par## 
@@ -745,20 +894,20 @@ def cledb_invparams(i,j,k,l,dbcgrid):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_elecdens(r):
 ## computes an electron radial density estimation using the Baumbach formulation
 
     baumbach = 1.e8*(0.036/r**1.5 + 1.55/r**6.)
     hscale=   7.18401074e-02  # 50 Mm
 
-    return np.float64(3.e8*np.exp(- (r-1.)/hscale) + baumbach)
+    return np.float32(3.e8*np.exp(- (r-1.)/hscale) + baumbach)
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 def cledb_phys(index,gy,ga,dbhdr,b):
 ## Returns the lvs and LOS geometry and magnetic field physics
 ## this is kept separate from cledb_physlvs because it computes projections transformations of the database variables recovered via cledb_physlvs
@@ -770,13 +919,13 @@ def cledb_phys(index,gy,ga,dbhdr,b):
     by=np.abs(b)*np.sin(btheta)*np.sin(bphi)
     bz=np.abs(b)*np.cos(btheta)
 
-    return np.array((phs[0],phs[1],phs[2],b,bphi,btheta,bx,by,bz),dtype=np.float64)
+    return np.array((phs[0],phs[1],phs[2],b,bphi,btheta,bx,by,bz),dtype=np.float32)
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 def cledb_physlvs(index,gy,dbhdr):
 ## Helper for phys_par; returns the LVS physics and compatible observation geometry.
 ## this is the primary function that retrieves physics parameters from the database index.
@@ -789,19 +938,19 @@ def cledb_physlvs(index,gy,dbhdr):
     gx = gxmin + j*(gxmax-gxmin)/(ngx-1)
     bphi  = bphimin + k*(bphimax-bphimin)/(nbphi-1)
     btheta  = bthetamin + l*(bthetamax-bthetamin)/(nbtheta-1)
-    ed = np.float64(xed[i]* cledb_elecdens(np.sqrt(gy*gy+gx*gx)))    # log of Ne
+    ed = np.float32(xed[i]* cledb_elecdens(np.sqrt(gy*gy+gx*gx)))    # log of Ne
 
-    return np.array((np.log10(ed),gy,gx,bphi,btheta),dtype=np.float64)
+    return np.array((np.log10(ed),gy,gx,bphi,btheta),dtype=np.float32)
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=params.jitparallel)
+@njit(parallel=params.jitparallel,cache=params.jitcache)
 def obs_cdf(spectr):
 ## computes the cdf distribution for a spectra
 
-    cdf=np.zeros((spectr.shape[0]),dtype=np.float64)
+    cdf=np.zeros((spectr.shape[0]),dtype=np.float32)
     for i in prange (0,spectr.shape[0]):
         cdf[i]=np.sum(spectr[0:i+1])        ## need to check if should start at 0 or not
     cdf=cdf[:]/cdf[-1]                      ## norm the cdf to simplify interpretation
@@ -811,7 +960,7 @@ def obs_cdf(spectr):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 # ## Simple Gaussian Function for spectra fitting
 def obs_gaussfit(x,ymax,mean,sigma, offset):
 # ## Simple Gaussian Function

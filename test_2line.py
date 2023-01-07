@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Test the two-line CLEDB inversion on synthetic CLE data.
+# # Test the two-line CLEDB inversion on synthetic data.
 
 # In[1]:
 
@@ -13,17 +13,19 @@
 # In[2]:
 
 
-## Needed modules
-import pickle                ## CLE synthetic observation data cube is saved in the pickle format.
-import importlib             ## reloads imports (python default settings will not reload small changes).
-
-from numba.typed import List ## Most numba functions are loaded by the CLEDB modules; non-reflected lists are needed to create a list of 2 bservation arrays
-
 ## Inversion Constants and control parameter imports.
 ## symbolic links pointing to the root directory containing the files are used. Pythondoes not allow relative upstream references anymore
 import constants as consts
-import ctrlparams 
-params=ctrlparams.ctrlparams()    ## just a shorter label
+import ctrlparams
+params=ctrlparams.ctrlparams()    ##Initialize and use a shorter label
+
+## Needed modules
+import pickle                ## CLE synthetic observation data cube is saved in the pickle format.
+import importlib             ## reloads imports (python default settings will not reload small changes).
+import numpy as np           ## Defines variables to store/load headers
+
+from numba.typed import List ## Most numba functions are loaded by the CLEDB modules; non-reflected lists are needed to create a list of 2 observation arrays
+
 
 
 # ### 1. Import the synthetic CLE observation.
@@ -39,10 +41,24 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
     sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
 ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
-sobs1=sobs1[:,:,::-1,:]   
-sobs2=sobs2[:,:,::-1,:]
-sobs3=sobs3[:,:,::-1,:]
 sobsa=sobsa[:,:,::-1,:]
+
+## A fake minimal header for CLE
+## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun. The wavelength raferences (vacuum), ranges and spectral resolutions are unique. See CLE outfiles and grid.dat.
+head_in =  [np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
+                     -0.75, 0.8, 1074.62686-0.0124,\
+                     (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0247,"CLE-SIM"),\
+                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
+            np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
+                     -0.75, 0.8, 1079.78047-0.0124,\
+                     (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0249,"CLE-SIM"),\
+                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume', 'U7')]).view(np.recarray)  ]
+
+# 
 #waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
 #waveB=waveB[::-1]
 
@@ -58,6 +74,8 @@ sobsa=sobsa[:,:,::-1,:]
 #    sobsa,waveA,waveB = pickle.load(f)  
 ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
 # sobsa=sobsa[:,:,::-1,:]
+
+
 # waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
 # waveB=waveB[::-1]
 
@@ -71,6 +89,21 @@ sobsa=sobsa[:,:,::-1,:]
 # with open('obsstokes_avg_muram3.pkl','rb') as f:
 #     sobsa = pickle.load(f) 
 # sobsa=sobsa[0]  
+
+## A fake minimal header for MURAM
+## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun (from muram xvec and yvec arrays). The wavelength raferences (vacuum), ranges and spectral resolutions are unique (muram wvvec1 and wvvce2 arrays).
+# head_in =  [np.array((0, 0, 0,\
+#                      -0.071, 0.989, 1074.257137,\
+#                      0.0001379,  0.0000689, 0.0071641,"MUR-SIM" ),\
+#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
+#             np.array((0, 0, 0,\
+#                     -0.071, 0.989, 1079.420513,\
+#                      0.0001379,  0.0000689, 0.0071985,"MUR-SIM" ),\
+#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray)  ]
 
 ## muram data too big to include as test data!!!!
 
@@ -102,11 +135,12 @@ sobs_in = List()                              ## this is the List object impleme
 # In[8]:
 
 
-#importlib.reload(prepinv)       ## If module is modified, reload the contents
-sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,params)
+importlib.reload(prepinv)       ## If module is modified, reload the contents
+#sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,head_in,params)
+sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,head_in,params)
 
 
-# In[10]:
+# In[9]:
 
 
 ## select and pre-read the database files based on the observation preprocessing
@@ -121,7 +155,7 @@ db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[12]:
+# In[10]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -129,16 +163,16 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 
 # ##### Process the spectroscopy outputs
 
-# In[13]:
+# In[11]:
 
 
-#importlib.reload(procinv)       ## If module is modified, reload the contents 
+importlib.reload(procinv)       ## If module is modified, reload the contents 
 specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params)      ## when storing to disk do an if to reduce dimensions for 1 line cases
 
 
-# #####Process the LOS magnetic fields from the first line
+# ##### Process the LOS magnetic fields from the first line
 
-# In[14]:
+# In[12]:
 
 
 #importlib.reload(procinv)       ## If module is modified, reload the contents 
@@ -147,15 +181,45 @@ blosout=procinv.blos_proc(sobs_tot[:,:,0:4],rms[:,:,0:4],keyvals,consts,params)
 
 # ##### Process the full vector magnetic field inversion products
 
-# In[15]:
+# In[13]:
 
 
-#importlib.reload(procinv)       ## If module is modified, reload the contents
-invout,sfound=procinv.cledb_invproc(sobs_totrot,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.reduced,params.verbose)
+importlib.reload(procinv)       ## If module is modified, reload the contents
+sobs_dopp=np.zeros((600,280,3))
+invout,sfound=procinv.cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.iqud,params.reduced,params.verbose)
 ## WARNING: This step has a significantly long execution time.
 
 
+# In[14]:
+
+
+#invout_iquv=invout
+#smatch_iquv=sfound
+# invout_iqud=invout
+# smatch_iqud=sfound
+invout_iquvrms=invout
+smatch_iquvrms=sfound
+
+
+# In[15]:
+
+
+print(invout_iquvrms[300,100,:,:])   
+
+
+# In[15]:
+
+
+#print(invout_iqud[300,100,:,:])   
+
+
 # ## All should be good if we reached this point; all the outputs should be computed and saved in memory.
+
+# In[17]:
+
+
+#print(invout_iquv[300,100,:,:])   
+
 
 # ## 4. OPTIONAL tidbits
 
@@ -171,7 +235,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 ## interactive plotting; use only on local machines if widget is installed
-#%matplotlib widget       
+##%matplotlib widget       
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):
@@ -190,10 +254,10 @@ def colorbar(mappable,*args,**kwargs):
     return cbar
 
 
+
 # ### 4.a DUMP results (optional)
 
 # In[17]:
-
 
 
 ## Remove old file saves and keep just the last run
@@ -205,11 +269,11 @@ if len(lst) >0:
 ## save the last run 
 datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
 
-if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
-    os.makedirs('./testrun_outputs')
+# if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+#     os.makedirs('./testrun_outputs')
 
-with open(f'./testrun_outputs/outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-    pickle.dump([specout,blosout,invout,sfound], f)
+# with open(f'./testrun_outputs/outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+#     pickle.dump([specout,blosout,invout,sfound], f)
 
 
 # ### 4.b PLOT the outputs (optional)
@@ -403,19 +467,19 @@ plt.savefig(f"./testrun_outputs/specout_1line_line{linen}_{datestamp}.pdf")
 ## plot 1-line BLOS
 
 fig, plots = plt.subplots(nrows=2, ncols=2, figsize=(8,8))
-ab=plots[0,0].imshow(blosout[srx1:srx2,sry1:sry2,0]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=0)
+ab=plots[0,0].imshow(blosout[srx1:srx2,sry1:sry2,0]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=60)
 plots[0,0].set_title('1$^{st}$ degenerate magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 plots[0,0].set_ylabel('Z [R$_\odot$]')
 #plots[0,0].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[0,1].imshow(blosout[srx1:srx2,sry1:sry2,1]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=0)
+ab=plots[0,1].imshow(blosout[srx1:srx2,sry1:sry2,1]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=60)
 plots[0,1].set_title('2$^{nd}$ degenerate magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 #plots[0,1].set_ylabel('Z [R$_\odot$]')
 #plots[0,1].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[1,0].imshow(blosout[srx1:srx2,sry1:sry2,2]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=0)
+ab=plots[1,0].imshow(blosout[srx1:srx2,sry1:sry2,2]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=60)
 plots[1,0].set_title('Classic magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 plots[1,0].set_ylabel('Z [R$_\odot$]')
@@ -434,21 +498,21 @@ if not os.path.exists('./testrun_outputs'):              ## make an output direc
 plt.savefig(f"./testrun_outputs/blosout_1line_{datestamp}.pdf")
 
 
-# In[21]:
+# In[23]:
 
 
 ## Plot magnetic inversion
 
-soln=1    ## selects the colution to plot < nsearch
+soln=0    ## selects the colution to plot < nsearch
 
-fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(10,12))
+fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(16,14))
 
 ab=plots[0,0].imshow(np.log10(invout[srx1:srx2,sry1:sry2,soln,0]),extent=rnge,cmap='Set1')#,vmin=1e6,vmax=11e6)
 plots[0,0].set_title(f'Database entry for sol. {soln}')
 colorbar(ab, title='Log of Index')
 plots[0,0].set_ylabel('Z [R$_\odot$]')
 
-ab=plots[0,1].imshow(invout[srx1:srx2,sry1:sry2,soln,1],extent=rnge,cmap='Reds',vmin=0,vmax=0.2)
+ab=plots[0,1].imshow(invout[srx1:srx2,sry1:sry2,soln,1],extent=rnge,cmap='Reds',vmin=0,vmax=20)
 plots[0,1].set_title('Fit residual')
 colorbar(ab, title='$\chi^2$ metric')
 
@@ -468,7 +532,7 @@ plots[1,2].set_title('LOS position')
 colorbar(ab, title='Distance along X dimension R$_\odot$')
 
 
-ab=plots[2,0].imshow(invout[srx1:srx2,sry1:sry2,soln,5],extent=rnge,cmap='bone',vmin=0,vmax=80)
+ab=plots[2,0].imshow(invout[srx1:srx2,sry1:sry2,soln,5],extent=rnge,cmap='bone',vmin=0,vmax=4000)
 plots[2,0].set_title('LVS field strength')
 colorbar(ab, title='|B| [G]')
 plots[2,0].set_ylabel('Z [R$_\odot$]')
@@ -482,18 +546,18 @@ plots[2,2].set_title('LVS B$_\Theta$')
 colorbar(ab, title='[rad]')
 
 
-ab=plots[3,0].imshow(invout[srx1:srx2,sry1:sry2,soln,8],extent=rnge,cmap='seismic',vmin=-60,vmax=60)
+ab=plots[3,0].imshow(invout[srx1:srx2,sry1:sry2,soln,8],extent=rnge,cmap='seismic',vmin=-600,vmax=600)
 plots[3,0].set_title('LOS cartesian B$_x$')
 colorbar(ab, title='[G]')
 plots[3,0].set_ylabel('Z [R$_\odot$]')
 plots[3,0].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,1].imshow(invout[srx1:srx2,sry1:sry2,soln,9],extent=rnge,cmap='seismic',vmin=-60,vmax=60)
+ab=plots[3,1].imshow(invout[srx1:srx2,sry1:sry2,soln,9],extent=rnge,cmap='seismic',vmin=-600,vmax=600)
 plots[3,1].set_title('LOS cartesian B$_y$')
 colorbar(ab, title='[G]')
 plots[3,1].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',vmin=-1000,vmax=1000)
+ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',vmin=-600,vmax=600)
 plots[3,2].set_title('LOS cartesian B$_z$')
 colorbar(ab, title='[G]')
 plots[3,2].set_xlabel('Y [R$_\odot$]')
@@ -506,22 +570,16 @@ if not os.path.exists('./testrun_outputs'):              ## make an output direc
 plt.savefig(f"./testrun_outputs/invout_2line__sol{soln}_{datestamp}.pdf")
 
 
-# In[23]:
+# In[24]:
 
 
 ##Print inversion solution in a human readable way
 
 np.set_printoptions(linewidth=200,suppress=False)   ## Suppress can be set to true to disable exponential notation.
-xx=310      ## x pixel position
+xx=301      ## x pixel position
 yy=105      ## y pixel positions
 
 
 print("||    DB Index   ||     chi^2    ||  ne density  ||  y (height)  || x (LOS pos.) ||      B       ||    B_theta   ||    B_phi     ||      Bx      ||      By      ||     Bz       ||")
 print(invout[xx,yy,:,:])
-
-
-# In[ ]:
-
-
-
 
