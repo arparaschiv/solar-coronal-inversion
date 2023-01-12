@@ -46,7 +46,7 @@
 ## global variables can't really be used with numba parallel python functions unless you aim to keep everything constant.
 
 ## Functions in the time module are not understood/supported by numba. enabling them forces the compiler to go back to object mode and throw warnings. 
-## Full Parallelization will generally not be possible while time functions are enabled.
+## Full Parallelization will generally not be possible when time functions are enabled via high verbosity.
 
 
 
@@ -103,12 +103,13 @@ def sobs_preprocess(sobs_in,headkeys,params):
         sobs_tot   = np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
         rms        = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1
         background = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1
-        sobs_totrot= np.copy(sobs_tot)
-        aobs       = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
 
     if keyvals[3] == 2:
     ## for two-line inversions we require a rotation of the linear polarization Q and U components
-        sobs_totrot,aobs=obs_qurotate(sobs_tot,yobs,keyvals)        
+        sobs_totrot = np.copy(sobs_tot)
+        aobs        = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
+        
+        sobs_totrot,aobs = obs_qurotate(sobs_tot,yobs,keyvals)        
         
         ## placeholder for [update issuemask]
 
@@ -154,7 +155,7 @@ def sdb_preprocess(yobs,keyvals,params):
     ## Preprocess the string information
     dbnames,dbynumbers,dbsubdirs=sdb_fileingest(params.dbdir,nline,tline,params.verbose)
     if params.verbose >=1:print("CLEDB covers a span of",dbynumbers.shape[0],"heights between",1+np.min(dbynumbers)/1000,"-",1+np.max(dbynumbers)/1000,"Solar radius")
-    
+   
     ######################################################################
     ## Create a file encoding showing which database to read for which voxel
     ## the encoding labels at this stage do not have an order.
@@ -164,10 +165,10 @@ def sdb_preprocess(yobs,keyvals,params):
     for xx in range(nx):
         for yy in prange(ny):                     
             db_enc_flnm[xx,yy]=sdb_findelongation(yobs[xx,yy],dbynumbers)   
-    
+
     db_uniq=np.unique(db_enc_flnm) ## makes a list of unique databases to read; the full list might have repeated entries
     if params.verbose >= 1: print("Load DB datafiles for",db_uniq.shape[0]," heights in memory for",nline,"line(s).\n------------------------------------")
-    
+
     ######################################################################
     ## read the required databases and their header----------
 
@@ -180,28 +181,26 @@ def sdb_preprocess(yobs,keyvals,params):
             database0=[None]*db_uniq.shape[0]
             for ii in prange(db_uniq.shape[0]):
                 database0[ii]=sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose)
-                for ij in range(7,-1,-1):
+                for ij in prange(7,-1,-1):
                     database0[ii][:,:,:,:,ij]=database0[ii][:,:,:,:,ij]/database0[ii][:,:,:,:,0]
-
         else:
             dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
             database0=[None]*db_uniq.shape[0]
             for ii in prange(db_uniq.shape[0]):
                 database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=4) 
-                for ij in range(7,-1,-1):
+                for ij in prange(7,-1,-1):
                     database0[ii][:,:,:,:,ij]=database0[ii][:,:,:,:,ij]/database0[ii][:,:,:,:,0]
-
     elif nline == 1:
         dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
         database0=[None]*db_uniq.shape[0]
         for ii in prange(db_uniq.shape[0]):
             database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=4) 
-            for ij in range(7,-1,-1):
+            for ij in prange(7,-1,-1):
                 database0[ii][:,:,:,:,ij]=database0[ii][:,:,:,:,ij]/database0[ii][:,:,:,:,0]
 
     ## numpy large array implementation does not parallelize properly leading to a 5x increase in runtime per 1024 calculations
     ## reverted to use a list to feed the database set to the calculation
-    
+
     ## Create a db_enc that is corresponding to the location in the outputted database list 
     for kk in prange(db_uniq.shape[0]):
         db_enc[np.where(db_enc_flnm == db_uniq[kk])] = kk
@@ -340,7 +339,7 @@ def sdb_parseheader(dbheaderfile):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=False,forceobj=True,cache=params.jitcache)   # don't try to parallelize things that don't need as the overhead will slow everything down
+@jit(parallel=params.jitparallel,forceobj=True,cache=params.jitcache)   # don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_read(fildb,dbhdr,verbose):
 ## here reading data is done and stored in variable database of size (ncalc,line,4)
 ## due to calling dcompress nad np.fromfile, this is incompatible with numba    
@@ -356,14 +355,29 @@ def sdb_read(fildb,dbhdr,verbose):
 
     if verbose >=1:
         print("INDIVIDUAL DB file location:", fildb)      
-       
+    ##CLE database compresion introduced numerical instabilities at small values. 
+    ## It has been DISABLED in the CLE >=2.0.4 database building and CLEDB commit>=update-iqud
     #db=sdb_dcompress(np.fromfile(fildb, dtype=np.int16),verbose)
     db=np.fromfile(fildb, dtype=np.float32)
     
     if verbose >= 3: print("{:4.6f}".format(time.time()-start),' SECONDS FOR INDIVIDUAL DB READ\n----------')
 
-    #return np.reshape(db,(ned*ngx*nbphi*nbtheta,nline*4))
     return np.reshape(db,(ned,ngx,nbphi,nbtheta,nline*4))
+###########################################################################
+###########################################################################
+
+###########################################################################
+###########################################################################
+@njit(parallel=False,cache=params.jitcache)                              ## don't try to parallelize things that don't need as the overhead will slow everything down
+def sdb_lcgrid(mn,mx,n):
+## grid for ned densities from mn to mx logarithms of density.
+
+    ff=10.** ((mx-mn)/(n-1))
+    xf=np.empty(n,np.float32)
+    xf[0]=10.**mn
+    for k in range(1,n): xf[k]=xf[k-1]*ff
+
+    return xf
 ###########################################################################
 ###########################################################################
 
@@ -372,6 +386,7 @@ def sdb_read(fildb,dbhdr,verbose):
 #@jit(parallel=False,forceobj=True,cache=params.jitcache) # don't try to parallelize things that don't need as the overhead will slow everything down
 ##The del command makes this incompatible with numba. The del command is needed.
 def sdb_dcompress(i,verbose):
+###~~~~~~~~~ DISABLED FOR CLE DATABASES NEWER THAN 2.0.4~~~~~~~~~~~~~~~~~~~~~
 ## helper routine for sdb_read
 ## CLEDB writes compressed databases to save storage space. We need this function to read the data
 ## This is numba incompatible due to the requirement to del negv
@@ -400,22 +415,7 @@ def sdb_dcompress(i,verbose):
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False,cache=params.jitcache)                              ## don't try to parallelize things that don't need as the overhead will slow everything down
-def sdb_lcgrid(mn,mx,n):
-## grid for ned densities from mn to mx logarithms of density.
-
-    ff=10.** ((mx-mn)/(n-1))
-    xf=np.empty(n,np.float32)
-    xf[0]=10.**mn
-    for k in range(1,n): xf[k]=xf[k-1]*ff
-
-    return xf
-###########################################################################
-###########################################################################
-
-###########################################################################
-###########################################################################
-#@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache) ## Numba not compatible with object datatypes
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache) ##Functiona like hasattr are not nopython compatible. Revert to object
 def obs_headstructproc(sobs_in,headkeys,params):
 ## This is the ingestion for a minimal number of needed keywords from the observation headerfile
 ## Most keywords are defined statically as DKIST specs were not available at the time of this update. Dummy headkeys input should be used
@@ -512,7 +512,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
         print("Cryo-NIRSP header not yet implemented")
     else: print("Observation keywords not recognised.")                                       ## only CoMP, MURAM, and CLE examples are currently implemented
 
-## Additional keywords of importance thatm ight or might not be included in observations.
+## Additional keywords of importance thatm might or might not be included in observations.
 ## check for the direction for the reference direction of linear polarization.
 ## angle direction is trigonometric; values are in radians
 ## 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU.
@@ -559,66 +559,81 @@ def obs_calcheight(keyvals):
 ###########################################################################
 @njit(parallel=params.jitparallel,cache=params.jitcache)
 def obs_integrate(sobs_in,keyvals):
-## reads the background and peak emission of lines, subtracts the background and integrates the signal
+## reads the background and peak emission of lines, subtracts the background and integrates the signal.
+## function was slow for big arrays. It has been rewritten for efficiency, but lost a lot in terms of clearness.
+## Extended comments are provided for each step/component
+## versions prior to "update-iqud" commit contain the original implementation.
+
+## Sobs_in is an array of spatial size, wavelength size and 4 components, or a list of two such arrays for two-line obs.
+## The lines are subscribed via ZZ. The last dimension is always 4 corresponding to Stokes IQUV 
+## the output arrays are of last diimension 4 or 8 based on input. These are subscribed via iterating ZZ; 0:4 or 4:8 via (4*zz):(4*(zz+1))
 
 ######################################################################
 ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx,ny,nw = keyvals[0:3]
     nline = keyvals[3]
 
-    sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float32)
-    cdf=np.empty((nx,ny,nw),dtype=np.float32)
-    background=np.zeros((nx,ny,nline*4),dtype=np.float32)    ## array to record the background levels in stokes I,Q,U,V, in that order.
-    mask=np.zeros((4),dtype=np.int32)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
-    rms=np.ones((nx,ny,nline*4),dtype=np.float32)
+    sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float32)       ## output array of integrated profiles
+    background=np.zeros((nx,ny,nline*4),dtype=np.float32)     ## output array to record the background levels in stokes I,Q,U,V, in that order
+    rms=np.ones((nx,ny,nline*4),dtype=np.float32)             ## output array to recordRMS statistics of the profile
+    cdf=np.zeros((nx,ny,nw),dtype=np.float32)                 ## internal array to store CDF profiles
+    #issuemask=np.zeros((4),dtype=np.int32)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
 
 ######################################################################
-##integrate for total profiles.
-    for zz in range(nline):
-        for xx in range(nx):
-            for yy in prange(ny):
-                #start=time.time()
-                if np.count_nonzero(sobs_in[zz][xx,yy,:,0]):
-                #compute the rough cdf distribution of the stokes I component to get a measure of the statistical noise.
-                    cdf[xx,yy,:]=obs_cdf(sobs_in[zz][xx,yy,:,0]) 
-                    ## compute the 5%-95% distributions to measure quiet noise.
-                    l0=np.where(np.abs(cdf[xx,yy,:]-0.01) == np.min(np.abs(cdf[xx,yy,:]-0.01)))[0][ 0]
-                    r0=np.where(np.abs(cdf[xx,yy,:]-0.99) == np.min(np.abs(cdf[xx,yy,:]-0.99)))[0][-1]
-                    #print(xx,yy,cdf.shape,cdf[-1],l0,r0)
-                    #print("{:4.6f}".format(time.time()-start),' SUBSET: SECONDS FOR CDF')
-                    ## remove the background noise from the profile. the 4 positions denote the IQUV measurements, in order.
-                    for i in range(4):
-                        ## remove the background noise from the profile. the 4 positions denote the IQUV measurements, in order.
-                        background[xx,yy,i+(4*zz)]=(sobs_in[zz][xx,yy,0:l0+1,i].mean()+sobs_in[zz][xx,yy,r0:,i].mean())/2.
-                        #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.)
-                        tmp=sobs_in[zz][xx,yy,:,i]-background[xx,yy,i+(4*zz)]
-                        ##now fix the possible negative values resulted from the background averaging in case of stokes I
-                        if i == 0:
-                            locs=np.where(tmp < 0)
-                            tmp[locs]=1e-7
-                            sobs_tot[xx,yy,i+(4*zz)]=np.sum(tmp)
-                        ## in case of stokes V, we integrate the absolute signal while keeping the convention (-1) for -+ ordered lobes an (1) for +- ordered lobes.
-                        elif i == 3:
-                            svmin=np.where(tmp == np.min(tmp) )[0][0]
-                            svmax=np.where(tmp == np.max(tmp) )[0][0]
-                            if svmin < svmax:
-                                sobs_tot[xx,yy,i+(4*zz)]=(-1)*np.sum(np.fabs(tmp))
-                            else:
-                                sobs_tot[xx,yy,i+(4*zz)]=( 1)*np.sum(np.fabs(tmp))
-                        else:
-                            sobs_tot[xx,yy,i+(4*zz)]=np.sum(tmp)
-                        #print("{:4.6f}".format(time.time()-start),' SUBSET: SECONDS FOR INTEGRATE')
+## integrate for total profiles.
+## Weirdly, with few operations per inner loop, pranges at all 3 for levels significantly reduce runtime to less than half!
+    for zz in prange(nline): ## to travel through two lines in needed
+        for xx in  prange(nx): 
+            for yy in prange(ny): 
 
-                        ## Compute the rms for each quantity. Ideally the background should be the same in all 4 measurements corresponding to one line.
-                        ## First, here is variance of each state with detector/physical counts
-                        ## Here is variance varis in ((I+S) - (I-S))/2 = S, in counts
-                        variance = np.abs((background[xx,yy,0] +background[xx,yy,0])/2.)
-                        ## here is the variance in y = S/I:  var(y)/y^2 = var(S)/S^2 + var(I)/I^2
-                        var =  variance/sobs_tot[xx,yy,i+(4*zz)]**2 + variance/sobs_tot[xx,yy,0]**2
-                        var *= (sobs_tot[xx,yy,i+(4*zz)]/sobs_tot[xx,yy,0])**2 ## this is  form of normalization that is not required as the data is not normalized here.
-                        rms[xx,yy,i+(4*zz)]=np.sqrt(var)
-                        #print("{:4.6f}".format(time.time()-start),' SUBSET: SECONDS FOR VARIANCE')
+                if np.count_nonzero(sobs_in[zz][xx,yy,:,0]):  ##enter only for pixels that have counts recorded
+                    #compute the rough cdf distribution of the stokes I component to get a measure of the statistical noise.
+                    cdf[xx,yy,:]=obs_cdf(sobs_in[zz][xx,yy,:,0]) ## keep CDF as a full array to 
+ 
+                    ## compute the 1%-99% distributions to measure the quiet noise.
+                    #l0=np.argwhere(np.abs(cdf[xx,yy,:]-0.01) == np.min(np.abs(cdf[xx,yy,:]-0.01)))[-1][0]
+                    #r0=np.argwhere(np.abs(cdf[xx,yy,:]-0.99) == np.min(np.abs(cdf[xx,yy,:]-0.99)))[-1][0]
+                    #l0=np.argwhere(np.abs(cdf[xx,yy,:]) >= 0.01)[0][0]  ## easier on the function calls than original version above
+                    #r0=np.argwhere(np.abs(cdf[xx,yy,:]) >= 0.99)[0][0]
+                    ## lr0 does a combined left-toright sort to not do repetitive argwhere calls. T
+                    ##he two ends of lr0 give the start and end of above noise signal.
+                    lr0=np.argwhere((np.abs(cdf[xx,yy,:]) >= 0.01) & (np.abs(cdf[xx,yy,:]) <=0.99))
+                        
+                    ## remove the background noise from the profile. 
+                    ## Take all the 4 positions denoting the IQUV measurements in one call.
+                    ## sobs_in subscripted by zz,xx,yy, thus the sum is over columns(axis=0) over the wavelength range.
+                    ## the sums give 4 values (for each iquv spectral signal) of noise before and after the line emission in the wavelength range. 
+                    ## Finaly it divides by the amount of points summed over for each components.
+                    background[xx,yy,(4*zz):(4*(zz+1))]=(np.sum(sobs_in[zz][xx,yy,0:lr0[0][0]+1,:],axis=0)+np.sum(sobs_in[zz][xx,yy,lr0[-1][0]:,:],axis=0))/(nw-lr0[-1][0]+lr0[0][0]+1)                  
+                    ## Temporary array to store the background subtracted spectra. All four component done in one call.
+                    tmp2=sobs_in[zz][xx,yy,:,:]-background[xx,yy,(4*zz):(4*(zz+1))]
+                    
+                    ##Now integrate/sum the four profiles
+                    ## tmp2 [:,0] --> Stokes I 
+                    sobs_tot[xx,yy,(4*zz)]=tmp2[tmp2[:,0]>0,0].sum()  ## background subtraction can introduce negative values unphysical for I; Sum only positive counts;
 
+                    ## tmp2 [:,3] --> Stokes V
+                    svmin=np.argwhere(tmp2[:,3] == np.min(tmp2[:,3]) )[-1][0]     ## position of minimum/negative Stokes V lobe
+                    svmax=np.argwhere(tmp2[:,3] == np.max(tmp2[:,3]) )[-1][0]     ## position of maximum/positive Stokes V lobe
+                    sobs_tot[xx,yy,(4*zz)+3]=(np.sign(svmin-svmax))*np.sum(np.fabs(tmp2[:,3]))   ## Sum the absolute of Stokes V signal and assign sign based on svmin and svmax lobe positions
+
+                    ## tmp2 [:,1:3] --> Stokes Q and U
+                    sobs_tot[xx,yy,(4*zz)+1:(4*zz)+3]=np.sum(tmp2[:,1:3],axis=0) ## sum both components in one call. These can take negative values, no need for precautions like for Stokes I.
+                    
+                    ## Compute the rms for each quantity. Ideally the background should be the same in all 4 measurements corresponding to one line.
+                    ## First, here is variance of each state with detector/physical counts
+                    ## Here is variance varis in ((I+S) - (I-S))/2 = S, in counts
+                    #variance = np.abs((background[xx,yy,0] +background[xx,yy,0])/2.) ##
+                    ## here is the variance in y = S/I:  var(y)/y^2 = var(S)/S^2 + var(I)/I^2
+                    #var =  variance/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + variance/sobs_tot[xx,yy,0]**2
+                    #var *= (sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2 ## this is  form of normalization that is not required as the data is not normalized here.
+                    #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt(var)
+                    #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.) ## PAR's standard RMS estimation
+                    rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2)) ## PAR's one line rms calculation
+                    
+                # else:
+                #     issuemask.....
+                    
     return sobs_tot,rms,background
 ###########################################################################
 ###########################################################################

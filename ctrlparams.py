@@ -26,7 +26,7 @@ class ctrlparams:
     
         ##numba jit flags
         self.jitparallel  = True                                                                          ## Boolean; Enable or disable numba jit parralel interpreter
-        self.jitcache     = False                                                                         ## Boolean; Jit caching for slightly faster repeated execution. Enable only after no changes to @jit functions are required. Otrherwise kernel restarts are needed to apply such changes. 
+        self.jitcache     = False                                                                         ## Boolean; Jit caching for slightly faster repeated execution. Enable only after no changes to @jit functions are required. Otrherwise kernel restarts are needed to clear caches. 
         self.jitdisable   = False                                                                         ## Boolean; enable or disable numba jit entirely; Requires python kernel restart!
         
         import yaml                                                                                       ## Workaround to save the jitdisable keyword to a separate config file.

@@ -57,6 +57,7 @@ import numpy as np
 from numba import jit,njit,prange
 import scipy.stats as sps
 from scipy.optimize import curve_fit
+import time
 import constants
 import ctrlparams 
 params=ctrlparams.ctrlparams()    ## just a shorter label
@@ -155,45 +156,50 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyv
 @jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
 def blos_proc(sobs_tot,rms,keyvals,consts,params):
 ## Uses the "improved" magnetograph formulation in eq 40 Casini &Judge 99, eq 14 of Plowman 2014, and eq 17 and 18 of Dima & Schad 2020
-## Follows the discussion in the three papers and adopts different implementations based on the line combination used
+## Follows the discussion in the three papers and adopts different analythical implementations based on the line combination used
 ## As shown in the papers the magnetograph formulation is not precise in terms of recovering the LOS magnetic field.
-## differences of the order of $\pm$ 2 times actual values  based on the atomic alignment, F factor, and LOS angle $\theta$ can manifest.
+## differences of the order of $\pm$ 2 times actual values  based on the atomic alignment, F factor, and LOS angle $\theta$ can manifest in that product.
 
-    if params.verbose >=1: print('--------------------------------------\n--BLOS_PROC: LOS B ESTIMATION START--\n--------------------------------------')
+## script will produce one set of 2 times degenerate magnetograph along with a classic magnetograph and a field azimuth for each line/observation that is fed via sobs_tot and keyvals.
+
+    if params.verbose >=1: print('--------------------------------------\n---BLOS_PROC: LOS B ESTIMATION START--\n--------------------------------------')
     ## unpack needed values from keywords (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx,ny = keyvals[0:2]
-    tline = keyvals[4]
-    ## initialize constants
-    const=consts.Constants(tline[0])                       ## for each line load the correct constants
+    tline = keyvals[4] 
     ## needed array initialization
-    blosout = np.zeros((nx,ny,4),dtype=np.longdouble)
+    blosout = np.zeros((nx,ny,4,len(tline)),dtype=np.float32)
     
-    ## the list of the F factors from Dima & Schad 2020 for lines of interest are saved in the constants class; 
-    ## both Fe XIII and SI IX have F == 0.
-    if params.verbose >=1:
-        if tline[0] == "si-x_1430":
-            print('BLOS_PROC: Constrained magnetograph solutions will have an additional correction applied. ')
+    for zz in range(0,len(tline)):
+        ## initialize constants
+        const=consts.Constants(tline[zz])                       ## for each line load the correct constants
 
-    ## two degenerate solutions are produced for blos; Indexes 0 and 1
-    ## the accurate solution matches sign with \sigma ^2_0 atomic alignment.
-    ## the "standard" magnetograph formulation (index 2) represents, in practice, the average accuracy between the two degenerate solutions.
-    ## Note: this solution is inaccurate in almost all cases; with the exception of fields tangential to the radial direction.
+        ## the list of the F factors from Dima & Schad 2020 for lines of interest are saved in the constants class; 
+        ## both Fe XIII and SI IX have F == 0.
+        if params.verbose >=2 and tline[zz] == "si-x_1430":
+            print('BLOS_PROC: Constrained magnetograph solutions will have an additional correction applied.')
 
-    for xx in range(nx):
-        for yy in prange(ny):
+        ## two degenerate solutions are produced for blos; Indexes 0 and 1
+        ## the accurate solution matches sign with \sigma ^2_0 atomic alignment.
+        ## the "standard" magnetograph formulation (index 2) represents, in practice, the average accuracy between the two degenerate solutions.
+        ## Note: this solution is inaccurate in almost all cases; with the exception of fields tangential to the radial direction.
 
-            ## compute the azimuthal component (phi) of the magnetic field from linear polarization
-            blosout[xx,yy,3] = - 0.5 * np.arctan2(sobs_tot[xx,yy,2],sobs_tot[xx,yy,1])
-
-            ## linear degree of polarization total
-            lpol = np.sqrt(sobs_tot[xx,yy,1]**2 + sobs_tot[xx,yy,2]**2)
-
-            ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
-            ## sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 to minimize deviation from "true" solution.
-            blosout[xx,yy,0]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (const.g_eff*(sobs_tot[xx,yy,0] - lpol) - 0.66*const.F_factor*(lpol/1.)) )
-            blosout[xx,yy,1]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (const.g_eff*(sobs_tot[xx,yy,0] + lpol) + 0.66*const.F_factor*(lpol/1.)) )
-            ## standard magnetograph formulation
-            blosout[xx,yy,2]=(const.planckconst/const.bohrmagneton) * ( -sobs_tot[xx,yy,3] / (const.g_eff*sobs_tot[xx,yy,0]) )
+        for xx in range(nx):
+            for yy in prange(ny):
+                ## linear degree of polarization total
+                lpol = np.sqrt(sobs_tot[xx,yy,1+(4*zz)]**2 + sobs_tot[xx,yy,2+(4*zz)]**2)
+                ## compute the azimuthal component (phi) of the magnetic field from linear polarization
+                blosout[xx,yy,3,zz] = - 0.5 * np.arctan2(sobs_tot[xx,yy,2+(4*zz)],sobs_tot[xx,yy,1+(4*zz)])
+                if (sobs_tot[xx,yy,0+(4*zz)] != 0) and (np.isnan(sobs_tot[xx,yy,4*zz:4*(zz+1)]).any() == False):          ### captures for nans or division by 0
+                    ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
+                    ## sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 to minimize deviation from "true" solution.
+                    ## 1e9 converts SI constants to nm to divide by the reference wavelength also in nm
+                    #blosout[xx,yy,0,zz]=(1/(4.67e-12*(const.line_ref**2)) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] - lpol) - 0.66*const.F_factor*(lpol/1.)) )
+                    blosout[xx,yy,0,zz]=(const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] - lpol) - 0.66*const.F_factor*(lpol/1.)) )
+                    blosout[xx,yy,1,zz]=(const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] + lpol) + 0.66*const.F_factor*(lpol/1.)) )
+                    ## standard magnetograph formulation
+                    blosout[xx,yy,2,zz]=(const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*sobs_tot[xx,yy,0+(4*zz)]) )
+                #else:
+                #    blosout[xx,yy,0:3,zz]==np.nan  ### else branch not needed. blosout cast to empty is already nan in pixels where field can't be computed
 
     ######################################################################
     ## [placeholder for issuemask]
@@ -210,7 +216,11 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 ## calculates 12 spectroscopic products
 ## Background is used both as an output product and as a preprocess parameter. More details in cdf_statistics comments.
 
-    if params.verbose >=1: print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY START\n--------------------------------------')
+    if params.verbose >=1: 
+        print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY START\n--------------------------------------')
+        if params.verbose >= 3:start0=time.time()  
+    
+    start0=time.time()  
     ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx,ny,nw = keyvals[0:3]
     nline = keyvals[3]
@@ -226,7 +236,7 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     ##NOTE: sobs_cal output should be in the shape of an array; e.g. [x,y,w,4*nline]
     
     ## create a wavelength array based on keywords for each line to be processed
-    for i in range(nline):
+    for i in prange(nline):
         if crpix3[i] == 0:                                          ## simple; just cycle and update
             for j in range(nw):
                 wlarr[j,i]=crval3[i]+(j*cdelt3[i])
@@ -262,18 +272,18 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
         else:
             sobs_cal=sobs_in[0]
             
-
     ######################################################################
     ## process the spectroscopy                     
     if params.verbose >= 1: 
         if nline == 2:                  
-            for xx in range(nx):
+            for xx in range(600,nx):
                 print("SPECTRO_PROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
-                for yy in prange(ny):
+                for yy in prange(500,ny):
                     specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
                         background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
                     specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
-                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
+                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose) 
+                print("{:4.6f}".format(time.time()-start0),' oneiter')
         else:
             for xx in range(nx):
                 print("SPECTRO_PROC: Executing ext. loop:",xx," of ",nx," (",ny," calculations / loop)")
@@ -308,7 +318,9 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
     ## NOTE: SPECOUT will always have two dimensions at exit to keep data dimensionality consistent. 
     ##      In the case of just one line observations, the second dimension is not filled in.
     ##      The array can be reshaped outside of the numba enabled functions to drop the extra dimension if needed.
-    if params.verbose >=1: print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY FINALIZED\n--------------------------------------')
+    if params.verbose >=1: 
+        if params.verbose >= 3: print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL SPECTROSCOPY PROCESSING')
+        print('--------------------------------------\nSPECTRO_PROC: SPECTROSCOPY FINALIZED\n--------------------------------------')
     return specout
 ###########################################################################
 ###########################################################################
@@ -335,7 +347,7 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
 ## Non-thermal component of the line width;
 ## fraction of linear polarization;
 ## fraction of total polarization;
-
+    start0=time.time()  
     #### NO OBSERVATION --> NO RUN! ###########    
     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
     ##returns an array-like 0 vector of the dimensions of the requested output.
@@ -363,20 +375,24 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
     ## background subtraction with Background and raw sobs_in arrays are processed here as part of cdf_statistics. 
     ## sobs_tot has background subtracted with the preprocess module via obs_integrate. BUT it is also normalized for the invproc and blosproc modules. So not optimal here.
     ## This is done this way because background is also desired as an output product, 
-    for i in range(4):                                        ## range(4); only 1 line is fed at a time to cdf_statistics
-        sobs_cal[:,i]=sobs_cal[:,i]-background[i]
-
+    
+    #print(sobs_cal[:,0],background[0])
+    #print(sobs_cal[:,0]-background[0])
+    #for i in range(4):                                        ## range(4); only 1 line is fed at a time to cdf_statistics
+    #    sobs_cal[:,i]=sobs_cal[:,i]-background[i]
+    sobs_cal-=background
+    print("{:4.6f}".format(time.time()-start0),' bkg')
     ## now recompute the cdf for the noise-reduced data
     cdf=obs_cdf(sobs_cal[:,0]) 
 
     ## check if there is reliable signal to fit and analyze
     ##(1) we can fit a line to the cdf distribution and in case it does fit well, there is no (reliable) stokes profile to recover.
     ##the 1.4e-5 rest in correlation corresponds to a gaussion with a peak in intensity of <5% compared to the average signal across the spectral range.
-
+    print("{:4.6f}".format(time.time()-start0),' cfd')
     if 1.- sps.pearsonr(wlarr_1pix,cdf)[0] < 1.4e-5:
         if verbose >=3: print("SPECTRO_PROC: WARNING! No reliable Stokes I signal in pixel...")
         issuemask[0]=1
-
+    print("{:4.6f}".format(time.time()-start0),' ps1')
     ## compute the center of the distribution, the line width, and the doppler shifts in wavelength and velocity.
     ## a normal distribution 0.5 is the average, sigma=34.13; FWHM=2*sqrt(2*alog(2))*sigma,
     ## [0] left stat fwhm, [1] center stat fwhm, [2] right stat fwhm;
@@ -403,7 +419,7 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
                     issuemask[3]+=1
     ## fudge for not doing repeated type conversions
     tmp6,tmp7,tmp8=np.int32(tmp[6:9])
-
+    print("{:4.6f}".format(time.time()-start0),' for')
     ## check if there is reliable signal to fit and analyze  (2) if the distribution is skewed, the inner part of it should not fit a line.
     if tmp8 - tmp6 >= 2: 
         if 1. - sps.pearsonr(wlarr_1pix[tmp6:tmp8+1],cdf[tmp6:tmp8+1])[0] > 5e-3:
@@ -414,42 +430,44 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
         nullout = np.zeros((12),dtype=np.float32)
         if verbose >= 2: print("SPECTRO_PROC: FATAL! Spectroscopy not resolvable in pixel")
         return nullout            
-
+    print("{:4.6f}".format(time.time()-start0),' ps2')
     ######################################################################            
     ## The spectroscopic products for each line are computed here.   
     
     ## core wavelength and width
-    if gaussfit == 1:                                                                  ## GAUSS version; still need cdf for extra calculations
-        gfit,gcov = curve_fit(obs_gaussfit,wlarr_1pix,sobs_cal[:,0],p0=[np.max(sobs_cal[:,0]),const.line_ref,0.2/2.3548,0.0],maxfev=5000)
-        spec_1pix[0]=gfit[1]                                                           ## line core wavelength
-        spec_1pix[8]=2.3548*gfit[2]                                                    ## Total line width [nm]; 2*np.sqrt(2*np.log(2))==2.3548
-    
-    if gaussfit == 0:                                                                  ## CDF only version
-        spec_1pix[0]=tmp[4]                                                            ## line core wavelength
-        spec_1pix[8]=tmp[5]-tmp[3]                                                     ## Total line width [nm]
-    
     if gaussfit == 2:                                                                  ## CDF + GAUSS version;
         gfit,gcov = curve_fit(obs_gaussfit,wlarr_1pix,sobs_cal[:,0],p0=[np.max(sobs_cal[:,0]),tmp[4],(tmp[5]-tmp[3])/2.3548,0.0],maxfev=5000)
         spec_1pix[0]=gfit[1]                                                           ## line core wavelength
         spec_1pix[8]=2.3548*gfit[2]                                                    ## Total line width [nm]; 2*np.sqrt(2*np.log(2))==2.3548
-
+    elif gaussfit == 1:                                                                ## GAUSS version; still need cdf for extra calculations
+        gfit,gcov = curve_fit(obs_gaussfit,wlarr_1pix,sobs_cal[:,0],p0=[np.max(sobs_cal[:,0]),const.line_ref,0.2/2.3548,0.0],maxfev=5000)
+        spec_1pix[0]=gfit[1]                                                           ## line core wavelength
+        spec_1pix[8]=2.3548*gfit[2]                                                    ## Total line width [nm]; 2*np.sqrt(2*np.log(2))==2.3548
+    elif gaussfit == 0:                                                                ## CDF only version
+        spec_1pix[0]=tmp[4]                                                            ## line core wavelength
+        spec_1pix[8]=tmp[5]-tmp[3]                                                     ## Total line width [nm]
+    
+    print("{:4.6f}".format(time.time()-start0),' gf')
 
     ## Doppler shifts
     spec_1pix[1]=spec_1pix[0]-const.line_ref                                           ## line  shift from reference position [nm]
     spec_1pix[2]=spec_1pix[1]*const.l_speed*1e-3/const.line_ref                        ## shift converted to velocities; km*s^-1
     
     ## record the intensity of the central wavelength for IQU profiles. 
-    spec_1pix[3]=(sobs_cal[tmp7,0]+sobs_cal[tmp7+1,0])/2.                              ## Stokes I core intensity
-    spec_1pix[4]=(sobs_cal[tmp7,1]+sobs_cal[tmp7+1,1])/2.                              ## Stokes Q core intensity
-    spec_1pix[5]=(sobs_cal[tmp7,2]+sobs_cal[tmp7+1,2])/2.                              ## Stokes U core intensity
+    #spec_1pix[3]=(sobs_cal[tmp7,0]+sobs_cal[tmp7+1,0])/2.                              ## Stokes I core intensity
+    #spec_1pix[4]=(sobs_cal[tmp7,1]+sobs_cal[tmp7+1,1])/2.                              ## Stokes Q core intensity
+    #spec_1pix[5]=(sobs_cal[tmp7,2]+sobs_cal[tmp7+1,2])/2.                              ## Stokes U core intensity
+    spec_1pix[3:6]=(sobs_cal[tmp7,0:3]+sobs_cal[tmp7+1,0:3])/2.                         ## Stokes IQU core intensity
+    #spec_1pix[3:6]=np.mean(sobs_cal[tmp7:tmp7+1,0:3])                                   ## Stokes IQU core intensity
+    print("{:4.6f}".format(time.time()-start0),' iqu')
     ## Stokes V Intensity; It will count the min/max counts of the first (left) lobe and will not match wavelength position of the other 3 quantities.
-    a=np.where(sobs_cal[:,3] == np.min(sobs_cal[:,3]))[0][0]                           ## check where the negative V lobe is located with respect to the line core position.
+    a=np.argwhere(sobs_cal[:,3] == np.min(sobs_cal[:,3]))[0][0]                           ## check where the negative V lobe is located with respect to the line core position.
     if a <= tmp7:
         spec_1pix[6]=(sobs_cal[a,3])                                                   ## is the negative V lobe is to the left? then Stokes V has a -+ shape
     else:
-        b=np.where(sobs_cal[:,3] == np.max(sobs_cal[:,3]))[0][0]
+        b=np.argwhere(sobs_cal[:,3] == np.max(sobs_cal[:,3]))[0][0]
         spec_1pix[6]=(sobs_cal[b,3])                                                   ## Otherwise, Stokes V has a +- shape; 
-    
+    print("{:4.6f}".format(time.time()-start0),' v')
     ##background counts
     spec_1pix[7]=background[0]                                                         ## background intensity of stokes I. background in all other Stokes components is similar;
     
@@ -462,14 +480,14 @@ def cdf_statistics(sobs_cal,sobs_tot,background,wlarr_1pix,keyvals,const,gaussfi
     spec_1pix[10] =np.sqrt(sobs_tot[1]**2+sobs_tot[2]**2)/sobs_tot[0]                  ## fraction of linear polarization with respect to intensity
     spec_1pix[11] =np.sqrt(sobs_tot[1]**2+sobs_tot[2]**2\
         +sobs_tot[3]**2)/sobs_tot[0]                                                   ## fraction of total polarization with respect to intensity
-
+    print("{:4.6f}".format(time.time()-start0),' fin')
     return spec_1pix
 ###########################################################################
 ###########################################################################
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=params.jitparallel,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,maxchisq,bcalc,reduced,verbose):
 ## main solver for the geometry and magnetic field strength version for full stokes vector
 ## Returns matched database index, double line IQUV vector, and chi^2 fitting residual
@@ -512,7 +530,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
             if verbose >= 3:print("CLEDB_MATCH: using full DB:",database_sel.shape,outredindex.shape)
 
     ##normalize the input data to the strongest component
-    norm_fact=sobs_1pix[np.where(sobs_1pix == np.max(sobs_1pix))[0][0]]
+    norm_fact=sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0][0]]
     sobs_1pix[:]=sobs_1pix[:]/norm_fact
         
     ## Geometric solution is based on a reduced chi^2 measure fit.
@@ -576,7 +594,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
 
             # Magnetic field strength from ratio of database with V/I ratios or wave data of observations and database
             if bcalc == 0: ## using first line
-                bfield = sobs_1pix[3]/(database_sel[ixr,3]+1e-8) ## for division operation precision when bfields are close to 0;
+                bfield = sobs_1pix[3]/(database_sel[ixr,3]+1e-8) ## for division operation precision when database bfields are close to 0;
             if bcalc == 1: ## using second line
                 bfield = sobs_1pix[7]/(database_sel[ixr,7]+1e-8)
             if bcalc == 2: ## using the average of the two lines
@@ -611,7 +629,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
 
 ###########################################################################
 ###########################################################################
-@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+@njit(parallel=params.jitparallel,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch,maxchisq,bcalc,reduced,verbose):
 ## main solver for the geometry and magnetic field strength -- Version with linear polarization+doppler data.
 ## Returns matched database index, double line IQU vector, and chi^2 fitting residual
@@ -656,7 +674,7 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,
             if verbose >= 3:print("CLEDB_MATCH: using full DB:",database_sel.shape,outredindex.shape)
 
     ##normalize the input data to the strongest component
-    norm_fact=sobs_1pix[np.where(sobs_1pix == np.max(sobs_1pix))[0][0]]
+    norm_fact=sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0][0]]
     sobs_1pix[:]=sobs_1pix[:]/norm_fact
         
     ## Geometric solution is based on a reduced chi^2 measure fit.
@@ -667,8 +685,8 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,
     diff = np.zeros((database_sel.shape[0],6),dtype=np.float32)
     ## These two below lines are the slowest of this function due to requiring two operations.
     ## A better numba COMPATIBLE alternative was not found
-    diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) #/ np.abs(rms[1:3])
-    diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) #/ np.abs(rms[4:7])
+    diff[:,0:2] = (database_sel[:,1:3] - sobs_1pix[1:3]) /rms[1:3]#/ np.abs(rms[1:3])
+    diff[:,2:5] = (database_sel[:,4:7] - sobs_1pix[4:7]) /rms[4:7]#/ np.abs(rms[4:7])
     ndata = 4*2-1-2          ## Number of observables for geometry solver ## ndata = -2 comes from not using the two V components (missing in IQUD).    
 
     denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
@@ -835,7 +853,7 @@ def cledb_partsort(arr,nsearch):
     arr_temp=np.copy(arr) ## don't change the input array inside; numba will complain of changing an upstream array that you don't return back.
     for i in range (nsearch):
         a=np.argmin(arr_temp[i:])
-        b=np.where(arr == arr_temp[i:][a])[0]
+        b=np.argwhere(arr == arr_temp[i:][a])[0]
         d=0
         for j in range(b.shape[0]):
             if b[j] in asrt[:i]:
