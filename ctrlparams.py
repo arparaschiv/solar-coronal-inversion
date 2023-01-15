@@ -17,8 +17,8 @@ class ctrlparams:
         self.integrated = False                                                                           ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO        
         
         ## Used in CLEDB_PROC
-        self.nsearch      = 8                                                                             ## number of closest solutions to compute
-        self.maxchisq     = 100                                                                           ## Stop computing solutions above this chi^2 threshold
+        self.nsearch      = 4                                                                             ## number of closest solutions to compute
+        self.maxchisq     = 100000000                                                                     ## Stop computing solutions above this chi^2 threshold
         self.gaussfit     = 2                                                                             ## Gaussian parametric fitting to use instead of the standard CDF fitting
         self.bcalc        = 0                                                                             ## control parameter for computing the B magnitude for two line observations.
         self.reduced      = True                                                                          ## Boolean; parameter for reduced database search 

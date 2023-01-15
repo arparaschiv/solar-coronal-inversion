@@ -575,18 +575,18 @@ def obs_integrate(sobs_in,keyvals):
 
     sobs_tot=np.zeros((nx,ny,nline*4),dtype=np.float32)       ## output array of integrated profiles
     background=np.zeros((nx,ny,nline*4),dtype=np.float32)     ## output array to record the background levels in stokes I,Q,U,V, in that order
-    rms=np.ones((nx,ny,nline*4),dtype=np.float32)             ## output array to recordRMS statistics of the profile
+    rms=np.ones((nx,ny,nline*4),dtype=np.float32)             ## output array to record RMS statistics of the profile
     cdf=np.zeros((nx,ny,nw),dtype=np.float32)                 ## internal array to store CDF profiles
     #issuemask=np.zeros((4),dtype=np.int32)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
 
 ######################################################################
 ## integrate for total profiles.
 ## Weirdly, with few operations per inner loop, pranges at all 3 for levels significantly reduce runtime to less than half!
-    for zz in prange(nline): ## to travel through two lines in needed
-        for xx in  prange(nx): 
-            for yy in prange(ny): 
 
-                if np.count_nonzero(sobs_in[zz][xx,yy,:,0]):  ##enter only for pixels that have counts recorded
+    for zz in prange(nline): ## to travel through the two lines
+        for xx in prange(nx): 
+            for yy in prange(ny): 
+                if ((np.count_nonzero(sobs_in[zz][xx,yy,:,0])) and (not(np.isnan(sobs_in[zz][xx,yy,:,:]).any()))):  ##enter only for pixels that have counts recorded
                     #compute the rough cdf distribution of the stokes I component to get a measure of the statistical noise.
                     cdf[xx,yy,:]=obs_cdf(sobs_in[zz][xx,yy,:,0]) ## keep CDF as a full array to 
  
@@ -597,14 +597,14 @@ def obs_integrate(sobs_in,keyvals):
                     #r0=np.argwhere(np.abs(cdf[xx,yy,:]) >= 0.99)[0][0]
                     ## lr0 does a combined left-toright sort to not do repetitive argwhere calls. T
                     ##he two ends of lr0 give the start and end of above noise signal.
-                    lr0=np.argwhere((np.abs(cdf[xx,yy,:]) >= 0.01) & (np.abs(cdf[xx,yy,:]) <=0.99))
+                    lr0=np.argwhere((np.abs(cdf[xx,yy,:]) > 0.01) & (np.abs(cdf[xx,yy,:]) <=0.99))
                         
                     ## remove the background noise from the profile. 
                     ## Take all the 4 positions denoting the IQUV measurements in one call.
                     ## sobs_in subscripted by zz,xx,yy, thus the sum is over columns(axis=0) over the wavelength range.
                     ## the sums give 4 values (for each iquv spectral signal) of noise before and after the line emission in the wavelength range. 
                     ## Finaly it divides by the amount of points summed over for each components.
-                    background[xx,yy,(4*zz):(4*(zz+1))]=(np.sum(sobs_in[zz][xx,yy,0:lr0[0][0]+1,:],axis=0)+np.sum(sobs_in[zz][xx,yy,lr0[-1][0]:,:],axis=0))/(nw-lr0[-1][0]+lr0[0][0]+1)                  
+                    background[xx,yy,(4*zz):(4*(zz+1))]=(np.sum(sobs_in[zz][xx,yy,0:lr0[0,0]+1,:],axis=0)+np.sum(sobs_in[zz][xx,yy,lr0[-1,0]:,:],axis=0))/(nw-lr0[-1,0]+lr0[0,0]+1)                  
                     ## Temporary array to store the background subtracted spectra. All four component done in one call.
                     tmp2=sobs_in[zz][xx,yy,:,:]-background[xx,yy,(4*zz):(4*(zz+1))]
                     
@@ -613,14 +613,15 @@ def obs_integrate(sobs_in,keyvals):
                     sobs_tot[xx,yy,(4*zz)]=tmp2[tmp2[:,0]>0,0].sum()  ## background subtraction can introduce negative values unphysical for I; Sum only positive counts;
 
                     ## tmp2 [:,3] --> Stokes V
-                    svmin=np.argwhere(tmp2[:,3] == np.min(tmp2[:,3]) )[-1][0]     ## position of minimum/negative Stokes V lobe
-                    svmax=np.argwhere(tmp2[:,3] == np.max(tmp2[:,3]) )[-1][0]     ## position of maximum/positive Stokes V lobe
+                    svmin=np.argwhere(tmp2[:,3] == np.min(tmp2[:,3]) )[-1,0]     ## position of minimum/negative Stokes V lobe
+                    svmax=np.argwhere(tmp2[:,3] == np.max(tmp2[:,3]) )[-1,0]     ## position of maximum/positive Stokes V lobe
                     sobs_tot[xx,yy,(4*zz)+3]=(np.sign(svmin-svmax))*np.sum(np.fabs(tmp2[:,3]))   ## Sum the absolute of Stokes V signal and assign sign based on svmin and svmax lobe positions
 
                     ## tmp2 [:,1:3] --> Stokes Q and U
                     sobs_tot[xx,yy,(4*zz)+1:(4*zz)+3]=np.sum(tmp2[:,1:3],axis=0) ## sum both components in one call. These can take negative values, no need for precautions like for Stokes I.
                     
                     ## Compute the rms for each quantity. Ideally the background should be the same in all 4 measurements corresponding to one line.
+                    ## Leave here commented lines for clarity of how RMS is computed.
                     ## First, here is variance of each state with detector/physical counts
                     ## Here is variance varis in ((I+S) - (I-S))/2 = S, in counts
                     #variance = np.abs((background[xx,yy,0] +background[xx,yy,0])/2.) ##
@@ -628,12 +629,15 @@ def obs_integrate(sobs_in,keyvals):
                     #var =  variance/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + variance/sobs_tot[xx,yy,0]**2
                     #var *= (sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2 ## this is  form of normalization that is not required as the data is not normalized here.
                     #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt(var)
-                    #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.) ## PAR's standard RMS estimation
-                    rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2)) ## PAR's one line rms calculation
-                    
+                    #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation; this is to save as much computation time possible
+                    #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.) ## canonical RMS estimation; not the same as implementation above
                 # else:
                 #     issuemask.....
-                    
+    ## RMS is dependent on background and sobs_tot of first line ([xx,xy,0]) Because zz parralelization above might compute second line first, an error is introduced.
+    ## This extra trtaversal removes the RMS calculation from the fast loops to avoid this issue. It only adds few seconds in computing time.
+    for xx in prange(nx): 
+        for yy in prange(ny): 
+            rms[xx,yy,:]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,:]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,:]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation            
     return sobs_tot,rms,background
 ###########################################################################
 ###########################################################################
