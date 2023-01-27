@@ -40,11 +40,11 @@ These instructions are following the [CURC system guidelines](https://curc.readt
         envs_dirs:
         - /projects/$USER/software/anaconda/envs
 
-- Anaconda install/enable. This step needs to be run at **each** sinteractive login to enable anaconda.
+- Anaconda install/enable. This step needs to be run at **each** sinteractive login to enable Anaconda.
 
         source /curc/sw/anaconda3/latest
 
-- Install the **CLEDBenv** anaconda environment from the [CLEDBenv.yml](./CLEDBenv.yml) file. Detailed instructions in [README-codedoc.PDF](./codedoc-latex/README-CODEDOC.pdf).<br>
+- Install the **CLEDBenv** anaconda environment using the [CLEDBenv.yml](./CLEDBenv.yml) file. Detailed instructions in [README-codedoc.PDF](./codedoc-latex/README-CODEDOC.pdf).<br>
 Note: Install inside the sinteractive run or a compile node following the CURC guidelines. Don't perform the installation from the login node.
 
 - Activate your new environment
@@ -67,7 +67,7 @@ Note: Install inside the sinteractive run or a compile node following the CURC g
 
 #### 2.b Batch/headless runs
 
-- The database generating scripts in CLEDB_BUILD directory have a dedicated headless run script *[rundb_1line_slurm.sh](./CLEBD_BUILD/rundb_1line_slurm.sh)* which has slurm headers and all where user inputs are disabled.
+- The database generating scripts in CLEDB_BUILD directory have a dedicated headless run script *[rundb_1line_slurm.sh](./CLEBD_BUILD/rundb_1line_slurm.sh)* which has slurm headers and where all user inputs are disabled.
 RC resources are requested via the sbatch commands in the script header. The ion to generate the database along with some path variables need to be manually edited in the script before running. This version of the database generation script will perform disk I/O on $SCRATCH partitions, and not on local directories. Databases will be moved back to the /projects/$USER/ directories after computations are finished.
 
 - Call it using sbatch after editing for the ion and paths to generate for each ion (multiple sbatch commands can be run concurrently if resources are available):

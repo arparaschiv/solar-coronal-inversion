@@ -9,8 +9,7 @@ Main repository for **CLEDB**; the Coronal Line Emission DataBase inversion code
 
 #### **Main aim:** 
 Invert coronal vector magnetic field products from observations of polarized light. 
-The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations
-to derive line of sight and/or full vector magnetic field products.
+The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations to derive line of sight and/or full vector magnetic field products.
 
 #### **Applications:** 
 Inverting magnetic field information from spectro-polarimetric solar coronal observations from instruments like DKIST Cryo-NIRSP; DL-NIRSP; COMP/UCOMP.
@@ -50,17 +49,16 @@ ii. Download the file using its gdrive FILE_ID from the download link (*test dat
     gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
 
 Note: The script versions of both tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs. 
-These offer the same functionality as the notebooks (from which they are directly derived from) See the dedicated [README_SLURM](./README_SLURM.md) for additional information.
+These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated [README_SLURM](./README_SLURM.md) for additional information.
 
-Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/0.53.1/) in a correct installation.
+Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/stable/) in a correct installation.
 
 
 ### **Scholarly works supporting the CLEDB inversion**
 
 1. [Paraschiv & Judge, SolPhys, 2022](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract) covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 2. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) discussed the importance of scattering geometry when solving for coronal magnetic fields.
-3. [Ali, Paraschiv, Reardon, & Judge, ApJ, 2022](https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract) performed a spectroscopic exploration of the infrared regions of 
-    the emission lines available for inversion with CLEDB.   
-4. [Dima & Schad, Apj, 2020](https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract) discussed potential degeneracies in using certain line combinations. The one-line CLEDB inversion utilizes the methods and results described in this work.
-5. [Schiffmann, Brage, Judge, Paraschiv & Wang](https://ui.adsabs.harvard.edu/abs/2021ApJ...923..186S/abstract) performed large-scale Lande g factor calculations for ions of interest and discusses degeneracies in context of their results.
-6. [Casini & Judge, ApJ, 1999](https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract) and [Judge & Casini, ASP proc., 2001](https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract) described the theoretical line formation process implemented by CLE, the coronal forward synthesis Fortran code that is currently utilized by CLEDB. 
+3. [Ali, Paraschiv, Reardon, & Judge, ApJ, 2022](https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract) performed a spectroscopic exploration of the infrared regions of emission lines available for inversion with CLEDB.   
+4. [Dima & Schad, ApJ, 2020](https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract) discussed potential degeneracies in using certain line combinations. The one-line CLEDB inversion utilizes the methods and results described in this work.
+5. [Schiffmann, Brage, Judge, Paraschiv & Wang, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...923..186S/abstract) performed large-scale Lande g factor calculations for ions of interest and discusses degeneracies in context of their results.
+6. [Casini & Judge, ApJ, 1999](https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract) and [Judge & Casini, ASP proc., 2001](https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract) described the theoretical line formation process implemented in CLE, the coronal forward-synthesis code that is currently utilized by CLEDB. 

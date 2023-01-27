@@ -196,7 +196,6 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
                     ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
                     ## sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 to minimize deviation from "true" solution.
                     ## 1e9 converts SI constants to nm to divide by the reference wavelength also in nm
-                    #blosout[xx,yy,0,zz]=(1/(4.67e-12*(const.line_ref**2)) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] - lpol) - 0.66*const.F_factor*(lpol/1.)) )
                     blosout[xx,yy,0,zz]=(const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] - lpol) - 0.66*const.F_factor*(lpol/1.)) )
                     blosout[xx,yy,1,zz]=(const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2) ) * ( -sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] + lpol) + 0.66*const.F_factor*(lpol/1.)) )
                     ## standard magnetograph formulation
@@ -533,6 +532,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
     diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
     chisq = np.zeros((diff.shape[0]),dtype=np.float32)
     np.round_( np.sum( diff, axis=1)/denom,15,chisq)
+    
     ## Unorthodox definition: chisq needs to be initialized separately, because np.round_ is not supported as a addressable function
     ## This is the only numba compatible implementation possible with current numba (0.51).
     ## Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced. 
@@ -540,11 +540,11 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
 
     ## Need to use a manual numba compatible fast sorting as np.argpartition is not numba implemented!
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
-    ## it just does a standard sorting search, but sorts just the first nsearch elements, making it much faster than np.argsort for few solutions.
-    ## for a lot of solutions, a full sort will perform better
-    if nsearch <= 50:
+    ## it just does a standard sorting search, but sorts just the first nsearch elements, making it much faster than np.argsort for few (<100) solutions.
+
+    if nsearch <= 100:
         asrt = cledb_partsort(chisq,nsearch) 
-    else:
+    else: ## for a lot of solutions, a full sort will perform better
         if verbose >= 2: print("WARNING (CLEDB_MATCH): High number of solutions requested. Expect slow runtime. Using a full array sort!")
         asrt =np.argsort(chisq)[0:nsearch]
 
@@ -580,7 +580,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
 
             # Magnetic field strength from ratio of database with V/I ratios or wave data of observations and database
             if bcalc == 0: ## using first line
-                bfield = sobs_1pix[3]/(database_sel[ixr,3]+1e-8) ## for division operation precision when database bfields are close to 0;
+                bfield =np.float32(np.float64( sobs_1pix[3]/(database_sel[ixr,3]+1e-8) )) ## for division operation precision when database bfields are close to 0;
             if bcalc == 1: ## using second line
                 bfield = sobs_1pix[7]/(database_sel[ixr,7]+1e-8)
             if bcalc == 2: ## using the average of the two lines
@@ -688,7 +688,7 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
     ## it just does a standard sorting search, but sorts just the first nsearch elements, making it much faster than np.argsort for few solutions.
     ## for a lot of solutions, a full sort will perform better
-    if nsearch <= 50:
+    if nsearch <= 100:
         asrt = cledb_partsort(chisq,nsearch) 
     else:
         if verbose >= 2: print("WARNING (CLEDB_MATCH): High number of solutions requested. Expect slow runtime. Using a full array sort!")
@@ -789,10 +789,12 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_sel,nsearch,verbose):
         ttp = tt * np.sin(bphir[ir])
         diffa = np.abs(tphib_obs - ttp)                       ## this is an array over btheta at each bphi
         diffb = np.abs(tphib_deg_obs - ttp)                   ## this is an array over btheta at each bphi (degenerate branch)
-        srta=cledb_partsort(diffa,nsearch)                    ## NOTE: no speed gain to use np.sort here as the arrays are small.
+        srta=cledb_partsort(diffa,nsearch)                    ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
         srtb=cledb_partsort(diffb,nsearch)
+        #srta=np.argsort(diffa)[0:nsearch]
+        #srtb=np.argsort(diffb)[0:nsearch]
         ## advanced slicing is not available, the for jj enumeration comes from numba requirements
-        if ir + srta[0] > 0 or  ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
+        if ir + srta[0] > 0 or ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
             for jj in range(nsearch):                                              ## NOTE: nsearch = srt.shape[0]
                 datasel[:,:,ir,jj,:]           = database_sel[:,:,ir,srta[jj],:]   ## Record those indices compatible with phib observed
                 outredindex[ir,jj]             = srta[jj]
@@ -834,21 +836,31 @@ def cledb_partsort(arr,nsearch):
 ## cledb_partsort is a parallel function that produces an output similar to np.argpartition with sort.
 ## Simplest possible substitution partial sort. It just returns the first nsearch sorted indexes similar to np.argpartition.
 ## It is numba non-python compatible!
-
+   
+    ## updated in update-iqud tag; original implementation is still commented
+    # asrt=np.zeros((nsearch),dtype=np.int64)
+    # arr_temp=np.copy(arr) ## don't change the input array inside; numba will complain of changing an upstream array that you don't return back.
+    # for i in range (nsearch):
+    #     a=np.argmin(arr_temp[i:])
+    #     b=np.argwhere(arr == arr_temp[i:][a])[0]
+    #     d=0
+    #     for j in range(b.shape[0]):
+    #         if ((b[j] in asrt[:i]) and (d+1 <b.shape[0])):
+    #             d+=1
+    #     asrt[i]=b[d]
+    #     sort_temp=arr_temp[i]
+    #     arr_temp[i]=arr_temp[i:][a]
+    #     arr_temp[i:][a]=sort_temp
+        
     asrt=np.zeros((nsearch),dtype=np.int64)
-    arr_temp=np.copy(arr) ## don't change the input array inside; numba will complain of changing an upstream array that you don't return back.
+    arr_temp=np.copy(arr)            ## don't change the input array inside; numba will complain of changing an upstream array that you don't return back.
     for i in range (nsearch):
-        a=np.argmin(arr_temp[i:])
-        b=np.argwhere(arr == arr_temp[i:][a])[0]
-        d=0
-        for j in range(b.shape[0]):
-            if ((b[j] in asrt[:i]) and (d+1 < b.shape[0])):
-                d+=1
-        asrt[i]=b[d]
-        sort_temp=arr_temp[i]
-        arr_temp[i]=arr_temp[i:][a]
-        arr_temp[i:][a]=sort_temp
-
+        a               = np.argmin(arr_temp[i:])
+        asrt[i]         = a+i                  ## the sorting puts the previously found value at the beginning of the array and then searches though a new array excluding the moved elements. Thus, each i index iteration is corrected by +i
+        sort_temp       = arr_temp[i]          ## move the foundindex to the i-th position
+        arr_temp[i]     = arr_temp[i:][a]
+        arr_temp[i:][a] = sort_temp
+    
     return asrt         ##works like a charm!
 ###########################################################################
 ###########################################################################
@@ -883,14 +895,14 @@ def cledb_params(index,dbcgrid):
 ###########################################################################
 @njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
 def cledb_invparams(i,j,k,l,dbcgrid):
+## Reverse function of cledb_paramsr## 
 ## This function is used with the database header to help compute the physics associated to the index entry
-## Reverse function of params_par## 
 ## for i,j,k,l in database, get index
 
-    ned=np.int32(dbcgrid[0]) 
-    ngx=np.int32(dbcgrid[1])
-    nbphi=np.int32(dbcgrid[2])
-    nbtheta=np.int32(dbcgrid[3])
+    ned     = np.int32(dbcgrid[0]) 
+    ngx     = np.int32(dbcgrid[1])
+    nbphi   = np.int32(dbcgrid[2])
+    nbtheta = np.int32(dbcgrid[3])
 
     return np.int32(i*ngx*nbphi*nbtheta + j*nbphi*nbtheta + k*nbtheta + l)
 ###########################################################################
@@ -903,7 +915,7 @@ def cledb_elecdens(r):
 ## computes an electron radial density estimation using the Baumbach formulation
 
     baumbach = 1.e8*(0.036/r**1.5 + 1.55/r**6.)
-    hscale=   7.18401074e-02  # 50 Mm
+    hscale   = 7.18401074e-02  # 50 Mm
 
     return np.float32(3.e8*np.exp(- (r-1.)/hscale) + baumbach)
 ###########################################################################
@@ -913,15 +925,15 @@ def cledb_elecdens(r):
 ###########################################################################
 @njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
 def cledb_phys(index,gy,ga,dbhdr,b):
-## Returns the lvs and LOS geometry and magnetic field physics
-## this is kept separate from cledb_physlvs because it computes projections transformations of the database variables recovered via cledb_physlvs
+## Returns the CLE and Obs. geometry and magnetic field physics
+## this is kept separate from cledb_physcle because it computes projections transformations of the database variables recovered via cledb_physcle.
 
-    phs=cledb_physlvs(index,gy,dbhdr)
-    bphi=phs[3]#np.abs(phs[3] - ga)                            ## derotate by azimuth rotation(ga) applied to Q and U profiles; does it not need disentangling?
-    btheta=phs[4]
-    bx=np.abs(b)*np.sin(btheta)*np.cos(bphi)
-    by=np.abs(b)*np.sin(btheta)*np.sin(bphi)
-    bz=np.abs(b)*np.cos(btheta)
+    phs    = cledb_physcle(index,gy,dbhdr)
+    bphi   = phs[3]#np.abs(phs[3] - ga)                            ## derotate by azimuth rotation(ga) applied to Q and U profiles; does it not need disentangling?
+    btheta = phs[4]
+    bx     = np.abs(b)*np.sin(btheta)*np.cos(bphi)                 ## The np.abs(b) comes from the standard spherical transform formalism. 
+    by     = np.abs(b)*np.sin(btheta)*np.sin(bphi)
+    bz     = np.abs(b)*np.cos(btheta)
 
     return np.array((phs[0],phs[1],phs[2],b,bphi,btheta,bx,by,bz),dtype=np.float32)
 ###########################################################################
@@ -930,8 +942,8 @@ def cledb_phys(index,gy,ga,dbhdr,b):
 ###########################################################################
 ###########################################################################
 @njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down 
-def cledb_physlvs(index,gy,dbhdr):
-## Helper for phys_par; returns the LVS physics and compatible observation geometry.
+def cledb_physcle(index,gy,dbhdr):
+## Helper for phys_par; returns the CLE frame physics and compatible observation geometry.
 ## this is the primary function that retrieves physics parameters from the database index.
 
     dbcgrid, ned, ngx, nbphi, nbtheta,  xed, gxmin,gxmax, bphimin, bphimax, \
@@ -939,10 +951,10 @@ def cledb_physlvs(index,gy,dbhdr):
 
     i,j,k,l = cledb_params(index,dbcgrid)
 
-    gx = gxmin + j*(gxmax-gxmin)/(ngx-1)
-    bphi  = bphimin + k*(bphimax-bphimin)/(nbphi-1)
+    gx      = gxmin + j*(gxmax-gxmin)/(ngx-1)
+    bphi    = bphimin + k*(bphimax-bphimin)/(nbphi-1)
     btheta  = bthetamin + l*(bthetamax-bthetamin)/(nbtheta-1)
-    ed = np.float32(xed[i]* cledb_elecdens(np.sqrt(gy*gy+gx*gx)))    # log of Ne
+    ed      = np.float32(xed[i]* cledb_elecdens(np.sqrt(gy*gy+gx*gx)))    # log of Ne
 
     return np.array((np.log10(ed),gy,gx,bphi,btheta),dtype=np.float32)
 ###########################################################################
@@ -956,9 +968,8 @@ def obs_cdf(spectr):
 
     cdf=np.zeros((spectr.shape[0]),dtype=np.float32)
     for i in prange (0,spectr.shape[0]):
-        cdf[i]=np.sum(spectr[0:i+1])        ## need to check if should start at 0 or not
-    #cdf=cdf[:]/cdf[-1]                      ## norm the cdf to simplify interpretation
-    return cdf/cdf[-1]
+        cdf[i]=np.sum(spectr[0:i+1])                        
+    return cdf/cdf[-1]                      ## norm the cdf to simplify interpretation
 ###########################################################################
 ###########################################################################
 

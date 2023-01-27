@@ -1,17 +1,21 @@
+# Parallel Database Generator
+
 README for running CLE database calculations on multiple CPU threads.
+
 ### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
 
 Contact: Alin Paraschiv (arparaschiv@ucar.edu)
 
-#### **History:**
-- ARP: 20210617 - initial release 
-- ARP: 20210827 - Added a slurm enabled version of the script for batch jobs on RC systems
-- ARP: 20210915 - Rewrote the thread scaling to allocate tasks uniformly across threads; Both interactive and batch scripts now can utilize RC slurm capabilities. The interactive version can only use slurm allocated resources inside interactive jobs. The batch dedicated version can utilize scratch directories; It copies outputs in a user's project directory after finalizing tasks.
+#### **History for BUILD module:**
+
+- ARP: 20210617 - initial release. 
+- ARP: 20210827 - Added a Slurm enabled version of the script for batch jobs on RC systems.
+- ARP: 20210915 - Rewrote the thread scaling to allocate tasks uniformly across threads; Both interactive and batch scripts now can utilize RC Slurm capabilities. The interactive version can only use Slurm allocated resources inside interactive jobs. The batch dedicated version can utilize scratch directories; It copies final outputs in a user's project directory after finalizing tasks.
 - ARP: 20221222 - Updated both scripts to fix an error with calculating the optimal heights that are scaled across available nodes. 
 
 #### **SCOPE:**
 
-This is a simple bash script implementation that launches separate parallel processes for the CLEDB_BUILD module.
+This is a simple bash script implementation that launches separate parallel processes for building Stokes IQUV databases as part of the CLEDB_BUILD module.
 Two versions are provisioned:
 
 1. *[rundb_1line.sh](./rundb_1line.sh)*    (For local **interactive** runs; can be utilized inside slurm interactive environments too.)
@@ -81,7 +85,7 @@ To fix try:
 - The ./rundb scripts will wait for all thread tasks to finish before exiting.
 Due to limitation in CPU process ID (PID) tracking, the user is not notified in order of threads finalizing, but in the order they were scheduled. e.g. if thread 2 finishes before thread 0, the user will find out only after thread 0 and thread 1 finish. A bug might manifest if a new unrelated task is scheduled with the same PID as one of the runs, but this should not occur in normal circumstances. If such a case occurs, a tail of the logs will verify that everything went well and scripts can be exited manually.
 
-- The number of Y heights to calculate between the ymin and ymax ranges are not always a multiple of the number of CPU threads.
+- The number of Y-heights to calculate between the ymin and ymax ranges are not always a multiple of the number of CPU threads.
 The scripts will efficiently scale the tasks on the available threads. If you request less tasks (via [DB.INPUT](./config/DB.INPUT)) than threads (via keyboard or sbatch), the script will not utilize all pre-allocated resources.
 
 - The script heavily relies on the SED function. 

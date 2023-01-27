@@ -29,9 +29,9 @@ class Constants:
         # ion/line specific constants
         if (ion == "fe-xiii_1074"):
             self.ion_temp = 6.25                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg] ## for ion XIII this needs to be computed for all 
-            #self.line_ref = 1074.62686                ## CLE Ion referential wavelength [nm]
-            self.line_ref = 1074.68                   ## Ion referential wavelength [nm]
+            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg] 
+            self.line_ref = 1074.62686                ## CLE Ion referential wavelength [nm]
+            #self.line_ref = 1074.68                   ## Ion referential wavelength [nm]
             self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5   ## Line thermal width 
             self.F_factor= 0.0                             ## Dima & Schad 2020 Eq. 9
             self.gu = 1.5                                  ## upper level g factor
@@ -42,9 +42,9 @@ class Constants:
 
         elif (ion == "fe-xiii_1079"):
             self.ion_temp = 6.25                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg] ## for ion XIII this needs to be computed for all 
-            #self.line_ref = 1079.78047                ## CLE Ion referential wavelength [nm]
-            self.line_ref = 1079.79                   ## Ion referential wavelength [nm]
+            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg] 
+            self.line_ref = 1079.78047                ## CLE Ion referential wavelength [nm]
+            #self.line_ref = 1079.79                   ## Ion referential wavelength [nm]
             self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width 
             self.F_factor= 0.0                        ## Dima & Schad 2020 Eq. 9
             self.gu = 1.5                             ## upper level g factor
@@ -55,7 +55,7 @@ class Constants:
 
         elif (ion == "si-x_1430"):
             self.ion_temp = 6.15                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg] ## for ion XIII this needs to be computed for all 
+            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg] 
             self.line_ref = 1430.2231                 ## CLE Ion referential wavelength [nm] ;;needs to be double-checked with most current ATOM
             #self.line_ref = 1430.10                   ## Ion referential wavelength [nm]
             self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width 
@@ -68,7 +68,7 @@ class Constants:
 
         elif (ion == "si-ix_3934"):
             self.ion_temp = 6.05                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg] ## for ion XIII this needs to be computed for all
+            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg] 
             self.line_ref = 3926.6551                 ## CLE Ion referential wavelength [nm] ;;needs to be double-checked with most current ATOM
             #self.line_ref = 3934.34                   ## Ion referential wavelength [nm]
             self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width 

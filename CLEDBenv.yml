@@ -5,13 +5,14 @@ channels:
  - conda-forge
 dependencies:
  - python=3.10
- - ipython=8.6
- - scipy=1.9
  - numpy=1.23
  - numba=0.56
- - numexpr
+ - pyyaml         ## used only in ctrlparams for NUMBA global options
+ - scipy=1.9
+ - ipython=8.6
  - ipympl
- - pyyaml
  - jupyter
  - jupyterlab
  - matplotlib
+# - sphinx        ## Not required by CLEDB; used only to build the documentation
+# - mist-parser   ## Not required by CLEDB; used to add markdown parsing to documentation building
