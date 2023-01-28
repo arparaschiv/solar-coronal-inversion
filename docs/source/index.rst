@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-**CLEDB** documentation
+**CLEDB** Documentation
 =======================
 
 https://github.com/arparaschiv/solar-coronal-inversion
@@ -38,9 +38,15 @@ This document describes the main concepts, functions, and variables, comprising 
    synopsis
    module_overview
    install
-   cledb_build
    inputvars
-   readmes 
+   cledb_build
+   cledb_prepinv
+   cledb_proc
+   outputs
+   slurm
+   readmes
+   changelog
+   glossary 
 
 
 

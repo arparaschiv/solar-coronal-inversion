@@ -1,4 +1,4 @@
-# **CLEDB - CORONAL FIELD DATABASE INVERSION**
+# **CLEDB Research Computing Headless Runs**
 
 ### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
 

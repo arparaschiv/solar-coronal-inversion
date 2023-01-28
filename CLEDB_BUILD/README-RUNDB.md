@@ -1,4 +1,4 @@
-# Parallel Database Generator
+# **CLEDB Parallel Database Generator**
 
 README for running CLE database calculations on multiple CPU threads.
 

@@ -11,8 +11,10 @@ Firstly, we illustrate our definitions for the flowcharts describing different a
 .. image:: figs/shape_defs.png
    :width: 800
 
+.. _module_flow-label:
+
 The CLEDB Modules
------------
+-----------------
 
 The CLEDB algorithm is split into three parts: 
 
