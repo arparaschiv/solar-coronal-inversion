@@ -1,7 +1,7 @@
 Module Overview Schematic
 =========================
 
-Algorithm flowchart definitions
+Algorithm Flowchart Definitions
 -------------------------------
 
 Firstly, we illustrate our definitions for the flowcharts describing different algorithm operations. We note that the flowcharts are not exhaustive and are not meant to describe the code to the level of individual operations. The flowcharts list the main variables and functions used along with how they are processed by the different modules and intrinsic functions, and the resulting outputs. 
@@ -11,7 +11,7 @@ Firstly, we illustrate our definitions for the flowcharts describing different a
 .. image:: figs/shape_defs.png
    :width: 800
 
-The Modules
+The CLEDB Modules
 -----------
 
 The CLEDB algorithm is split into three parts: 

@@ -39,6 +39,7 @@ This document describes the main concepts, functions, and variables, comprising 
    module_overview
    install
    cledb_build
+   inputvars
    readmes 
 
 

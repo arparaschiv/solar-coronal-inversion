@@ -58,31 +58,10 @@ If dependency problems arise, CLEDBenv can be deleted and recreated with the def
 	The ``CLEDBenv`` anaconda environment installs specific version packages that are tested. Updating the individual Python packages inside the environment is not recommended and might break functionality. 
 
 
-Basic Run Examples
-------------------
-
-1. Databases can be built with:
-
-	.. code-block:: bash
-
-	   ./CLEDB_BUILD/rundb_1line.sh 
-
-	See detailed database build instructions via the dedicated :ref:`readme-rundb-label` found in the CLEDB\_BUILD directory.
-
-2. Two examples of running the full inversion package (assuming databases are already built) are provided as Jupyter notebooks and/or lab sessions.
-
-	.. code-block:: bash
-
-		./jupyter-lab test_1line.ipynb
-		./jupyter-lab test_2line.ipynb
-
-.. Attention::
-	Script versions for ``test_1line`` and ``test_2line`` are also available. These are tailored to be used in headless runs. 
-
-Utilized Python Modules
+CLEDBenv Python Modules
 -----------------------
 
-For numerical computation efficiency, the CLEDB distribution heavily relies on the Numpy and Numba packages. 
+For numerical computation efficiency, the ``CLEDBenv`` distribution environment heavily relies on the Numpy and Numba packages. 
 	
 * Numpy
 	Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure Python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.23) documentation is `found here. <https://numpy.org/doc/1.23/>`_
@@ -116,3 +95,23 @@ For numerical computation efficiency, the CLEDB distribution heavily relies on t
 
 
 
+Basic Run Example
+------------------
+
+1. Databases can be built with:
+
+	.. code-block:: bash
+
+	   ./CLEDB_BUILD/rundb_1line.sh 
+
+	See detailed database build instructions via the dedicated :ref:`readme-rundb-label` found in the CLEDB\_BUILD directory.
+
+2. Two examples of running the full inversion package (assuming databases are already built) are provided as Jupyter notebooks and/or lab sessions.
+
+	.. code-block:: bash
+
+		./jupyter-lab test_1line.ipynb
+		./jupyter-lab test_2line.ipynb
+
+.. Attention::
+	Script versions for ``test_1line`` and ``test_2line`` are also available. These are tailored to be used in headless runs. 
