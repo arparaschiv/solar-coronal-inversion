@@ -51,6 +51,7 @@ A. Input Data and Metadata
 ``sobs_in float array [nline][xs,ys,ws,4]  nline = 1 || 2 for (1-line) or (2-line)``
     ``sobs_in`` is passed as a numba typed list at input. Data are input Stokes IQUV observations of one or two lines respectively. The list will be internally reshaped as a numpy float array of [xs,ys,ws,4] or [xs,ys,ws,8] size.  
 
+.. _ctrl-label:
 
 B. Control Parameters ``ctrlparams.py`` Class
 ---------------------------------------------
@@ -86,6 +87,8 @@ PREPINV Params
 PROC Params
 ^^^^^^^^^^^
 
+.. _ctrl_nsearch-label:
+
 ``nsearch [uint]``
 	Number of solutions to compute and return for each voxel. 
 	
@@ -100,6 +103,8 @@ PROC Params
 	* gaussfit == 1: Fit the line using an optimization based Gaussian procedure. This approach requires a set of 4 guesswork parameters. These are the approximate maximum of the emission (max of curve), the approximate wavelength of the core of the distribution(theoretical center of the line), its standard deviation (theoretical width of 0.16 nm), and an offset (optional, hard-coded as 0).
 
 	* gaussfit == 2: Fit the line using a optimization based Gaussian procedure. In this case, the initial guesswork parameters are fed in from the results of the CDF solution, where the curve theoretically optimizes for a more accurate solution, with sub-voxel resolution.	
+
+.. _ctrl_bcalc-label:
 	
 ``bcalc [uint]``
 	Controls how to compute the field strength in the case of 2-line observations.
@@ -112,8 +117,12 @@ PROC Params
 	
 	* bcalc == 3: Assigns the field strength from the Doppler oscillation inputs. Only applicable when IQUD is enabled.
 
+.. _ctrl_red-label:
+
 ``reduced [boolean]``
 	Parameter to reduce the database size before searching for solutions by using the linear polarization measurements. Dimensionality of db is reduced by over 1 order of magnitude, enabling significant sped-ups. Solution ordering might be altered in certain circumstances.
+
+.. _ctrl_iqud-label:
 
 ``iqud [boolean]``
 	Switches between using Stokes V or Doppler oscillations to compute the magnetic field strength and orientation.
@@ -174,6 +183,8 @@ Ion Specific Consts
 
 ``ion_mass [float]``
 	float; Ion mass; SI [Kg];   
+
+.. _consts_lref-label:
 
 ``line_ref [float]``
 	Theoretical line core wavelength position; [nm]		
