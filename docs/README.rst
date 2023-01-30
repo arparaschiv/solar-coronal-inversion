@@ -1,4 +1,7 @@
-CLEDB - Coronal Line Emission DataBase Inversion
-================================================
+CLEDB - Documentation 
+=====================
 
-**CLEDB** is a Python based inversion tool and pipeline that is used to recover magnetic field information from SpectroPolariemtric observations of the Solar Corona.
+The **C**\ oronal **L**\ ine **E**\ mission **D**\ ata\ **B**\ ase inversion is a Python based tool and pipeline that is used to infer magnetic field information from SpectroPolariemtric observations of the Solar Corona.
+This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for coronal magnetic fields.
+
+Online version on Readthedocs.io

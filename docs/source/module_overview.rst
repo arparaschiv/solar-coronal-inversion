@@ -1,10 +1,10 @@
-Module Overview Schematic
-=========================
+Module Overview
+===============
 
 Algorithm Flowchart Definitions
 -------------------------------
 
-Firstly, we illustrate our definitions for the flowcharts describing different algorithm operations. We note that the flowcharts are not exhaustive and are not meant to describe the code to the level of individual operations. The flowcharts list the main variables and functions used along with how they are processed by the different modules and intrinsic functions, and the resulting outputs. 
+We illustrate our definitions for the flowcharts presented throughout this document that describe the principal algorithm operations. We note that the flowcharts are not exhaustive and are not meant to describe the code to the level of individual operations. The flowcharts list the main variables and functions used along with how they are processed by the different modules and intrinsic functions, and the resulting outputs. 
 
 
 
@@ -16,19 +16,59 @@ Firstly, we illustrate our definitions for the flowcharts describing different a
 The CLEDB Modules
 -----------------
 
-The CLEDB algorithm is split into three parts: 
+The CLEDB inversion algorithm can be split into three parts: 
 
-* ``CLEDB_BUILD`` - The BUILD module contains pre-configured scripts for generating a database used downstream to fit the observations. FORTRAN binaries and bash scripting is used by this module. Running the default configured ``rundb_1line.sh`` script for each line of your observation is enough in most cases. Please see the dedicated :ref:`readme-rundb-label` for more detailed instructions. 
+* The ``CLEDB_BUILD`` module contains pre-configured scripts for generating a database used downstream to fit the observations. Fortran binaries and Bash scripting is used by this module. Running the default configured ``rundb_1line.sh`` script for each line of your observation is enough in most cases. Please see the dedicated :ref:`readme-rundb-label` for more detailed instructions. 
  
-* ``CLEDB_PREPINV`` - The PREPINV module prepares the data for analysis and matches required databases to read into memory (for the 2-line branch). The ``ctrlparams`` and ``constants`` classes are imported separately and fed to the module.
+* The ``CLEDB_PREPINV`` module prepares the data for analysis and matches required databases to read into memory (for the 2-line branch). Two main functions **SOBS_PREPROCESS** and **SDB_PREPROCESS** match and prepare the data and databases for analysis. The *ctrlparams* and *constants* classes are imported separately and fed to the module.
 
-* ``SPECTRO_PROC``, ``BLOS_PROC``, and/or ``CLEDB_INVPROC`` are the data analysis modules. These perform analytical or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the ``OUTPUTS``). The main :ref:`readme-main-label` contains instructions on how to end-to-end run the provided examples.
+*  The ``CLEDB_PROC`` module encompasses the main data analysis functions **SPECTRO_PROC**, **BLOS_PROC**, and/or **CLEDB_INVPROC**. These perform analytical or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the ``OUTPUTS``). 
+
+.. hint::
+	The :ref:`readme-main-label` contains instructions on how to end-to-end run the provided examples.
 
 .. image:: figs/1_CLEDB_OVERVIEW.png
    :width: 800
 
 
-The above module schematic presents the modules along with the main inputs and outputs. Each module is described separately in the following sections. The most important variables and defined functions are described for each inversion module component. The definitions and accompanying diagrams are not meant to be 1:1 mirrors of the coding, but merely to trace the most crucial operations and resulting outputs. Common terminology is defined in the last section. 
+The flowchart schematic presents the modules along with the main inputs and outputs. Each module is described separately in the following sections along with detailed operation flowcharts. The most important variables and functions are described for each inversion module component. The definitions and accompanying diagrams are not meant to be 1:1 mirrors of the coding, but merely to trace the most crucial operations and resulting outputs. Common terminology is defined in the last section. 
 
 .. note::
-	Additional extended comments can be found in each module's scripts.
+	Additionally, more extended comments can be found in each module's Python/Bash scripts.
+
+
+.. _python_modules-label:
+
+The Python Modules
+------------------
+
+The following Python packages are required. For numerical computation efficiency, the inversion heavily relies on the Numpy and Numba packages. 
+	
+* Numpy
+	Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure Python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.23) documentation is `found here. <https://numpy.org/doc/1.23/>`_
+	
+* Numba
+	Numba implements just in time (JIT) compilation decorators and attempts where possible to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode will maximize optimization and runtime speed, but is significantly limited in terms of Python and/or Numpy function compatibility. 
+
+	A Numba fully-enabled implementation can utilize only a small subset of Python and Numpy functions. Significant data sanitation and statically defined function I/O are required in order to enable runtime optimization and parallelization. Due to these sacrifices, coding implementations are not always clear and straightforward. Extensive documentation and examples can be found in the Numba documentation. The version specific (0.56.4) documentation is `available here. <https://numba.readthedocs.io/en/0.53.1/>`_
+
+	.. Note::
+		The ``CLEDB_PREPINV`` module can only be compiled in Numba object-mode due to disk I/O operations that are not implemented in non-python mode.
+
+* pyyaml
+	YAML format library utilized in the *ctrlparams* class to enable or disable Numba global options. 
+
+* Scipy 
+	Used for spectroscopic fitting and statistics.
+
+* Jupyter, Jupyterlab, Matplotlib and Ipympl
+	Optional libraries for data visualization, plotting, widgets, etc.
+
+* Glob, and OS 
+	Additional modules used primarily by ``CLEDB_PREPINV`` for disk I/O operations.
+
+* Time and Sys 
+	Used during debug runs with high level of :ref:`verbosity <verbosity-label>`.
+
+* Sphinx, Sphinx-rtd-theme and Mist-parser 
+	Libraries for building documentation and processing markdown files. Disabled as these are not required by the inversion.

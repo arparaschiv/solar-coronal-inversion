@@ -1,17 +1,17 @@
 .. _cledb_proc-label:
 
-CLEDB_PROC - Data Analysis \& Inversion
+CLEDB_PROC - Analysis \& Inversion
 =======================================
 
 **Purpose:**
 
-Three main functions, **SPECTRO_PROC**, **BLOS_PROC**, and **CLEDB_INVPROC** are grouped under the ``CLEDB_PROC`` data analysis and inversion module. Based on the 1-line or 2-line input data, two or three modules are called. Line of sight or full vector magnetic field outputs along with plasma, geometric and spectroscopic outputs are inverted here. The algorithm flow and a processing overview is described in the below diagram. 
+Three main functions, **SPECTRO_PROC**, **BLOS_PROC**, and **CLEDB_INVPROC** are grouped under the ``CLEDB_PROC`` data analysis and inversion module. Based on the 1-line or 2-line input data, two or three modules are called. Line of sight or full vector magnetic field outputs along with plasma, geometric and spectroscopic outputs are inverted here. The algorithm flow and a processing overview is described in the flowchart. 
 
 .. image:: figs/4_CLEDB_PROC.png
    :width: 800
 
-A. SPECTRO_PROC Function
------------------------------------------
+The SPECTRO_PROC Function
+-------------------------
 
 **Purpose:**
 
@@ -36,8 +36,8 @@ SPECTRO_PROC Main Functions
     :math:`\triangleright` LEV2CALIB_WAVE (Opt.)
         Provisioned to be implemented at a later time. Higher order wavelength calibration using the spectroscopic profiles. See `Ali, Paraschiv, Reardon, & Judge, ApJ, 2022 <https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract>`_ for additional details. This function can couple if the upstream wavelength accuracy of the input observation is missing or is less than 0.01nm.
 
-.. important::
-    Upstream Level-1 calibration for DKIST is provisioned to match or exceed this accuracy requirement. Implementation is of low priority.
+    .. important::
+        Upstream Level-1 calibration for DKIST is provisioned to match or exceed this accuracy requirement. Implementation is of low priority.
 
     :math:`\triangleright` LEV2CALIB_ABSINT (Opt.)
         To be implemented at a later time, if feasible. Absolute intensity calibration function that produces an additional output, the calibrated intensity in physical units. The approach is not easily automated as it requires a more convoluted and specific planning of the observations to gather the necessary input data.   
@@ -92,8 +92,8 @@ SPECTRO_PROC Main Variables
 
 
 
-B. BLOS_PROC Function
----------------------
+The BLOS_PROC Function
+----------------------
 
  .. error::
     Stokes V observations are required for this analytical method. Thus, BLOS_PROC is incompatible with the IQUD input.
@@ -142,8 +142,8 @@ BLOS_PROC Main Variables
     A :math:`\frac{\pi}{2}` degeneracy will manifest due to using arctan functions to derive the angle.
 
 
-C. CLEDB_INVPROC Function
--------------------------
+The CLEDB_INVPROC Function
+--------------------------
 
 **Purpose:**
 
@@ -192,7 +192,7 @@ CLEDB_INVPROC Main Variables
 ``database [ned,nx,nbphi,nbtheta,nline\*4] list of float arrays``
     Individual list entries are fed to the CLEDB_MATCHIQUV or CLEDB_MATCHIQUD. From the database list, only the best matching height entry via :ref:`db_enc<dbenc-label>` is passed via the *database_sel* internal variable. 
 
-``database\_sel [ned,nx,nbphi,nbtheta,nline\*4] float array``  
+``database_sel [ned,nx,nbphi,nbtheta,nline\*4] float array``  
     Subset index of the database list that is fed to CLEDB_MATCHIQUV or CLEDB_MATCHIQUD for matching the observation in one voxel. This alleviates memory shuffling and array slicing operations. The array is then reshaped into a 2D  [ned\*nx\*nbphi\*nbtheta(index),nline\*4] form. In the case where reduction is selected, database_sel is additionally reduced with respect to the number of potential indexes to match. 
 
 ``sobs_totrot``

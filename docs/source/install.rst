@@ -1,5 +1,5 @@
-Installation Instructions
-=========================
+Installation and Run Instructions
+=================================
 
 Code Distribution Download
 --------------------------
@@ -14,23 +14,24 @@ To create a local deployment use the git clone function:
 
    git clone https://github.com/arparaschiv/solar-coronal-inversion
 
-``CLEDB_BUILD`` uses CLE precompiled GNU compatible FORTRAN binary executable files to generate databases. The module is run by utilizing a bash script that enables parallel runs of serial computations. Binaries for both Darwin and Linux architectures are provided. More details are found in the :ref:`cledb_build-label` module.
+``CLEDB_BUILD`` uses CLE precompiled GNU compatible Fortran binary executable files to generate databases. The module is run by utilizing a Bash script that enables parallel runs of serial computations. Binaries for both Darwin and Linux architectures are provided. More details are found in the :ref:`cledb_build-label` module.
 
 .. Note::
-	The CLE FORTRAN source code is not included in this package. It is hosted in a separate repository `https://github.com/arparaschiv/coronal-line-emission <https://github.com/arparaschiv/coronal-line-emission>`_. The source code is meant to be publicly available and can be requested from the authors.
+	The CLE FORTRAN source code is not included in this package. It is hosted in a separate repository `https://github.com/arparaschiv/coronal-line-emission <https://github.com/arparaschiv/coronal-line-emission>`_.
 
-Python Environment Setup
-------------------------
 
-The ``PREPINV`` and ``PROC`` modules of CLEDB are written in Python. 
-The Anaconda environment is utilized. Anaconda documentation and installation instructions can be `found here <https://docs.continuum.io/anaconda/install/>`_.
+A CLEDBenv Python Environment
+-----------------------------
 
-We provide a configuration file ``CLEDBenv.yml`` to create a custom Anaconda environment. 
+The ``CLEDB_PREPINV`` and ``CLEDB_PROC`` modules of CLEDB are written in Python. 
+The Anaconda environment system is utilized. Anaconda documentation and installation instructions can be `found here <https://docs.continuum.io/anaconda/install/>`_.
+
+We provide a configuration file ``CLEDBenv.yml`` to create a custom Anaconda environment that groups the CLEDB utilized Python modules briefly :ref:`described above<python_modules-label>`. 
 
 .. literalinclude:: ../../CLEDBenv.yml
    :language: YAML
 
-The configuration file is used to configure the required and optional CLEDB Python packages. In a terminal session create the environment:
+The configuration file is used to configure the required and optional CLEDB Python packages. In a terminal session you can create the environment via:
 
 .. code-block:: bash
 
@@ -48,51 +49,14 @@ The user can return to the standard Python package base by running
 
 	conda deactivate
 
-If dependency problems arise, CLEDBenv can be deleted and recreated with the default packages from the .yml.
+If dependency problems arise for any reason, CLEDBenv can be deleted and recreated with the default fixed-version packages from ``CLEDBenv.yml``.
 
 .. code-block:: bash
 
 	conda remove --name CLEDBenv --all
 
 .. Danger::
-	The ``CLEDBenv`` anaconda environment installs specific version packages that are tested. Updating the individual Python packages inside the environment is not recommended and might break functionality. 
-
-
-CLEDBenv Python Modules
------------------------
-
-For numerical computation efficiency, the ``CLEDBenv`` distribution environment heavily relies on the Numpy and Numba packages. 
-	
-* Numpy
-	Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure Python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.23) documentation is `found here. <https://numpy.org/doc/1.23/>`_
-	
-* Numba
-	Numba implements just in time (JIT) compilation decorators and attempts where possible to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode will maximize optimization and runtime speed, but is significantly limited in terms of Python and/or Numpy function compatibility. 
-
-	A Numba enabled implementation can utilize only a small subset of Python and Numpy functions. Significant data sanitation and statically defined function input/output are required in order to enable runtime optimization and parallelization. Due to these sacrifices, coding implementations are not always clear and straightforward. Extensive documentation, Python and Numpy function lists, and examples can be found in the Numba documentation. The version specific (0.56.4) documentation is `available here. <https://numba.readthedocs.io/en/0.53.1/>`_
-
-.. Note::
-
-	The ``CLEDB_PREPINV`` module can only be compiled in object-mode due to disk I/O operations that are not implemented in non-python mode.
-
-* pyyaml
-	YAML format library utilized in the ctrlparams class to enable or disable Numba global options. 
-
-* Scipy 
-	Used for module fitting and statistics.
-
-* Jupyter, Jupyterlab, Matplotlib and Ipympl
-	Optional libraries for data visualization, plotting, widgets, etc.
-
-* Glob, and OS 
-	Additional modules used primarily by ``CLEDB_PREPINV`` for I/O operations.
-
-* Time and Sys 
-	used during debug runs with high level of verbosity.
-
-* Sphinx and Mist-parser 
-	libraries for building documentation and processing markdown files. Disabled as these are not required by the inversion.
-
+	The ``CLEDBenv`` anaconda environment installs specific version packages. Cross-compatibility is verified by us. This feature ensures additional codebase stability. Updating the individual Python packages inside the CLEDBenv environment is not recommended and might break code functionality. 
 
 
 Basic Run Example
@@ -115,3 +79,18 @@ Basic Run Example
 
 .. Attention::
 	Script versions for ``test_1line`` and ``test_2line`` are also available. These are tailored to be used in headless runs. 
+
+Headless Slurm Runs Overview
+----------------------------
+
+A few optimizations and modifications are provided in order to ensure a straightforward run of CLEDB on headless systems like research computing clusters. The `Slurm environment <https://slurm.schedmd.com/documentation.html>`_ is utilized. 
+
+Namely:
+
+	* Instructions for resource allocation, installing, and running the inversion in both interactive and batch modes of Slurm research computing setups are provided.
+	
+	* The database building bash script has a dedicated headless version, *rundb_1line_slurm.sh*, where user options are hard-coded.
+
+	* Pure python test scripts (test\_\*.py) are exported/generated from the Jupyter notebooks (test\_\*.ipynb) to be compatible with batch allocations.
+
+A dedicated readme covering this topic can be :ref:`consulted here <readme-slurm-label>` or as standalone in the mian CLEDB directory. The instructions are provided following the templates set by the `Colorado University Research Computing User Guide <https://curc.readthedocs.io/en/latest/index.html>`_.

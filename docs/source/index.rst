@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-**CLEDB** Documentation
-=======================
+Documentation for the **CLEDB** Distribution
+============================================
 
-https://github.com/arparaschiv/solar-coronal-inversion
+`CLEDB is a publicly hosted on Github <https://github.com/arparaschiv/solar-coronal-inversion>`_
 
 ------------------------------------------------------
 
@@ -14,22 +14,24 @@ https://github.com/arparaschiv/solar-coronal-inversion
 
 
 The **C**\ oronal **L**\ ine **E**\ mission **D**\ ata\ **B**\ ase inversion is a Python based tool and pipeline that is used to infer magnetic field information from SpectroPolariemtric observations of the Solar Corona.
-This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for coronal magnetic fields.
+This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for inverted coronal magnetic fields.
 
 -----------------------------------------------------------------------------
 
 **Authors and Contact:** 
 
-| Alin Paraschiv and Philip Judge -- High Altitude Observatory NCAR|UCAR
+| Alin Paraschiv and Philip Judge 
+| -- High Altitude Observatory NCAR|UCAR 
+| -- National Solar Observatory, AURA
 
-| arparaschiv *at* ucar.edu  or paraschiv.alinrazvan+cledb *at* gmail.com
+| arparaschiv *at* ucar edu  or paraschiv.alinrazvan+cledb *at* gmail
 
 -----------------------------------------------------------------------
 
 .. Check out the :doc:`usage` section for further information.
 
 .. note::
-   Last updated at *update-readthedocs* commit tag.
+   Last updated at the :ref:`*update-readthedocs*<todo-label>` commit tag.
 
 .. toctree::
    :maxdepth: 3
@@ -43,17 +45,16 @@ This document describes the main concepts, functions, and variables, comprising 
    cledb_prepinv
    cledb_proc
    outputs
-   slurm
    readmes
    changelog
    glossary 
 
 
 
+..
+   Indices and tables
+   ==================
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   * :ref:`genindex`
+   * :ref:`modindex`
+   * :ref:`search`

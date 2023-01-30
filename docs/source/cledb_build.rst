@@ -42,7 +42,7 @@ CLEDB_BUILD Configuration
 
 	* darwin -- mac osx x86 compiled.
 
-DB.INPUT parameters
+DB.INPUT Parameters
 ^^^^^^^^^^^^^^^^^^^
 
 ``ny, ymin, ymax``
