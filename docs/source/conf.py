@@ -21,6 +21,8 @@ project = 'CLEDB solar-coronal-inversion'
 copyright = '2023, Alin Paraschiv'
 author = 'Alin Paraschiv'
 
+master_doc = 'index'
+
 # The full version, including alpha/beta/rc tags
 release = 'update-readthedocs'
 
