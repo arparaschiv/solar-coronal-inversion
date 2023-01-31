@@ -1,6 +1,8 @@
 # **CLEDB Coronal Field Database Inversion**
 ### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
 
+[![Documentation Status](https://readthedocs.org/projects/cledb/badge/?version=latest)](https://cledb.readthedocs.io/en/latest/?badge=latest)
+
 Main repository for **CLEDB**, the Coronal Line Emission DataBase inversion code distribution.
 
 **Authors:** Alin Paraschiv & Philip Judge.  High Altitude Observatory & National Solar Observatory 
