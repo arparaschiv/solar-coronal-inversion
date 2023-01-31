@@ -10,7 +10,8 @@ Focused Readme Files
 MAIN README
 -----------
 
-.. include:: ../../README.md
+..
+   .. include:: ../../README.md
    :parser: myst_parser.sphinx_
 
 .. _readme-rundb-label:
@@ -18,7 +19,8 @@ MAIN README
 README-RUNDB
 ------------
 
-.. include:: ../../CLEDB_BUILD/README-RUNDB.md
+..
+   .. include:: ../../CLEDB_BUILD/README-RUNDB.md
    :parser: myst_parser.sphinx_
 
 .. _readme-slurm-label:
@@ -26,7 +28,8 @@ README-RUNDB
 README-SLURM
 ------------
 
-.. include:: ../../README-SLURM.md
+..
+   .. include:: ../../README-SLURM.md
    :parser: myst_parser.sphinx_
 
 
