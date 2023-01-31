@@ -8,6 +8,8 @@ build:
 # Build from the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
+  builder: html
+  fail_on_warning: false
 
 # Explicitly set the version of Python and its requirements
 python:
