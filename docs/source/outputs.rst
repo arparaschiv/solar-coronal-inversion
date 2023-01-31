@@ -18,7 +18,7 @@ The main CLEDB inversion algorithm outputs are stored in the following variables
 	11 **CLEDB_INVPROC** output products. These are described :ref:`here <invout-label>`\ .
 
 * **issuemask**  
-	Records any issues that arise in processing for each voxel (to be implemented). The issuemask will be updated by both modules.
+	Records any issues that arise in processing for each pixel (to be implemented). The issuemask will be updated by both modules.
 
 .. note::
 	The global process followed to produce these outputs is sketched in :ref:`module_flow-label`.
@@ -38,7 +38,7 @@ The inversion will implement a confidence/issue map of size [nx,ny] for all spat
 Example of issuemask coding:
 
 Code 0
-	No apparent problem in voxel.
+	No apparent problem in pixel.
 
 Code 1
 	One or more of Stokes I, Q, U are lower than noise RMS threshold.
@@ -64,4 +64,4 @@ Code 64
 Code 128
 	\----------------TBD----------------------
 
-Encoding the information sequentially when processing through the different modules will be done by using powers of 2. The issuemask values are thus cumulative. Following the map coding from above, we take for example a pixel from a 1-line observation with unreliable Stokes V signal. The uncertainty in Stokes V will also lead to compromised B\ :math:`_{LOS}` information. Thus, the *issuemask* will encode a value of 10 for that respective pixel.
+Encoding the information is done sequentially when progressing through the different modules.  This will be done by using powers of 2. The issuemask values thus become cumulative. Following the sketch map encoding from above, we take for example a pixel from a 1-line observation with unreliable Stokes V signal. The uncertainty in Stokes V will also lead to compromised B\ :math:`_{LOS}` information. Thus, the *issuemask* will encode a value of 10 for that respective pixel.

@@ -7,51 +7,51 @@ Input Data and Metadata
 -----------------------
 
 ``header *keys`` 
-	Set of input header metadata information that should describe the ``sobs_in`` :ref:`variable <sobs_in-label>`. Expected keywords with simplified naming are detailed in this section. Detailed keyword information can be found for DKIST observations in the `SPEC_0214 documentation <https://docs.dkist.nso.edu/projects/data-products/en/stable/specs/spec-214.html>`_.
+	Set of input :term:`header` metadata information that should describe the ``sobs_in`` :ref:`variable <sobs_in-label>`. Expected keywords with simplified naming are detailed in this section. Detailed keyword information can be found for DKIST observations in the `SPEC_0214 documentation <https://docs.dkist.nso.edu/projects/data-products/en/stable/specs/spec-214.html>`_.
 
-	``*keys to crpixn [int]``
+	``*keys to crpixn [] int``
 	Reference pixel along x y or w (wavelength) direction.
 
-	``*keys to crvaln [float]``
+	``*keys to crvaln [] float``
 	Coordinate value at crpix along x y or w (wavelength) direction.
 
-	``*keys to cdeltn [float]``
+	``*keys to cdeltn [] float``
 	Spatial (x,y) or spectral (w) platescale sampling along a direction.
 
-	``*keys to linpolref [float]``
+	``*keys to linpolref [] float``
 	(0, 2\ :math:`{\pi}`) range; Direction of reference for the linear polarization. This is a physical convention based on the fixed orientation of a spectrograph retarder. ``linpolref`` = 0 implies the direction is corresponding to a horizontal axis, analogous to the unit circle reference. Direction is trigonometric. The units are in radians. 
 
-	``*keys to instwidth [float]``
+	``*keys to instwidth [] float``
 	Measure of the utilized instrument's intrinsic line broadening coefficient. The units are in nm or km s\ :math:`^{-1}`.
 
-	``*keys to nline [int]``
+	``*keys to nline [] int``
 	Number of targeted lines; CLEDB can accept 1-line or 2-line observations.  
 
-	``*keys to tline [str, nline]``
-	String array containing the name of lines to process. Naming convention follows the database directory structure first used by the ``CLEDB_BUILD`` module.
+	``*keys to tline [:12, nline] string array``
+	String array containing the name of lines to process. Naming convention follows the database :ref:`directory structure <naming_conv-label>` defined as part of the ``CLEDB_BUILD`` module.
 
-	``*keys to xs/naxis1 [int]``
+	``*keys to xs/naxis1 [] int``
 	Pixel dimension of ``sobs_in`` array along the horizontal spatial direction.
 
-	``*keys to ys/naxis2 [int]``
+	``*keys to ys/naxis2 [] int``
 	Pixel dimension of ``sobs_in`` array along the vertical spatial direction.
 
-	``*keys to ws [int]``
+	``*keys to ws [] int``
 	Pixel dimension of ``sobs_in`` array along the spectral dimension.  
 
-	``*keys to skybright [float]``
+	``*keys to skybright [] float``
 	Sky brightness measurement used to judge observation quality and rms.
 
-	``*keys to grtngba \& grtngang [float]`` 
+	``*keys to grtngba \& grtngang [] float`` 
 	The grating order and position; used to find central wavelength of input observation and judge suitability for inverting.   
 
-``keyvals[list]``
-	Order is nx, ny, nw, nline, tline, crpix1, crpix2, crpix3, crval1, crval2, crval3, cdelt1, cdelt2, cdelt3, linpolref, instwidth;  This is a variable pack used to more easily feed the necessary keywords to other modules and/or functions.                        
+``keyvals [16] list of variables``
+	Packing of nx, ny, nw, nline, tline, crpix1, crpix2, crpix3, crval1, crval2, crval3, cdelt1, cdelt2, cdelt3, linpolref, instwidth in a list container to more easily feed the necessary keywords to other modules and/or functions.                        
 
 .. _sobs_in-label:
 
-``sobs_in float array [nline][xs,ys,ws,4]  nline = 1 || 2 for (1-line) or (2-line)``
-    ``sobs_in`` is passed as a numba typed list at input. Data are input Stokes IQUV observations of one or two lines respectively. The list will be internally reshaped as a numpy float array of [xs,ys,ws,4] or [xs,ys,ws,8] size.  
+``sobs_in [nline][xs,ys,ws,4] float array; nline = 1 || 2 for (1-line) or (2-line)``
+    ``sobs_in`` is passed as a `numba typed list <https://numba.readthedocs.io/en/stable/reference/pysupported.html#typed-list>`_ at input. Data are input Stokes IQUV observations of one or two lines respectively. The list will be internally reshaped as a numpy float array of [xs,ys,ws,4] or [xs,ys,ws,8] size.  
 
 .. _ctrl-label:
 
@@ -61,7 +61,7 @@ Ctrl. Parameters *ctrlparams.py* Class
 .. literalinclude:: ../../ctrlparams.py
    :language: PYTHON
 
-Python class that unpacks control parameters used in all modules of the inversion setup. This is an editable imported module that users access and modify. The yaml import seen here is used to configure NNumba global options.
+Python class that unpacks control parameters used in all modules of the inversion setup. This is an editable imported module that users access and modify. The yaml import seen here is used to configure Numba global options.
 
 .. hint::
 	The python importlib module is used in the example notebooks to reload changes.
@@ -69,12 +69,14 @@ Python class that unpacks control parameters used in all modules of the inversio
 General Parameters
 ^^^^^^^^^^^^^^^^^^
 
-``dbdir [string]``
+.. _ctrl_dbdir-label:
+
+``dbdir [] string``
 	Directory where the database is stored after being built with ``CLEDB_BUILD``. This is the main directory containing all ions, and not one of the individual ion subdirectories (e.g. fe-xiii_1074, etc.).
 
 .. _verbosity-label:
 
-``verbose [uint]``
+``verbose [] uint``
 	Verbosity controlling parameter that takes vales 0-3. Levels are incremental (e.g. lev 3 includes outputs from levels 1 and 2) Due to Numba library incompatibilities, enabling higher level verbosity will block Numba optimization of the code. 
 
 	* verbose == 0: Production; silent run.
@@ -88,7 +90,7 @@ General Parameters
 PREPINV Parameters
 ^^^^^^^^^^^^^^^^^^
 	
-``integrated [boolean]``
+``integrated [] boolean``
 	To use for calibrated COMP/UCOMP data. In this case, the profiles are integrated across the line sampling points. This parameter defaults to 0 to be applicable to spectroscopic data such as DKIST. 
 
 PROC Parameters
@@ -96,13 +98,17 @@ PROC Parameters
 
 .. _ctrl_nsearch-label:
 
-``nsearch [uint]``
-	Number of solutions to compute and return for each voxel. 
+``nsearch [] uint``
+	Number of solutions to compute and return for each pixel. 
+
+.. _ctrl_maxchisq-label:
 	
-``maxchisq [float]``
-	Stops searching for solutions in a particular voxel if fitting residuals surpassed this threshold.
+``maxchisq [] float``
+	Stops searching for solutions in a particular pixel if fitting residuals surpassed this threshold.
 	
-``gaussfit [uint]``
+.. _ctrl_gaussfit-label:
+
+``gaussfit [] uint``
 	Used to switch between CDF fitting and Gaussian parametric fitting with optimization.
 
 	* gaussfit == 0: Process the spectroscopic line parameters using only the CDF method.
@@ -113,7 +119,7 @@ PROC Parameters
 
 .. _ctrl_bcalc-label:
 	
-``bcalc [uint]``
+``bcalc [] uint``
 	Controls how to compute the field strength in the case of 2-line observations.
 
 	* bcalc == 0: Use the field strength ratio of the first coronal line in the list. Only applicable when Stokes V measurements exist; e.g. iqud is disabled.
@@ -126,26 +132,27 @@ PROC Parameters
 
 .. _ctrl_red-label:
 
-``reduced [boolean]``
+``reduced [] boolean``
 	Parameter to reduce the database size before searching for solutions by using the linear polarization measurements. Dimensionality of db is reduced by over 1 order of magnitude, enabling significant sped-ups. Solution ordering might be altered in certain circumstances.
 
 .. _ctrl_iqud-label:
 
-``iqud [boolean]``
+``iqud [] boolean``
 	Switches the main matching function of ``CLEDB_PROC`` in order to utilize either Stokes V or Doppler oscillations to compute the magnetic field strength and orientation.
 
 Numba Jit Parameters
 ^^^^^^^^^^^^^^^^^^^^
 
-``jitparallel [boolean]``
+.. _njit_par-label:
+
+``jitparallel [] boolean``
 	When Jit is enabled (jitdisable == False), it controls whether parallel loop-lifting allocations are requested, as opposed to just optimize the execution in single-thread-mode. 
 
-``jitcache [boolean]``
+``jitcache [] boolean``
 	Jit caching for slightly faster repeated execution. Enable only after no changes to \@jit or \@njit functions are required. Otherwise kernel restarts are needed to clear caches. 
 
-``jitdisable [boolean]``
+``jitdisable [] boolean``
 	Debug parameter to control the enabling of Numba Just in Time compilation (:term:`JIT`) decorators throughout. Higher level verbosity requires disabling the JIT decorators. This functionality can only be done via Numba GLOBAL flags that need to be written to a configuration file ``.numba_config.yaml``. Any change of this parameter requires a kernel restart.
-
 
 
 Constants *constants.py* Class
@@ -154,7 +161,7 @@ Constants *constants.py* Class
 .. literalinclude:: ../../constants.py
    :language: PYTHON
 
-Python class that unpacks physical constants needed during the inversion. Parameters are mainly utilized by the ``SPECTRO_PROC`` and ``BLOS_PROC`` modules. Ion specific and general atomic and plasma constant parameters are stored herein. The class self-initializes for each requested ion providing its *ion specific* parameters in a dynamic fashion.
+Python class that unpacks physical constants needed during the inversion. The constants are mainly utilized by the ``SPECTRO_PROC`` and ``BLOS_PROC`` modules. Ion specific and general atomic and plasma constant parameters are packed herein. The class self-initializes for each requested ion providing its **ion specific** parameters in a dynamic fashion.
 
 Physical Constants
 ^^^^^^^^^^^^^^^^^^
@@ -162,54 +169,54 @@ Physical Constants
 ``solar_diam [float*4]``
 	Solar diameter in arcsecond, degrees, radians, and steradian units.
 	
-``l_speed [float]`` 
-	Speed of light; SI [m s\ :math:`^{-1}`]  
+``l_speed [] float`` 
+	Speed of light; Units in SI [m s\ :math:`^{-1}`]  
 
-``kb [float]``
-	Boltzmann constant; SI [m\ :math:`^{-2}` kg s\ :math:`^{-2}` K\ :math:`^{-1}`]
+``kb [] float``
+	Boltzmann constant; Units in SI [m\ :math:`^{-2}` kg s\ :math:`^{-2}` K\ :math:`^{-1}`]
 	
-``e_mass [float]``
-	Electron mass; SI [Kg]
+``e_mass [] float``
+	Electron mass; Units in SI [Kg]
 	
-``e_charge [float]``
-	Electron charge; SI [C]
+``e_charge [] float``
+	Electron charge; Units in SI [C]
 	
-``planckconst [float]``
-	Planck's constant; SI [m\ :math:`^{-2}` kg s\ :math:`^{-1}`]
+``planckconst [] float``
+	Planck's constant; Units in SI [m\ :math:`^{-2}` kg s\ :math:`^{-1}`]
 	
-``bohrmagneton [float]``
-	Bohr Magneton; Mostly SI converted to Gauss units [kg m\ :math:`^{-2}` s\ :math:`^{-2}` G\ :math:`^{-1}`]		
+``bohrmagneton [] float``
+	Bohr Magneton; Units in mostly in SI. T converted to Gauss units [kg m\ :math:`^{-2}` s\ :math:`^{-2}` G\ :math:`^{-1}`]		
 		
 Ion Specific Constants
 ^^^^^^^^^^^^^^^^^^^^^^
 .. Note::
-	Four sets of these constants are provisioned for the four possible ions to invert.
+	Four sets of these constants are provisioned for the four possible lines to invert.
 
-``ion_temp [float]``
-	Ion temperature; SI [K]
+``ion_temp [] float``
+	Ion temperature; Units in SI [K]
 
-``ion_mass [float]``
-	float; Ion mass; SI [Kg]   
+``ion_mass [] float``
+	Ion mass; Units in SI [Kg]   
 
 .. _consts_lref-label:
 
-``line_ref [float]``
-	Theoretical line core wavelength position; [nm]		
+``line_ref [] float``
+	Theoretical line core wavelength position; Units in [nm]		
 
 .. Caution::
 	Simulation examples might have different set line centers based on the spectral synthesis code used. Doppler shift products might not compute correctly.			
 
-``width_th [float]`` 
-	float; Thermal width analytical approximation; [nm]
+``width_th [] float`` 
+	Thermal width analytical approximation; Units in [nm]
 
-``F_factor [float]`` 
-	Additional factor described by `Dima & Schad, ApJ, 2020 <https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract>`_. Useful when calculating LOS products in the ``BLOS_PROC`` module	
+``F_factor [] float`` 
+	Additional factor described by `Dima & Schad, ApJ, 2020 <https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract>`_. Useful when calculating :term:`LOS` products in the ``BLOS_PROC`` module	
 
-``g``\ :sub:`u` \& ``g``\ :sub:`l` ``[float]`` 
-	Atomic upper and lower energy levels factors; LS coupling
+``gu and gl [] float`` 
+	LS coupling atomic upper and lower energy levels factors
 
-``j``\ :sub:`u` \& ``j``\ :sub:`l` ``[float]``	
+``ju and jl [] float``	
 	Atomic upper and lower level angular momentum terms
 
-``g``\ :math:`_{eff}` ``[float]``
-	LS coupling effective Lande factor
+``g_eff [] float``
+	LS coupling effective Land\ :math:`\acute{e}` g factor

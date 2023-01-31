@@ -1,9 +1,9 @@
-Dedicated Readme Files
+Focused Readme Files
 ======================
 
 .. warning::
    * The sections below are dinamically linked to standalone readme markdown files. A documentation rebuild will capture changes in any of the files.
-   * Consequentially, some dynamic links to functions will not work here as they would from the direct rendering of the readmes. This is because relative paths can not be kept consistent.
+   * Consequentially, some dynamic links to functions will not work when displayed here as they would from the direct rendering of the readmes. This is because relative paths can not be kept consistent.
 
 .. _readme-main-label:
 
@@ -26,7 +26,7 @@ README-RUNDB
 README-SLURM
 ------------
 
-.. include:: ../../README_SLURM.md
+.. include:: ../../README-SLURM.md
    :parser: myst_parser.sphinx_
 
 

@@ -6,8 +6,8 @@ Glossary
 	ADU
 		Arbitrary Data Units; detector calibrated counts when no absolute intensity calibration exists.
 
-	Analytical solution
-	    Frame an inverse problem in a well-understood mathematical form and  approximates a solution. 
+	Analytical solutions
+	    Frame an inverse problem in a well-understood and reasonably posed mathematical form and approximates a solution. 
 
 	CDF
 		Cumulative Distribution Function. Statistical method for interpreting normal distributions. 
@@ -30,8 +30,11 @@ Glossary
 	FWHM
 		Full Width at Half Maximum. Measurement of a standard width of a normal distribution.    
 
-	Header (input file)
-	    Sets of metadata that accompanies an observation datafile.
+	Glob
+		This is a `Python library <https://docs.python.org/3/library/glob.html>`_ to process and manipulate os pathnames. 
+
+	Header 
+	    Sets of input metadata that accompanies an observation datafile.
 
 	Inversion
 	    Mathematical process that starts from the output of a physical 		process and backtraces to recover one or more input variables. In our particular case, we start from output Stokes IQUV profiles and attempt at recovering coronal magnetic fields responsible for producing said profiles.
@@ -49,13 +52,22 @@ Glossary
 		`An open source JIT compiler <https://numba.pydata.org/>`_ that translates a subset of Python and NumPy code into fast machine code. Serial task parallelization and loop-lifting is also available. See `documentation <https://numba.readthedocs.io/en/stable/index.html>`_.
 
 	Numpy
-		`Open source library <https://numpy.org/>`_ for fast numeric operations.	
+		`Open source library <https://numpy.org/>`_ for fast numeric operations.
+
+	Physical parameters
+		A set of observable parameters like density, magnetic field strength, magnetic geometry components, temperature, 3D coordinate position, etc. 
 
 	Physical units
 	    Definition of measurement that is calibrated to physically etalonated constants; e.g. intensity in [erg cm\ :math:`^{-2}` s\ :math:`^{-1}` nm\ :math:`^{-1}` sr\ :math:`^{-1}`]
 
+	Pixel
+		A 2D representation for a signal integrating area. This is equivalent to a LOS integration of a voxel. This is also the fundamental storage datatype for Python/Numpy arrays. In this document we refer to pixels when discussing data/array elements. 
+
 	Radiative transfer
 	    Transfer of electromagnetic radiation through a medium.
+
+	RMS
+		Root Mean Square.  The square root of the arithmetic mean of the squares in a set of discrete realizations.
 
 	Slurm
 		A computation `worload manager <https://slurm.schedmd.com/documentation.html>`_ used predominantly by research computing clusters.
@@ -66,17 +78,17 @@ Glossary
 	Spectroscopic emission line
 	    Excess flux exceeding background counts at determined spectral positions, occurring when the electrons of an excited atom or molecule move between energy levels.
 
-	Stokes parameters 
+	Stokes IQUV 
 	    A set of values or spectra that describe the polarization state of electromagnetic radiation.
 
 	Stokes I
 	    Total intensity of spectroscopic line emission.
 
-	Stokes Q \& U
+	Stokes Q and U
 	    Linear polarization components of spectroscopic line emission.
 
 	Stokes V
 	    Circular polarization component of spectroscopic line emission.
 
 	Voxel
-	    A generalized concept of a pixel. In our case, by voxel we envision 2D projection of a volume inside a square area that contains information about the integral emission along the line of sight.                     
+	    A generalized concept of a pixel. In our case, by voxel we envision 2D projection of a volume inside a square area that contains information about the integral emission along the line of sight. Voxel is used in this document instead of :term:`pixel` when refering to the physical counts recorded inside a spatial integration area of the size of a pixel.                    

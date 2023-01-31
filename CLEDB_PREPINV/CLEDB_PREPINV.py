@@ -255,7 +255,7 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
                 dbynumbers[i]=np.int32(namesA[i][nn+2:nn+6])
             return [namesA,namesB],dbynumbers,dbsubdirs
 
-        ## legacy loop to read two line databases (for fe XIII). .hdr and .DAT database files need to be in dbdir.
+        ## legacy loop to read two line databases (for fe XIII). .hdr and .DAT database files need to be in dbdir without a specific ion subfolder.
         elif os.path.isfile(dbdir+"db.hdr") and glob.glob(dbdir+"DB*.DAT") != []:
             names=glob.glob(dbdir+"DB*.DAT")
             nn=str.find(names[0],'DB0')

@@ -22,7 +22,7 @@ The CLEDB inversion algorithm can be split into three parts:
  
 * The ``CLEDB_PREPINV`` module prepares the data for analysis and matches required databases to read into memory (for the 2-line branch). Two main functions **SOBS_PREPROCESS** and **SDB_PREPROCESS** match and prepare the data and databases for analysis. The *ctrlparams* and *constants* classes are imported separately and fed to the module.
 
-*  The ``CLEDB_PROC`` module encompasses the main data analysis functions **SPECTRO_PROC**, **BLOS_PROC**, and/or **CLEDB_INVPROC**. These perform analytical or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the ``OUTPUTS``). 
+*  The ``CLEDB_PROC`` module encompasses the main data analysis functions **SPECTRO_PROC**, **BLOS_PROC**, and/or **CLEDB_INVPROC**. These apply :term:`analytical solutions` or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the ``OUTPUTS``). 
 
 .. hint::
 	The :ref:`readme-main-label` contains instructions on how to end-to-end run the provided examples.
@@ -46,14 +46,19 @@ The following Python packages are required. For numerical computation efficiency
 	
 * Numpy
 	Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure Python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.23) documentation is `found here. <https://numpy.org/doc/1.23/>`_
-	
+
 * Numba
-	Numba implements just in time (JIT) compilation decorators and attempts where possible to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode will maximize optimization and runtime speed, but is significantly limited in terms of Python and/or Numpy function compatibility. 
+	Numba implements just in time (JIT) compilation decorators and attempts where possible to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode is the desired target. It will maximize optimization and runtime speed, but is significantly limited in terms of Python and/or Numpy function compatibility. Object-mode has full Python compatibility but the applicable optimizations are `significantly less effective in most situations <https://numba.readthedocs.io/en/stable/user/performance-tips.html#no-python-mode-vs-object-mode>`_. 
 
-	A Numba fully-enabled implementation can utilize only a small subset of Python and Numpy functions. Significant data sanitation and statically defined function I/O are required in order to enable runtime optimization and parallelization. Due to these sacrifices, coding implementations are not always clear and straightforward. Extensive documentation and examples can be found in the Numba documentation. The version specific (0.56.4) documentation is `available here. <https://numba.readthedocs.io/en/0.53.1/>`_
+	A Numba fully-enabled implementation can utilize only a small subset of Python and Numpy functions. Significant data sanitation and statically defined function I/O are required in order to enable runtime optimization and parallelization. Due to these sacrifices, coding implementations are not always clear and straightforward. 
 
-	.. Note::
-		The ``CLEDB_PREPINV`` module can only be compiled in Numba object-mode due to disk I/O operations that are not implemented in non-python mode.
+	.. danger::
+		Numba non-python mode is not directly equivalent to parallel/loop-lifted runs. A decision on running a specific function in parallel needs manual consideration. Loop-lifting "all" non-python functions leads to significant worsening of execution efficiency. We use a :ref:`control parameter <njit_par-label>` described later-on to control the use of loop-lifting/parallelization, but only on functions that would benefit from the effect. A significant number of non-python compatible functions have implicit parallelization set to disabled **for good reason**.
+
+	Extensive documentation and examples can be found in the Numba documentation. The version specific (0.56.4) documentation is `available here. <https://numba.readthedocs.io/en/0.53.1/>`_
+
+	.. Attention::
+		The ``CLEDB_PREPINV`` module can only be compiled in Numba object-mode due to disk I/O operations that are not implemented in non-python mode. Object-mode is usually not faster than normal Python, but it does benefit from loop-lifting parallelization, that is beneficial to our usecase.
 
 * pyyaml
 	YAML format library utilized in the *ctrlparams* class to enable or disable Numba global options. 

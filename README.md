@@ -1,7 +1,7 @@
-# **CLEDB CORONAL FIELD DATABASE INVERSION**
+# **CLEDB Coronal Field Database Inversion**
 ### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
 
-Main repository for **CLEDB**; the Coronal Line Emission DataBase inversion code distribution.
+Main repository for **CLEDB**, the Coronal Line Emission DataBase inversion code distribution.
 
 **Authors:** Alin Paraschiv & Philip Judge.  High Altitude Observatory & National Solar Observatory 
 
@@ -18,7 +18,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 
 1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available in a dedicated documentation write-up. [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
-3. Installation and usage on RC systems is described in [README_SLURM.md](./README_SLURM.md).
+3. Installation and usage on RC systems is described in [README-SLURM.md](./README-SLURM.md).
 4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
 
 ### **System platform compatibility**
@@ -49,7 +49,7 @@ ii. Download the file using its gdrive FILE_ID from the download link (*test dat
     gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
 
 Note: The script versions of both tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs. 
-These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated [README_SLURM](./README_SLURM.md) for additional information.
+These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated [README-SLURM](./README-SLURM.md) for additional information.
 
 Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/stable/) in a correct installation.
 
