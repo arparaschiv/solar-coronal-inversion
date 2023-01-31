@@ -41,6 +41,24 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "colon_fence",
+    "smartquotes",
+    "replacements",
+    "linkify",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+    "attrs_inline",
+    "inv_link",
+]
+
 
 # -- Options for HTML output -------------------------------------------------
 
