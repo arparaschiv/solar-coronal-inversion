@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module Overview &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation and Run Instructions" href="install.html" />
+    <link rel="prev" title="Synopsis and Motivation" href="synopsis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Module Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#algorithm-flowchart-definitions">Algorithm Flowchart Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-cledb-modules">The CLEDB Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-python-modules">The Python Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis and Inversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Focused Readme Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Module Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/module_overview.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-overview">
+<h1>Module Overview<a class="headerlink" href="#module-overview" title="Permalink to this heading"></a></h1>
+<section id="algorithm-flowchart-definitions">
+<h2>Algorithm Flowchart Definitions<a class="headerlink" href="#algorithm-flowchart-definitions" title="Permalink to this heading"></a></h2>
+<p>We illustrate our definitions for the flowcharts presented throughout this document that describe the principal algorithm operations. We note that the flowcharts are not exhaustive and are not meant to describe the code to the level of individual operations. The flowcharts list the main variables and functions used along with how they are processed by the different modules and intrinsic functions, and the resulting outputs.</p>
+<a class="reference internal image-reference" href="_images/shape_defs.png"><img alt="_images/shape_defs.png" src="_images/shape_defs.png" style="width: 800px;" /></a>
+</section>
+<section id="the-cledb-modules">
+<span id="module-flow-label"></span><h2>The CLEDB Modules<a class="headerlink" href="#the-cledb-modules" title="Permalink to this heading"></a></h2>
+<p>The CLEDB inversion algorithm can be split into three parts:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">CLEDB_BUILD</span></code> module contains pre-configured scripts for generating a database used downstream to fit the observations. Fortran binaries and Bash scripting is used by this module. Running the default configured <code class="docutils literal notranslate"><span class="pre">rundb_1line.sh</span></code> script for each line of your observation is enough in most cases. Please see the dedicated <a class="reference internal" href="readmes.html#readme-rundb-label"><span class="std std-ref">README-RUNDB</span></a> for more detailed instructions.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> module prepares the data for analysis and matches required databases to read into memory (for the 2-line branch). Two main functions <strong>SOBS_PREPROCESS</strong> and <strong>SDB_PREPROCESS</strong> match and prepare the data and databases for analysis. The <em>ctrlparams</em> and <em>constants</em> classes are imported separately and fed to the module.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">CLEDB_PROC</span></code> module encompasses the main data analysis functions <strong>SPECTRO_PROC</strong>, <strong>BLOS_PROC</strong>, and/or <strong>CLEDB_INVPROC</strong>. These apply <a class="reference internal" href="glossary.html#term-Analytical-solutions"><span class="xref std std-term">analytical solutions</span></a> or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the <code class="docutils literal notranslate"><span class="pre">OUTPUTS</span></code>).</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The <a class="reference internal" href="readmes.html#readme-main-label"><span class="std std-ref">MAIN README</span></a> contains instructions on how to end-to-end run the provided examples.</p>
+</div>
+<a class="reference internal image-reference" href="_images/1_CLEDB_OVERVIEW.png"><img alt="_images/1_CLEDB_OVERVIEW.png" src="_images/1_CLEDB_OVERVIEW.png" style="width: 800px;" /></a>
+<p>The flowchart schematic presents the modules along with the main inputs and outputs. Each module is described separately in the following sections along with detailed operation flowcharts. The most important variables and functions are described for each inversion module component. The definitions and accompanying diagrams are not meant to be 1:1 mirrors of the coding, but merely to trace the most crucial operations and resulting outputs. Common terminology is defined in the last section.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Additionally, more extended comments can be found in each module’s Python/Bash scripts.</p>
+</div>
+</section>
+<section id="the-python-modules">
+<span id="python-modules-label"></span><h2>The Python Modules<a class="headerlink" href="#the-python-modules" title="Permalink to this heading"></a></h2>
+<p>The following Python packages are required. For numerical computation efficiency, the inversion heavily relies on the Numpy and Numba packages.</p>
+<ul>
+<li><dl class="simple">
+<dt>Numpy</dt><dd><p>Numpy provides fast vectorized operations on its self implemented-ndarray datatypes. All Python based modules are written in a Numpy-centric way. Functional equivalent pure Python coding is avoided when possible due significantly slower runtimes. Numpy version specific (1.23) documentation is <a class="reference external" href="https://numpy.org/doc/1.23/">found here.</a></p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Numba</dt><dd><p>Numba implements just in time (JIT) compilation decorators and attempts where possible to perform loop-lifting and scale serial tasks on available CPU threads. Numba has two modes of operation, object-mode and non-python mode. Non-python mode is the desired target. It will maximize optimization and runtime speed, but is significantly limited in terms of Python and/or Numpy function compatibility. Object-mode has full Python compatibility but the applicable optimizations are <a class="reference external" href="https://numba.readthedocs.io/en/stable/user/performance-tips.html#no-python-mode-vs-object-mode">significantly less effective in most situations</a>.</p>
+<p>A Numba fully-enabled implementation can utilize only a small subset of Python and Numpy functions. Significant data sanitation and statically defined function I/O are required in order to enable runtime optimization and parallelization. Due to these sacrifices, coding implementations are not always clear and straightforward.</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Numba non-python mode is not directly equivalent to parallel/loop-lifted runs. A decision on running a specific function in parallel needs manual consideration. Loop-lifting “all” non-python functions leads to significant worsening of execution efficiency. We use a <a class="reference internal" href="inputvars.html#njit-par-label"><span class="std std-ref">control parameter</span></a> described later-on to control the use of loop-lifting/parallelization, but only on functions that would benefit from the effect. A significant number of non-python compatible functions have implicit parallelization set to disabled <strong>for good reason</strong>.</p>
+</div>
+<p>Extensive documentation and examples can be found in the Numba documentation. The version specific (0.56.4) documentation is <a class="reference external" href="https://numba.readthedocs.io/en/0.53.1/">available here.</a></p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> module can only be compiled in Numba object-mode due to disk I/O operations that are not implemented in non-python mode. Object-mode is usually not faster than normal Python, but it does benefit from loop-lifting parallelization, that is beneficial to our usecase.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>pyyaml</dt><dd><p>YAML format library utilized in the <em>ctrlparams</em> class to enable or disable Numba global options.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Scipy</dt><dd><p>Used for spectroscopic fitting and statistics.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Jupyter, Jupyterlab, Matplotlib and Ipympl</dt><dd><p>Optional libraries for data visualization, plotting, widgets, etc.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Glob, and OS</dt><dd><p>Additional modules used primarily by <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> for disk I/O operations.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Time and Sys</dt><dd><p>Used during debug runs with high level of <a class="reference internal" href="inputvars.html#verbosity-label"><span class="std std-ref">verbosity</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Sphinx, Sphinx-rtd-theme and Mist-parser</dt><dd><p>Libraries for building documentation and processing markdown files. Disabled as these are not required by the inversion.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="synopsis.html" class="btn btn-neutral float-left" title="Synopsis and Motivation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation and Run Instructions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

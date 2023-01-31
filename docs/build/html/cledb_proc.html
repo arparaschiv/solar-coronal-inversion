@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLEDB_PROC - Analysis and Inversion &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Output Products" href="outputs.html" />
+    <link rel="prev" title="CLEDB_PREPINV - Pre-processing" href="cledb_prepinv.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLEDB_PROC - Analysis and Inversion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-spectro-proc-function">The SPECTRO_PROC Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#spectro-proc-main-functions">SPECTRO_PROC Main Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spectro-proc-main-variables">SPECTRO_PROC Main Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-blos-proc-function">The BLOS_PROC Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#blos-proc-main-functions">BLOS_PROC Main Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blos-proc-main-variables">BLOS_PROC Main Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-cledb-invproc-function">The CLEDB_INVPROC Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cledb-invproc-main-functions">CLEDB_INVPROC Main Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cledb-invproc-main-variables">CLEDB_INVPROC Main Variables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Focused Readme Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">CLEDB_PROC - Analysis and Inversion</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cledb_proc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cledb-proc-analysis-and-inversion">
+<span id="cledb-proc-label"></span><h1>CLEDB_PROC - Analysis and Inversion<a class="headerlink" href="#cledb-proc-analysis-and-inversion" title="Permalink to this heading"></a></h1>
+<p><strong>Purpose:</strong></p>
+<p>Three main functions, <strong>SPECTRO_PROC</strong>, <strong>BLOS_PROC</strong>, and <strong>CLEDB_INVPROC</strong> are grouped under the <code class="docutils literal notranslate"><span class="pre">CLEDB_PROC</span></code> data analysis and inversion module. Based on the 1-line or 2-line input data, two or three modules are called. Line of sight or full vector magnetic field outputs along with plasma, geometric and spectroscopic outputs are inverted here. The algorithm flow and a data processing overview is described in the flowchart.</p>
+<a class="reference internal image-reference" href="_images/4_CLEDB_PROC.png"><img alt="_images/4_CLEDB_PROC.png" src="_images/4_CLEDB_PROC.png" style="width: 800px;" /></a>
+<section id="the-spectro-proc-function">
+<h2>The SPECTRO_PROC Function<a class="headerlink" href="#the-spectro-proc-function" title="Permalink to this heading"></a></h2>
+<p><strong>Purpose:</strong></p>
+<p>Ingests the fully prepped data from <a class="reference internal" href="cledb_prepinv.html#sobs-preprocess-label"><span class="std std-ref">sobs_preprocess</span></a> and produces spectroscopic outputs for each input line. Part of the outputs are used downstream in <strong>BLOS_PROC</strong> or <strong>CLEDB_INVPROC</strong>. This module requires data in the formats as resulting from the <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> module. Optional sub-modules are envisioned to be integrated into this processing based on upstream instrument processing and retrieved data quality. This is a computationally demanding and time consuming function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <span class="math notranslate nohighlight">\(\diamond\)</span>, <span class="math notranslate nohighlight">\(\triangleright\)</span>, and <span class="math notranslate nohighlight">\(\triangleright\triangleright\)</span> symbols respectively denote main, secondary, and tertiary (helper) level functions. Main functions are called by the example scripts. Secondary functions are called by the main functions, and tertiary from either main or secondary functions.</p>
+</div>
+<section id="spectro-proc-main-functions">
+<h3>SPECTRO_PROC Main Functions<a class="headerlink" href="#spectro-proc-main-functions" title="Permalink to this heading"></a></h3>
+<p><span class="math notranslate nohighlight">\(\diamond\)</span> <strong>SPECTRO_PROC</strong></p>
+<blockquote>
+<div><dl>
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> CDF_STATISTICS</dt><dd><p>Performs pixelwise analysis on the stokes IQUV spectra for each line and computes relevant spectroscopic outputs (see <a class="reference internal" href="#specout-label"><span class="std std-ref">specout</span></a>) by using via a <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-gaussfit-label"><span class="std std-ref">gaussfit key</span></a>. By default a gaussian fitting coupled with non-parametric approaches, namely the analysis of <a class="reference internal" href="glossary.html#term-CDF"><span class="xref std std-term">CDF</span></a> functions is utilized.</p>
+<dl class="simple">
+<dt><span class="math notranslate nohighlight">\(\triangleright\triangleright\)</span> OBS_CDF and ` OBS_GAUSSFIT</dt><dd><p>These are two helper routines used by CDF_STATISTICS to perform parameter fits and estimations.</p>
+</dd>
+</dl>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-gaussfit-label"><span class="std std-ref">gaussfit key</span></a> == 2 represents the slowest component of the entire CDF_STATISTICS block. On the other hand, it is the most accurate and reliable profile fitting method of the three options.</p>
+</div>
+</dd>
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> ML_LOSDISENTANGLE (Opt.)</dt><dd><p>Provisioned to be implemented at a later time. If observations permit, uses Machine Learning techniques for population distributions to help disentangling multiple emitting structures along the LOS in situations where the single point assumption might fail.</p>
+</dd>
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> LEV2CALIB_WAVE (Opt.)</dt><dd><p>Provisioned to be implemented at a later time. Higher order wavelength calibration using the spectroscopic profiles. See <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract">Ali, Paraschiv, Reardon, &amp; Judge, ApJ, 2022</a> for additional details. This function can couple if the upstream wavelength accuracy of the input observation is lower than 0.005 nm.</p>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Upstream Level-1 calibration for DKIST is provisioned to match or exceed this accuracy requirement. Implementation is of low priority.</p>
+</div>
+<dl class="simple">
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> LEV2CALIB_ABSINT (Opt.)</dt><dd><p>To be implemented at a later time, if feasible. Absolute intensity calibration function that produces an additional output, the calibrated intensity in <a class="reference internal" href="glossary.html#term-Physical-units"><span class="xref std std-term">physical units</span></a>. The approach is not easily automated as it requires a more convoluted and specific planning of the observations to gather the necessary input data.</p>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This functions was provisioned in the incipient stages of the pipeline design. Subsequently, it was found that CLEDB can utilize only normalized Stokes profiles such that absolute calibrations are not required (see <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract">Paraschiv &amp; Judge, SolPhys, 2022</a>). Implementation is halted at this time.</p>
+</div>
+</div></blockquote>
+</section>
+<section id="spectro-proc-main-variables">
+<h3>SPECTRO_PROC Main Variables<a class="headerlink" href="#spectro-proc-main-variables" title="Permalink to this heading"></a></h3>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">sobs_cal</span> <span class="pre">[nx,ny,sn,4]</span> <span class="pre">float</span> <span class="pre">array</span> <span class="pre">(opt.)</span></code></dt><dd><p>Optional calibrated level-2 data in intensity and or wavelength units. This array would be used by the CDF_STATISTICS function instead of <code class="docutils literal notranslate"><span class="pre">sobs_in</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As LEV2CALIB_ABSINT and LEV2CALIB_WAVE are not currently implemented, <code class="docutils literal notranslate"><span class="pre">sobs_cal</span></code> is currently just a placeholder.</p>
+</div>
+</dd>
+</dl>
+<dl id="specout-label">
+<dt><code class="docutils literal notranslate"><span class="pre">specout</span> <span class="pre">[nx,ny,nline,12]</span> <span class="pre">output</span> <span class="pre">float</span> <span class="pre">array</span></code></dt><dd><blockquote>
+<div><p>Returns 12 spectroscopic output products, for each <code class="docutils literal notranslate"><span class="pre">nline</span></code> input line and for every pixel location.</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>specout[:, :, :, 0]</dt><dd><p>Wavelength position of the line core. Units are [nm].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 1]</dt><dd><p>Doppler shift with respect to the theoretical line core defined in the <em>constants</em> class <a class="reference internal" href="inputvars.html#consts-lref-label"><span class="std std-ref">line_ref key</span></a>. Units are [nm].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 2]</dt><dd><p>Doppler shift with respect to the theoretical line core defined in the <em>constants</em> class <a class="reference internal" href="inputvars.html#consts-lref-label"><span class="std std-ref">line_ref key</span></a>. Units are [km s<span class="math notranslate nohighlight">\(^{-1}\)</span>].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 3:6]</dt><dd><p>Intensity at computed line center wavelength (<code class="docutils literal notranslate"><span class="pre">specout[:,</span> <span class="pre">:,</span> <span class="pre">:,</span> <span class="pre">0]</span></code>) for <a class="reference internal" href="glossary.html#term-Stokes-I"><span class="xref std std-term">Stokes I</span></a>, <a class="reference internal" href="glossary.html#term-Stokes-Q-and-U"><span class="xref std std-term">Stokes Q and U</span></a>. Units are <a class="reference internal" href="glossary.html#term-ADU"><span class="xref std std-term">ADU</span></a> or calibrated <a class="reference internal" href="glossary.html#term-Physical-units"><span class="xref std std-term">physical units</span></a> if LEV2CALIB_ABSINT is utilized.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>specout[:, :, :, 6]</dt><dd><p>Intensity at lobe maximum for <a class="reference internal" href="glossary.html#term-Stokes-V"><span class="xref std std-term">Stokes V</span></a>. The signed “core” counts are measured in the core of the absolute strongest lobe. Thus, the Stokes V measurement will not match the wavelength position of the Stokes IQU intensities. Units are <a class="reference internal" href="glossary.html#term-ADU"><span class="xref std std-term">ADU</span></a> or calibrated <a class="reference internal" href="glossary.html#term-Physical-units"><span class="xref std std-term">physical units</span></a> if LEV2CALIB_ABSINT is utilized.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>If the <em>ctrlparams</em> class <a class="reference internal" href="inputvars.html#ctrl-iqud-label"><span class="std std-ref">iqud key</span></a> == True, this dimension will be returned implicitly as 0.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 7]</dt><dd><p>Averaged background intensity outside the line profile for the <a class="reference internal" href="glossary.html#term-Stokes-I"><span class="xref std std-term">Stokes I</span></a> component. Since background counts are in theory independent of the Stokes measurement, we utilize just this one realization. Units are <a class="reference internal" href="glossary.html#term-ADU"><span class="xref std std-term">ADU</span></a> or calibrated <a class="reference internal" href="glossary.html#term-Physical-units"><span class="xref std std-term">physical units</span></a> if LEV2CALIB_ABSINT is used.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 8]</dt><dd><p>Total line <a class="reference internal" href="glossary.html#term-FWHM"><span class="xref std std-term">FWHM</span></a>. Units are [nm].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 9]</dt><dd><p>Non-thermal component of the FWHM line width. A measure or estimation of the instrumental line broadening/width will significantly increase the accuracy of this determination. Units are [nm].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 10]</dt><dd><p>Fraction of linear polarization P<sub>l</sub> with respect to the total <a class="reference internal" href="glossary.html#term-Stokes-I"><span class="xref std std-term">Stokes I</span></a> counts. Dimensionless.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>specout[:, :, :, 11]</dt><dd><p>Fraction of total polarization (linear + circular) P<sub>v</sub> with respect to the total <a class="reference internal" href="glossary.html#term-Stokes-I"><span class="xref std std-term">Stokes I</span></a> counts. Dimensionless.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Regardless if solving for 1-line or 2-line observations, <code class="docutils literal notranslate"><span class="pre">specout</span></code> will return both <code class="docutils literal notranslate"><span class="pre">nline</span></code> dimensions. In the case of 1-line observations, the <code class="docutils literal notranslate"><span class="pre">nline</span></code> = 1 dimension corresponding to the hypothetical second line is returned as 0 for all pixel locations. The unused dimension can be removed from the upstream example script, if needed. This behavior is known and enforced to keep output casting static, making the codebase compatible with Numba and speeding up execution.</p>
+</div>
+</section>
+</section>
+<section id="the-blos-proc-function">
+<h2>The BLOS_PROC Function<a class="headerlink" href="#the-blos-proc-function" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><div class="admonition error">
+<p class="admonition-title">Error</p>
+<p>Stokes V observations are required for this analytical method. Thus, BLOS_PROC is incompatible with the IQUD <a class="reference internal" href="inputvars.html#ctrl-iqud-label"><span class="std std-ref">setup</span></a>.</p>
+</div>
+</div></blockquote>
+<p><strong>Purpose:</strong></p>
+<p>Implements the <a class="reference internal" href="glossary.html#term-Analytical-solutions"><span class="xref std std-term">analytical solutions</span></a> of <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract">Casini &amp; Judge, ApJ, 1999</a> and <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract">Dima &amp; Schad, ApJ, 2020</a> to calculate the <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> projected magnetic field strength and magnetic azimuth angle. The module returns two degenerate constrained magnetograph solutions, where the one that matches the sign of the atomic alignment is more precise. The less precise “classic” magnetograph formulation is also returned.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>There is not enough information in 1-line observations to deduce which of the two degenerate solution is “more precise”. The “classic” magnetograph estimation is less precise than the optimal degenerate constrained magnetograph solution, but more precise than the other.
+The differences will vary from insignificant to tens of percents of the magnetic field strength based on observation and magnetic geometry, and degree of linear polarization. The choice of what product to use remains the prerogative of the user.</p>
+</div>
+<p>This branch requires only 1-line observations (4 stokes profiles). The setup is used to get as much magnetic information as possible (the field strength and <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> projection) in the absence of a second line. For a <a class="reference internal" href="cledb_prepinv.html#sobs-tot-label"><span class="std std-ref">sobs_tot</span></a> input of 2-lines, the module will produce independent products for each input line observation.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Observations of Si X 1430.10 nm will benefit from an additional alignemnt correction due to the non-zero F factor of this transition. Additional details in <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract">Dima &amp; Schad, ApJ, 2020</a>.</p>
+</div>
+<section id="blos-proc-main-functions">
+<h3>BLOS_PROC Main Functions<a class="headerlink" href="#blos-proc-main-functions" title="Permalink to this heading"></a></h3>
+<p><span class="math notranslate nohighlight">\(\diamond\)</span> <strong>BLOS_PROC</strong></p>
+</section>
+<section id="blos-proc-main-variables">
+<h3>BLOS_PROC Main Variables<a class="headerlink" href="#blos-proc-main-variables" title="Permalink to this heading"></a></h3>
+<dl id="blos-label">
+<dt><code class="docutils literal notranslate"><span class="pre">blosout</span> <span class="pre">[nx,ny,4*nline]</span> <span class="pre">output</span> <span class="pre">float</span> <span class="pre">array</span></code></dt><dd><p>The array returns 4 or 8 products containing <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> projected magnetic field estimations and magnetic azimuth angle in G units at each pixel location.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>blosout[:, :, 0] and/or blosout[:, :, 4]</dt><dd><p>First degenerate constrained magnetograph solution for each respective line.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>blosout[:, :, 1] and/or blosout[:, :, 5]</dt><dd><p>Second degenerate constrained magnetograph solution for each respective line.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>blosout[:, :, 2] and/or blosout[:, :, 6]</dt><dd><p>“Classic” magnetograph solution for each respective line. Values lie in between the two above degenerate solutions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>blosout[:, :, 3] and/or blosout[:, :, 7]</dt><dd><p>Magnetic field azimuth angle derived from the Q and U linear polarization components of the respective line; -<span class="math notranslate nohighlight">\(\pi\)</span> to <span class="math notranslate nohighlight">\(\pi\)</span> range.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A <span class="math notranslate nohighlight">\(\frac{\pi}{2}\)</span> <a class="reference internal" href="glossary.html#term-Degeneracy"><span class="xref std std-term">degeneracy</span></a> will manifest due to using arctan functions to derive the angle.</p>
+</div>
+</dd>
+</dl>
+</section>
+</section>
+<section id="the-cledb-invproc-function">
+<span id="cledb-invproc-label"></span><h2>The CLEDB_INVPROC Function<a class="headerlink" href="#the-cledb-invproc-function" title="Permalink to this heading"></a></h2>
+<p><strong>Purpose:</strong></p>
+<p>Main 2-line inversion function. <strong>CLEDB_INVPROC</strong> compares the preprocessed observations with the selected databases by performing a <span class="math notranslate nohighlight">\(\chi^2\)</span> goodness of fit measurement between each independent voxel and the complete set of calculations in the matched database. If <strong>CLEDB_GETSUBSET</strong> is enabled via <a class="reference internal" href="inputvars.html#ctrl-label"><span class="std std-ref">ctrlparams</span></a> class <a class="reference internal" href="inputvars.html#ctrl-red-label"><span class="std std-ref">getsubset key</span></a>, a presorting of the database entries to those that match the direction of observer linear polarization azimuth is performed. After the main sorting is performed, the best database solutions are then queried with respect to the physical parameters that gave the matched profiles. <strong>CLEDB_INVPROC</strong> acts like a pixel iterator and variable ingestion setup for either CLEDB_MATCHIQUV or CLEDB_MATCHIQUD.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>The <a class="reference internal" href="inputvars.html#ctrl-red-label"><span class="std std-ref">reduced</span></a> presorting will slightly change the final ordering of solutions in certain cases.</p>
+</div>
+<section id="cledb-invproc-main-functions">
+<h3>CLEDB_INVPROC Main Functions<a class="headerlink" href="#cledb-invproc-main-functions" title="Permalink to this heading"></a></h3>
+<p><span class="math notranslate nohighlight">\(\diamond\)</span> <strong>CLEDB_INVPROC</strong></p>
+<dl>
+<dt><span class="math notranslate nohighlight">\(\diamond\)</span> <strong>CLEDB_MATCHIQUV</strong></dt><dd><p>Matches a set of two full Stokes IQUV observations with a model observation of the same Stokes quantities. Solutions are 2 times degenerate with respect to the <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a>. Matching is done individually for one pixel in the input array. This is a computationally demanding and time consuming function.</p>
+</dd>
+<dt><span class="math notranslate nohighlight">\(\diamond\)</span> <strong>CLEDB_MATCHIQUD</strong></dt><dd><p>Matches a set of two partial Stokes IQU observations with a model observation of the same Stokes quantities. The matched solutions are initially more degenerate than <strong>CLEDB_MATCHIQUV</strong>, usually 4 timee with respect to LOS and signed field strength combinations. Additional information from Doppler oscillation tracking are brought-in to recover field strengths and reduce degeneracies (to 2 times). Matching is done individually for one pixel in the input array. This is a computationally demanding and time consuming function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Based on the <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-iqud-label"><span class="std std-ref">iqud key</span></a> only one of CLEDB_MATCHIQUV or CLEDB_MATCHIQUD setups is selected and utilized.</p>
+</div>
+<dl class="simple">
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> CLEDB_GETSUBSET</dt><dd><p>When <a class="reference internal" href="inputvars.html#ctrl-red-label"><span class="std std-ref">enabled</span></a> via <em>ctrlparams</em>, the information encoded in the Stokes Q and U magnetic azimuth is used to reduce the matched database by approximately 1 order of magnitude in terms of observation-comparable calculations.</p>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If the subset calculation is <a class="reference internal" href="inputvars.html#ctrl-red-label"><span class="std std-ref">enabled</span></a> via <a class="reference internal" href="inputvars.html#ctrl-label"><span class="std std-ref">ctrlparams</span></a>, execution time in the case of large databases is significantly decreased.</p>
+</div>
+<dl>
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> CLEDB_PARTSORT</dt><dd><p>A custom function that performs a <strong>fast</strong> partial sort of the input array because only a small subset of <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch key</span></a> solutions are requested via the <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch key</span></a>. This increases execution times by a few factors when requesting just few <code class="docutils literal notranslate"><span class="pre">nsearch</span></code> solutions (&lt; 100 on 10<span class="math notranslate nohighlight">\(^8\)</span> entries databases). CLEDB_PARTSORT is used by CLEDB_MATCHIQUV, CLEDB_MATCHIQUD, and CLEDB_GETSUBSET functions. In CLEDB_MATCH, CLEDB_PARTSORT performs a &lt; <code class="docutils literal notranslate"><span class="pre">nsearch</span></code> sorting of database entries based on the <span class="math notranslate nohighlight">\(\chi^2\)</span> metric. In CLEDB_GETSUBSET, CLEDB_PARTSORT selects for each <span class="math notranslate nohighlight">\(\varphi\)</span> angle orientation only the most compatible <span class="math notranslate nohighlight">\(\vartheta\)</span> directions based on the <span class="math notranslate nohighlight">\(\Phi_B\)</span> azimuth given by the linear polarization Q and U measurements.</p>
+</dd>
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> CLEDB_PHYS</dt><dd><p>Returns 9 physical and geometrical parameters corresponding to each selected database index following the <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch</span></a> and <a class="reference internal" href="inputvars.html#ctrl-maxchisq-label"><span class="std std-ref">maxchisq</span></a> constraints. These products are returned as dimensions of the <a class="reference internal" href="#invout-label"><span class="std std-ref">invout</span></a> output variable.</p>
+<dl class="simple">
+<dt><span class="math notranslate nohighlight">\(\triangleright\triangleright\)</span> CLEDB_PARAMS, CLEDB_INVPARAMS,  CLEDB_ELECDENS, and CLEDB_PHYSCLE</dt><dd><p>These are helper functions that prop CLEDB_PHYS by providing interfaces with the parameters encoded in selected databases and helping transform quantities between different geometrical systems.</p>
+</dd>
+</dl>
+</dd>
+<dt><span class="math notranslate nohighlight">\(\triangleright\)</span> CLEDB_QUDEROTATE</dt><dd><p>The inverse function of <a class="reference internal" href="cledb_prepinv.html#qurotate-label"><span class="std std-ref">OBS_QUROTATE</span></a>. Derotates the Q and U components from each selected database entry, in order to make the set of fitted solutions directly comparable with the original integrated input <a class="reference internal" href="cledb_prepinv.html#sobs-tot-label"><span class="std std-ref">sobs_tot</span></a> observation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="cledb-invproc-main-variables">
+<h3>CLEDB_INVPROC Main Variables<a class="headerlink" href="#cledb-invproc-main-variables" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">database</span> <span class="pre">[ned,nx,nbphi,nbtheta,nline*4]</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">float</span> <span class="pre">arrays</span></code></dt><dd><p>Individual entries from the database list are fed to the <strong>CLEDB_MATCHIQUV</strong> or <strong>CLEDB_MATCHIQUD</strong> functions. From the database list, only the best matching height entry via <a class="reference internal" href="cledb_prepinv.html#dbenc-label"><span class="std std-ref">db_enc</span></a> variable is passed via the <em>database_sel</em> internal variable.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">database_sel</span> <span class="pre">[ned,nx,nbphi,nbtheta,nline*4]</span> <span class="pre">float</span> <span class="pre">array</span></code></dt><dd><p>Subset index of the database list that is fed to CLEDB_MATCHIQUV or CLEDB_MATCHIQUD for matching the observation in one pixel. This alleviates memory shuffling and array slicing operations. The array is then reshaped into a 2D  [ned*nx*nbphi*nbtheta,nline*4] form (e.g. [index,nline*4]). In the case where <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-red-label"><span class="std std-ref">reduction key</span></a> is enabled, <em>database_sel</em> is additionally reduced with respect to the number of potential indexes to match.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sobs_totrot</span></code></dt><dd><p>Input variable to CLEDB_INVPROC described <a class="reference internal" href="cledb_prepinv.html#sobs-totrot-label"><span class="std std-ref">here</span></a>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sobs_dopp</span></code></dt><dd><p>Doppler oscillation magnetic field strength and POS orientation resulting from wave tracking.</p>
+</dd>
+</dl>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p><code class="docutils literal notranslate"><span class="pre">sobs_dopp</span></code> is only used as input to CLEDB_MATCHIQUD when <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-iqud-label"><span class="std std-ref">iqud</span></a> is enabled. For Numba consistency, an empty array is also passed to CLEDB_INVPROC when performing full IQUV inversions, but it is never used.</p>
+</div>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">chisq</span> <span class="pre">[ned*nx*nbphi*nbtheta,nline*4]</span> <span class="pre">float</span> <span class="pre">array</span></code></dt><dd><p>Computes the squared difference between the voxel IQUV measurements [nline*4] and each index element of the database [index,nline*4].</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sfound</span> <span class="pre">[nx,ny,nsearch,nline*4]</span> <span class="pre">output</span> <span class="pre">float</span> <span class="pre">array;</span></code></dt><dd><p>Returns the first <code class="docutils literal notranslate"><span class="pre">nsearch</span></code> de-rotated and matched Stokes IQUV sets from the database.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Solutions are skipped if the <span class="math notranslate nohighlight">\(\chi^2\)</span> fitting residuals are greater than the limit set by the <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-maxchisq-label"><span class="std std-ref">maxchisq key</span></a>. Thus, it is possible and even expected that less than requested  <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch</span></a> solutions to be returned for one observed voxel.</p>
+</div>
+</dd>
+</dl>
+<dl id="invout-label">
+<dt><code class="docutils literal notranslate"><span class="pre">invout</span> <span class="pre">[nx,ny,nsearch,11]</span> <span class="pre">output</span> <span class="pre">float</span> <span class="pre">array</span></code></dt><dd><p>Main 2-line inversion output products. <code class="docutils literal notranslate"><span class="pre">invout</span></code> contains the matched database index, the <span class="math notranslate nohighlight">\(\chi^2\)</span> fitting residuals, and 9 inverted physical parameters, for all <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch</span></a>  closest matching solutions with respect to the input observation. The 11 parameters follow with individual descriptions.</p>
+<ul>
+<li><dl class="simple">
+<dt>invout[:,:,:,0]</dt><dd><p>The index of the database entry that was matched at the <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch</span></a> rank. The index is used to retrieve the encoded physics that match the observations.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,1]</dt><dd><p>The <span class="math notranslate nohighlight">\(\chi^2\)</span> residual of the matched database entry.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,2]</dt><dd><p>Plasma density computed via the database. This output is applicable for the Fe XIII 1074.68/1079.79 line ratio (same ion). Other line combinations will produce less accurate results due to the relative abundance ratios, that are varying dynamically. For a real-life observation, we do not consider trustworthy the implicit static relative abundance ratios of different ions, resulted from the <a class="reference internal" href="glossary.html#term-CHIANTI"><span class="xref std std-term">CHIANTI</span></a> tabular data implicitly ingested via the <a class="reference internal" href="cledb_build.html#atom-label"><span class="std std-ref">ATOM files</span></a> when build databases. Units are logarithm of number electron density in cm<span class="math notranslate nohighlight">\(^{-3}\)</span>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,3]</dt><dd><p>The apparent height of the observation. Analogous to the <a class="reference internal" href="cledb_prepinv.html#yobs-label"><span class="std std-ref">yobs</span></a> variable. Units are R<span class="math notranslate nohighlight">\(_\odot\)</span>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,4]</dt><dd><p>Position of the dominant emitting plasma along the <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a>. Units are R<span class="math notranslate nohighlight">\(_\odot\)</span>.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>invout[:,:,:,5]</dt><dd><p>Magnetic field strength recovered via the ratio of observed stokes V to database Stokes V (computed for B = 1 G); Uses <em>ctrlparams</em> class <a class="reference internal" href="inputvars.html#ctrl-bcalc-label"><span class="std std-ref">bcalc key</span></a>. Units are [G].</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Due to how the problem is posed, <strong>CLEDB_MATCHIQUV</strong> can only use bcalc = 0, 1, or 2 while <strong>CLEDB_MATCHIQUD</strong> can only use <a class="reference internal" href="inputvars.html#ctrl-bcalc-label"><span class="std std-ref">bcalc</span></a> = 3.</p>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,6]</dt><dd><p>Magnetic field <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> angle in CLE frame. Range is 0 to <span class="math notranslate nohighlight">\(2\pi\)</span>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,7]</dt><dd><p>Magnetic field azimuth angle in CLE frame. Range is 0 to <span class="math notranslate nohighlight">\(\pi\)</span>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,8]</dt><dd><p>B<sub>x</sub> cartesian projected magnetic field depth/<a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> component. Units are [G].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,9]</dt><dd><p>B<sub>y</sub> cartesian projected magnetic field horizontal component. Units are [G].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>invout[:,:,:,10]</dt><dd><p>B<sub>z</sub> cartesian projected magnetic field vertical component. Units are [G].</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Regardless of the number of solutions (if any) that are found inside the <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-maxchisq-label"><span class="std std-ref">maxchisq</span></a> and <a class="reference internal" href="inputvars.html#ctrl-nsearch-label"><span class="std std-ref">nsearch</span></a> constraints, the <code class="docutils literal notranslate"><span class="pre">invout</span></code> output array will keep its dimensions fixed and return “0” value fields to keep output data shapes consistent. This is a Numba requirement. Only the index is set to “-1” to notify the user that no result was outputted.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cledb_prepinv.html" class="btn btn-neutral float-left" title="CLEDB_PREPINV - Pre-processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="outputs.html" class="btn btn-neutral float-right" title="Output Products" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

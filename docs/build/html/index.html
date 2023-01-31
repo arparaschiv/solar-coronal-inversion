@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation for the CLEDB Distribution &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Synopsis and Motivation" href="synopsis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis and Inversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Focused Readme Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Documentation for the <strong>CLEDB</strong> Distribution</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="documentation-for-the-cledb-distribution">
+<h1>Documentation for the <strong>CLEDB</strong> Distribution<a class="headerlink" href="#documentation-for-the-cledb-distribution" title="Permalink to this heading"></a></h1>
+<p><a class="reference external" href="https://github.com/arparaschiv/solar-coronal-inversion">CLEDB is a publicly hosted on Github</a></p>
+<hr class="docutils" />
+<p><strong>Purpose:</strong></p>
+<p>The <strong>C</strong>oronal <strong>L</strong>ine <strong>E</strong>mission <strong>D</strong>ata<strong>B</strong>ase inversion is a Python based tool and pipeline that is used to infer magnetic field information from SpectroPolariemtric observations of the Solar Corona.
+This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for inverted coronal magnetic fields.</p>
+<hr class="docutils" />
+<p><strong>Authors and Contact:</strong></p>
+<div class="line-block">
+<div class="line">Alin Paraschiv and Philip Judge</div>
+<div class="line">– High Altitude Observatory NCAR|UCAR</div>
+<div class="line">– National Solar Observatory, AURA</div>
+</div>
+<div class="line-block">
+<div class="line">arparaschiv <em>at</em> ucar edu  or paraschiv.alinrazvan+cledb <em>at</em> gmail</div>
+</div>
+<hr class="docutils" />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Last updated at the <a class="reference internal" href="changelog.html#todo-label"><span class="std std-ref">*update-readthedocs*</span></a> commit tag.</p>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="synopsis.html#synopsis">Synopsis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synopsis.html#motivation-for-the-cledb-approach">Motivation for the CLEDB approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="synopsis.html#list-of-relevant-publications">List of Relevant Publications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_overview.html#algorithm-flowchart-definitions">Algorithm Flowchart Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_overview.html#the-cledb-modules">The CLEDB Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_overview.html#the-python-modules">The Python Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#code-distribution-download">Code Distribution Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#a-cledbenv-python-environment">A CLEDBenv Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#basic-run-example">Basic Run Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#headless-slurm-runs-overview">Headless Slurm Runs Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="inputvars.html#input-data-and-metadata">Input Data and Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inputvars.html#ctrl-parameters-ctrlparams-py-class">Ctrl. Parameters <em>ctrlparams.py</em> Class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="inputvars.html#general-parameters">General Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inputvars.html#prepinv-parameters">PREPINV Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inputvars.html#proc-parameters">PROC Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inputvars.html#numba-jit-parameters">Numba Jit Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="inputvars.html#constants-constants-py-class">Constants <em>constants.py</em> Class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="inputvars.html#physical-constants">Physical Constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inputvars.html#ion-specific-constants">Ion Specific Constants</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cledb_build.html#cledb-build-configuration">CLEDB_BUILD Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cledb_build.html#db-input-parameters">DB.INPUT Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cledb_build.html#the-cledb-build-job-script">The CLEDB_BUILD Job Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cledb_build.html#cledb-build-output">CLEDB_BUILD Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cledb_prepinv.html#cledb-prepinv-module-functions">CLEDB_PREPINV Module Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cledb_prepinv.html#cledb-prepinv-main-variables">CLEDB_PREPINV Main Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis and Inversion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cledb_proc.html#the-spectro-proc-function">The SPECTRO_PROC Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cledb_proc.html#spectro-proc-main-functions">SPECTRO_PROC Main Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cledb_proc.html#spectro-proc-main-variables">SPECTRO_PROC Main Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cledb_proc.html#the-blos-proc-function">The BLOS_PROC Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cledb_proc.html#blos-proc-main-functions">BLOS_PROC Main Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cledb_proc.html#blos-proc-main-variables">BLOS_PROC Main Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cledb_proc.html#the-cledb-invproc-function">The CLEDB_INVPROC Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cledb_proc.html#cledb-invproc-main-functions">CLEDB_INVPROC Main Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cledb_proc.html#cledb-invproc-main-variables">CLEDB_INVPROC Main Variables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="outputs.html#output-variable-overview">Output Variable Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outputs.html#tentative-issuemask-implementation">Tentative Issuemask Implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Focused Readme Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readmes.html#main-readme">MAIN README</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="readmes.html#cledb-coronal-field-database-inversion"><strong>CLEDB CORONAL FIELD DATABASE INVERSION</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="readmes.html#readme-rundb">README-RUNDB</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="readmes.html#cledb-parallel-database-generator"><strong>CLEDB Parallel Database Generator</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="readmes.html#readme-slurm">README-SLURM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="readmes.html#cledb-research-computing-runs"><strong>CLEDB Research Computing Runs</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#cledb-coronal-inversion-updates-and-todo-list"><strong>CLEDB coronal inversion UPDATES and TODO list</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="synopsis.html" class="btn btn-neutral float-right" title="Synopsis and Motivation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

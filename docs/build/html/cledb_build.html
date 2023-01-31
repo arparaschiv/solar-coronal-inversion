@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLEDB_BUILD - Database Generation &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CLEDB_PREPINV - Pre-processing" href="cledb_prepinv.html" />
+    <link rel="prev" title="Input Variables and Parameters" href="inputvars.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLEDB_BUILD - Database Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cledb-build-configuration">CLEDB_BUILD Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#db-input-parameters">DB.INPUT Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-cledb-build-job-script">The CLEDB_BUILD Job Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cledb-build-output">CLEDB_BUILD Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis and Inversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Focused Readme Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">CLEDB_BUILD - Database Generation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cledb_build.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cledb-build-database-generation">
+<span id="cledb-build-label"></span><h1>CLEDB_BUILD - Database Generation<a class="headerlink" href="#cledb-build-database-generation" title="Permalink to this heading"></a></h1>
+<p><strong>Purpose:</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">CLEDB_BUILD</span></code> module is used to generate a database of synthetic IQUV profiles for the four provisioned ions, with a range of density estimations, range of possible <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> positions, and all possible magnetic angle configurations, for one magnetic field strength B = 1.  In normal circumstances this module is only run once per system where the inversion is installed. A module diagram is provided in this section.</p>
+<section id="cledb-build-configuration">
+<span id="db-input-label"></span><h2>CLEDB_BUILD Configuration<a class="headerlink" href="#cledb-build-configuration" title="Permalink to this heading"></a></h2>
+<p>Here we describe the scripts included in the config directory.</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">DB.INPUT</span></code></dt><dd><p>Main configuration file for the database generation. It contains the <a class="reference internal" href="glossary.html#term-Physical-parameters"><span class="xref std std-term">physical parameters</span></a> configurations for the databases to be generated.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">*</span><span class="w">  </span><span class="n">NY</span><span class="w"> </span><span class="n">NED</span><span class="w">  </span><span class="n">NX</span><span class="w">  </span><span class="n">NBPHI</span><span class="w"> </span><span class="n">NBTHETA</span><span class="w">  </span>
+<span class="o">*</span><span class="w"> </span><span class="n">standard</span><span class="w"> </span><span class="mi">51</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">61</span><span class="w"> </span><span class="mi">180</span><span class="w"> </span><span class="mi">90</span><span class="w"></span>
+<span class="mi">51</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">61</span><span class="w"> </span><span class="mi">180</span><span class="w"> </span><span class="mi">90</span><span class="w"></span>
+<span class="o">*</span><span class="w"> </span><span class="n">ELNMIN</span><span class="w"> </span><span class="n">ELNMAX</span><span class="w">   </span><span class="n">YMIN</span><span class="w">   </span><span class="n">YMAX</span><span class="w">    </span><span class="n">XMIN</span><span class="w">   </span><span class="n">XMAX</span><span class="w">   </span><span class="n">BPMIN</span><span class="w">     </span><span class="n">BPMAX</span><span class="w">      </span><span class="n">BTMIN</span><span class="w">     </span><span class="n">BTMAX</span><span class="w">   </span>
+<span class="w">   </span><span class="mf">-1.5</span><span class="w">   </span><span class="mf">2.3</span><span class="w">   </span><span class="mf">1.000</span><span class="w">   </span><span class="mf">1.500</span><span class="w">   </span><span class="mf">-1.50</span><span class="w">   </span><span class="mf">1.50</span><span class="w">   </span><span class="mf">0.000</span><span class="w">   </span><span class="mf">6.28318548</span><span class="w">   </span><span class="mf">0.000</span><span class="w">   </span><span class="mf">3.14159274</span><span class="w"></span>
+<span class="o">*</span><span class="w">  </span><span class="n">above</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">important</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">kept</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">spaces</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">same</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">decimals</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">bash</span><span class="w"> </span><span class="n">script</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">work</span><span class="w"></span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>It is critical to keep the same number of parameter decimals and white spaces between the values when modifying the <code class="docutils literal notranslate"><span class="pre">DB.INPUT</span></code> configuration file. The automated job-scripts that run the jobs are dependent on precisely reading each entry.</p>
+</div>
+<dl class="simple" id="atom-label">
+<dt><code class="docutils literal notranslate"><span class="pre">ATOM.ion</span></code></dt><dd><p>This set of files contain the atomic configuration data to be used for calculations. Full level atoms would have a too high computational requirement to use. To avoid this, we use reduced calculations. For example take the Fe XIII lines. The atom configurations are set up as reduced 4-level and 6-transition calculations including the M1 and E1/E2 transitions from upper levels to M1 upper levels. See Fig. 3 of <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract">Casini &amp; Judge, ApJ, 1999</a> This level/transition setup mimics the IQUV fluxes from a full level calculation for each of the the selected infrared coronal lines.</p>
+</dd>
+</dl>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Advanced understanding required. In general, users should not modify the ATOM files.</p>
+</div>
+<dl id="hint-ion-label">
+<dt><code class="docutils literal notranslate"><span class="pre">INPUT.ion(a/b)</span></code></dt><dd><p>These are input and configuration files that are read when generating databases. The <em>wlmin</em> and <em>wlmax</em> parameters control which lines described in the <code class="docutils literal notranslate"><span class="pre">ATOM.ion</span></code> files are processed. In the case of Fe XIII, a separate <code class="docutils literal notranslate"><span class="pre">INPUT.ion</span></code> configuration (a/b) is needed for each line to produce distinct database entries.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>In the case of Fe XIII, a custom <code class="docutils literal notranslate"><span class="pre">INPUT.ion</span></code> configuration with <em>wlmin</em> and <em>wlmax</em> constraints that includes both lines can be created. This would lead to the synthesis of a direct 2-line database. The <a class="reference internal" href="cledb_prepinv.html#sdb-preproc-label"><span class="std std-ref">sdb_preprocess function</span></a> in the <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> module is provisioned to process such a database configuration. This is an alternate configuration that can be fairly straightforward to implement for a setup aimed at inverting only for the Fe XIII pair. Please note that this is a legacy feature that should not be treated as a default/expected configuration for generating databases.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">IONEQ</span></code></dt><dd><p>Ionization equilibrium data from CHIANTI.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">GRID.DAT</span></code></dt><dd><p>Defines the range and resolution of a CLE simulation. In the case of database building it has no significant functionality and is only required due to CLE’s implicit dependency on it’s import.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">db&quot;xxxx&quot;\_&quot;arch&quot;</span></code></dt><dd><p>Executable CLE binaries for generating databases. <em>xxxx</em> is the used version of the CLE Fortran code. arch can be <em>linux</em>, <em>rclinux</em> or <em>darwin</em>. The three different versions are provided in the distribution for cross-platform compatibility.</p>
+<ul class="simple">
+<li><p>linux – Debian compiled</p></li>
+<li><p>rclinux – CentOs compiled on research computing system.</p></li>
+<li><p>darwin – mac osx x86 compiled.</p></li>
+</ul>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Ideally, the <em>xxxx</em> version of the CLE code should match its <a class="reference external" href="https://github.com/arparaschiv/coronal-line-emission">latest stable release.</a></p>
+</div>
+</dd>
+</dl>
+<section id="db-input-parameters">
+<h3>DB.INPUT Parameters<a class="headerlink" href="#db-input-parameters" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ny,</span> <span class="pre">ymin,</span> <span class="pre">ymax</span></code></dt><dd><p>Number of y (horizontal) heights in R<span class="math notranslate nohighlight">\(_\odot\)</span> units for which to compute database entries. The <code class="docutils literal notranslate"><span class="pre">ny</span></code> heights are spanned between <code class="docutils literal notranslate"><span class="pre">ymin</span></code> and <code class="docutils literal notranslate"><span class="pre">ymax</span></code> values. Regardless of user input, polarization signal can not computed at this time for R<span class="math notranslate nohighlight">\(_\odot\)</span> &lt; 1 due to the assumptions and interpretation focused on off-limb coronal emission.</p>
+</dd>
+</dl>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Observations show that the amount of polarization in Fe XIII drastically decreases with height. One should not normally expect to reasonably recover full Stokes polarization signal at y &gt; 1.5<span class="math notranslate nohighlight">\(_\odot\)</span>.</p>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ned,</span> <span class="pre">elnmin,</span> <span class="pre">elnmax</span></code></dt><dd><p>Number and range of ambient electron density values for which to compute calculations. <code class="docutils literal notranslate"><span class="pre">elnmin</span></code> and <code class="docutils literal notranslate"><span class="pre">elnmax</span></code> define a logarithmic range in which to spread the <code class="docutils literal notranslate"><span class="pre">ned</span></code> densities. The center of this range is an analytical approximation of a standard electron density expected for a y height above the limb following the Baumbach formulation. See equation 12 and discussion in <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract">Paraschiv &amp; Judge, SolPhys, 2022</a> . For example, at y = 1.1R<span class="math notranslate nohighlight">\(_\odot\)</span> we expect a logarithm of density log(n<span class="math notranslate nohighlight">\(_e\)</span>) ~ 8 cm<span class="math notranslate nohighlight">\(^{-3}\)</span>. Setting <code class="docutils literal notranslate"><span class="pre">ned</span></code> = 10, <code class="docutils literal notranslate"><span class="pre">elnmin</span></code> = -2 and <code class="docutils literal notranslate"><span class="pre">elnmax</span></code> = 2 will generate databases for 10 density values logarithmically scaled between log(n<span class="math notranslate nohighlight">\(_e\)</span>) <span class="math notranslate nohighlight">\(\approx\)</span> 6 - 10 cm<span class="math notranslate nohighlight">\(^{-3}\)</span>.</p>
+</dd>
+</dl>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Please keep in mind some potential inversion breaking assumptions. A reasonable density range of log(n<span class="math notranslate nohighlight">\(_e\)</span>) 7-10 is compatible with:</p>
+<blockquote>
+<div><ol class="lowerroman simple">
+<li><p>low enough densities so that collisional depolarization becomes unimportant inside the Hanle saturated regime;</p></li>
+<li><p>compatible with expected plasma densities in a standard 1.0-1.5R<span class="math notranslate nohighlight">\(_\odot\)</span> observation range (also remember above point about polarization vs. height).</p></li>
+</ol>
+</div></blockquote>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">nx,</span> <span class="pre">xmin,</span> <span class="pre">xmax</span></code></dt><dd><p>Number of x (depth along the <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a>) positions to compute databases for in R<span class="math notranslate nohighlight">\(_\odot\)</span> units. The <code class="docutils literal notranslate"><span class="pre">nx</span></code> positions are linearly spanned between <code class="docutils literal notranslate"><span class="pre">xmin</span></code> and <code class="docutils literal notranslate"><span class="pre">xmax</span></code> values.</p>
+</dd>
+</dl>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Due to geometric considerations, setting <code class="docutils literal notranslate"><span class="pre">xmin</span></code> and <code class="docutils literal notranslate"><span class="pre">xmax</span></code> values to more than <span class="math notranslate nohighlight">\(\pm\)</span> 1.0 R<span class="math notranslate nohighlight">\(_\odot\)</span> will most probably not result in practical benefits. This is because a higher 1.5 R<span class="math notranslate nohighlight">\(_\odot\)</span> apparent height, a 1.0 R<span class="math notranslate nohighlight">\(_\odot\)</span> depth would correspond to an actual height above the limb of 1.8 R<span class="math notranslate nohighlight">\(_\odot\)</span>. This is in the more extreme range of the polarization formation vs height issue described above.</p>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">nbphi,</span> <span class="pre">bpmin,</span> <span class="pre">bpmax</span></code></dt><dd><p>Number and range of CLE magnetic <a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a> angles to compute. The <code class="docutils literal notranslate"><span class="pre">nbphi</span></code> angles are spread along a <code class="docutils literal notranslate"><span class="pre">bpmin</span></code> - <code class="docutils literal notranslate"><span class="pre">bpmax</span></code>  range set to 0 - 2<span class="math notranslate nohighlight">\(\pi\)</span> by default.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">nbtheta,</span> <span class="pre">btmin,</span> <span class="pre">btmax</span></code></dt><dd><p>Number and range of magnetic CLE azimuth angles to compute. The <code class="docutils literal notranslate"><span class="pre">nbtheta</span></code> range is set to <code class="docutils literal notranslate"><span class="pre">btmin</span></code> - <code class="docutils literal notranslate"><span class="pre">btmax</span></code> .  By default this is set to a 0 - 1<span class="math notranslate nohighlight">\(\pi\)</span> reduced range due to spherical transformation definitions.</p>
+</dd>
+</dl>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Due to how the problem is posed, please do not interchange the maximum ranges between the two magnetic angles, as it would lead to execution errors.</p>
+</div>
+</section>
+</section>
+<section id="the-cledb-build-job-script">
+<h2>The CLEDB_BUILD Job Script<a class="headerlink" href="#the-cledb-build-job-script" title="Permalink to this heading"></a></h2>
+<p>The <em>rundb_1line.sh</em> job script will ingest the ATOM, INPUT, DB.INPUT, etc. files and split the job into available CPU threads. The user is asked for keyboard input on how many threads to use and for which line/ion to generate a database.</p>
+<a class="reference internal image-reference" href="_images/2_CLEDB_BUILD.png"><img alt="_images/2_CLEDB_BUILD.png" src="_images/2_CLEDB_BUILD.png" style="width: 800px;" /></a>
+<p>The script runs in a Bash shell terminal session. It can handle both Linux and Darwin (OSX) environments. For OSX, an additional dependency is required. Users need to install the GNU implementation of the sed command. The simplest way is to achieve this is by using the homebrew environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew install gnu-sed
+</pre></div>
+</div>
+<p>The job script will split the serial <code class="docutils literal notranslate"><span class="pre">ny</span></code> tasks on the requested CPU threads and run in dedicated folders that will be sanitized upon completion, preserving only the output database files and metadata headers.</p>
+<p>Logs for each script (“X”) are written in real time and can be checked interactively while the job is running.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tail BASHJOB_<span class="s2">&quot;X&quot;</span>.LOG
+</pre></div>
+</div>
+<p>A Slurm enabled version, <em>rundb_1line_slurm</em>  which has hard-coded choices to be compatible with headless runs is also provided. The parameters need to be checked manually before running. Detailed information about the Slurm enabled routines can be found in the detailed <a class="reference internal" href="readmes.html#readme-slurm-label"><span class="std std-ref">README-SLURM</span></a> section.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A standalone README-SLURM.MD readme is included in the inversion root directory.</p>
+</div>
+<p>Extensive notes about the parallel job script implementations are found in the detailed <a class="reference internal" href="readmes.html#readme-rundb-label"><span class="std std-ref">README-RUNDB</span></a> section.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A standalone README-RUNMD.md readme is included with the <code class="docutils literal notranslate"><span class="pre">CLEDB_BUILD</span></code> module.</p>
+</div>
+</section>
+<section id="cledb-build-output">
+<span id="cledb-output-label"></span><h2>CLEDB_BUILD Output<a class="headerlink" href="#cledb-build-output" title="Permalink to this heading"></a></h2>
+<p>Databases for one up to four of the currently available ions/lines can be constructed by running the job script successively.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>As long as enough free CPU threads are available, multiple <em>rundb_1line.sh</em> jobs can be started simultaneously for <strong>different</strong> ions as there is no storage or computational overlap.</p>
+</div>
+<p>The output database is written to the storage disk. Each individual line will be written in its dedicated folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Prior to git commit <em>update-iqud</em> <code class="docutils literal notranslate"><span class="pre">CLEDB_BUILD</span></code> wrote compressed data using a simple float64 <span class="math notranslate nohighlight">\(\rightarrow\)</span> int16 conversion using a division constant, set to -2.302585092994046e15. Same constant needs to be used when writing but also when reading databases into memory as part of the <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> module. <strong>This approach proved to create numerical instabilities and is currently disabled.</strong></p>
+</div>
+<p id="naming-conv-label">A database folder hierarchical system is needed in order to ingest the selected database calculations by the <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> module. The folder system is defined as: <em>element-ionstage_line</em>.</p>
+<ol class="arabic simple">
+<li><p><strong>fe-xiii_1074</strong></p></li>
+<li><p><strong>fe-xiii_1079</strong></p></li>
+<li><p><strong>si-x_1430</strong></p></li>
+<li><p><strong>si-ix_3934</strong></p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A fifth option for directly writing two line databases for Fe XIII is still preserved as a legacy option as <a class="reference internal" href="#hint-ion-label"><span class="std std-ref">described above</span></a>. The <em>.hdr</em> and <em>.DAT</em> database files need to be placed in the main <em>ctrlparams</em> <a class="reference internal" href="inputvars.html#ctrl-dbdir-label"><span class="std std-ref">dbdir key</span></a> without a specific line subfolder.</p>
+</div>
+<p>This convention is used by all three modules of CLEDB.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Running successive jobs for the <strong>same</strong> ion/line will <strong>erase</strong> its database calculations if they exist!</p>
+</div>
+<p>Individual data stores for each computed height are created to ease I/O operations when reading databases into memory for inverting. A db”xxxx”.dat file is generated at each y height in the <code class="docutils literal notranslate"><span class="pre">ny</span></code> set, where “xxxx” represents the distance <em>above the limb</em> in units of R<span class="math notranslate nohighlight">\(_\odot\)</span> (DB0000.dat corresponds to the solar limb or a height of 1.00R<span class="math notranslate nohighlight">\(_\odot\)</span>). A metadata <em>db.hdr</em> file is produced in the individual line directory that contains the range dimensions and parameters applicable to any one database set of files.</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>The user should not change the parameter configurations in <code class="docutils literal notranslate"><span class="pre">DB.INPUT</span></code> between multiple ion/line runs that should be part of the same database.</p>
+</div>
+<p>Generating <span class="math notranslate nohighlight">\(\sim\)</span> 5 <span class="math notranslate nohighlight">\(\cdot\)</span> 10<span class="math notranslate nohighlight">\(^8\)</span> calculations per line for two lines will occupy <span class="math notranslate nohighlight">\(\approx\)</span> 32 Gb of disk space with no storage compression.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inputvars.html" class="btn btn-neutral float-left" title="Input Variables and Parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cledb_prepinv.html" class="btn btn-neutral float-right" title="CLEDB_PREPINV - Pre-processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

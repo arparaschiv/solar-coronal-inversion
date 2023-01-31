@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synopsis and Motivation &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Module Overview" href="module_overview.html" />
+    <link rel="prev" title="Documentation for the CLEDB Distribution" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Synopsis and Motivation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#motivation-for-the-cledb-approach">Motivation for the CLEDB approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#list-of-relevant-publications">List of Relevant Publications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis and Inversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Focused Readme Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Synopsis and Motivation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/synopsis.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="synopsis-and-motivation">
+<h1>Synopsis and Motivation<a class="headerlink" href="#synopsis-and-motivation" title="Permalink to this heading"></a></h1>
+<section id="synopsis">
+<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this heading"></a></h2>
+<p><strong>CLEDB</strong> aims to invert coronal magnetic field information from observations of polarized light. The algorithm takes arrays of one or two sets of SpectroPolarimetric <a class="reference internal" href="glossary.html#term-Stokes-IQUV"><span class="xref std std-term">Stokes IQUV</span></a> observations <code class="docutils literal notranslate"><span class="pre">sobs_in</span></code> along with their <a class="reference internal" href="glossary.html#term-Header"><span class="xref std std-term">header</span></a> metadata information. The data and metadata are pre-processed, and optimal corresponding sets of databases resulting from forward calculations are selected and read from disk storage.</p>
+<p>The data processing is split into two branches, based on the available polarized coronal Stokes observations:</p>
+<ul class="simple">
+<li><p><strong>1-line branch:</strong> 4 input IQUV observations <em>(one coronal emission line)</em>.</p></li>
+<li><p><strong>2-line branch:</strong> 8 input I<sub>1</sub>Q<sub>1</sub>U<sub>1</sub>V<sub>1</sub>I<sub>2</sub>Q<sub>2</sub>U<sub>2</sub>V<sub>2</sub> observations <em>(two coronal emission lines)</em>.</p></li>
+</ul>
+<p>Spectroscopic analysis products are computed for each line for both 1-line or 2-line branches.</p>
+<p>The 1-line branch employs analytical approximations to calculate line of sight (<a class="reference internal" href="glossary.html#term-LOS"><span class="xref std std-term">LOS</span></a>) integrated magnetic field products, while the 2-line branch offers access to additional magnetic field products. This second setup benefits from more degrees of freedom allowing us to break degeneracies intrinsic in the inversion. Thus, the two-line algorithm branch performs a <span class="math notranslate nohighlight">\({\chi}^2\)</span> fitting  between the observation and a forward-modeled database to recover full 3D vector magnetic field components.</p>
+<p>The databases are generated via forward modeling of combinations of input magnetic field and geometric parameters. In this setup, databases are used as a static input with respect to the inversion scheme and <strong>should not</strong> be computed dynamically for each observation.</p>
+</section>
+<section id="motivation-for-the-cledb-approach">
+<h2>Motivation for the CLEDB approach<a class="headerlink" href="#motivation-for-the-cledb-approach" title="Permalink to this heading"></a></h2>
+<p>By utilizing 2-line observations, we can recover the 3D magnetic field information for single point <a class="reference internal" href="glossary.html#term-Voxel"><span class="xref std std-term">voxel</span></a> using a <span class="math notranslate nohighlight">\({\chi}^2\)</span> fitting approach. Theoretically, we can employ the <a class="reference internal" href="glossary.html#term-CLE"><span class="xref std std-term">CLE</span></a> (Coronal Line Emission) spectral synthesis code to generate forward-model calculations. About 10<sup>7</sup>-10<sup>9</sup> atomic plasma and magnetic configurations are needed in order to satisfy a reasonable solution resolution criteria. Directly forward modeling such solutions for one <a class="reference internal" href="glossary.html#term-Pixel"><span class="xref std std-term">pixel</span></a>/voxel in a dynamic fashion would be time consuming. Such a calculation has execution times in the order of 5-10 hours, on a single CPU thread when using a fast implementation of the Fortran CLE code.</p>
+<p>Building a static database (via the <code class="docutils literal notranslate"><span class="pre">CLEDB_BUILD</span></code> module of our algorithm) to store the vast set of synthetic Stokes observations, along with the input plasma and magnetic field configurations responsible for producing polarized emission, proved to be a significantly more feasible approach.</p>
+<p>Additionally, the database theoretical calculations gain intrinsic access to otherwise un-observable input parameters (e.g. atomic alignment <span class="math notranslate nohighlight">\({\sigma}_0^2\)</span>, intrinsic magnetic field angles <span class="math notranslate nohighlight">\({\vartheta}\)</span>, <span class="math notranslate nohighlight">\({\varphi}\)</span> etc.) that can be used to break inherent degeneracies encountered when attempting analytical inversions (as for example occurring in the 1-line branch implementation). The dimensionality of the problem at hand can be further reduced by 1-2 orders of magnitude by using native symmetries when building and querying databases. Detailed discussions on the physics aspects of dimensionality reduction and <a class="reference internal" href="glossary.html#term-Degeneracy"><span class="xref std std-term">degeneracy</span></a> breaking effects can be found in the sources below.</p>
+</section>
+<section id="list-of-relevant-publications">
+<h2>List of Relevant Publications<a class="headerlink" href="#list-of-relevant-publications" title="Permalink to this heading"></a></h2>
+<p>Academic journal papers that helped build and justify CLEDB:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract">Paraschiv &amp; Judge, SolPhys, 2022</a> covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract">Judge, Casini, &amp; Paraschiv, ApJ, 2021</a> discussed the importance of scattering geometry when solving for coronal magnetic fields.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract">Ali, Paraschiv, Reardon, &amp; Judge, ApJ, 2022</a> performed a spectroscopic exploration of the infrared regions of the emission lines available for inversion with CLEDB.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract">Dima &amp; Schad, ApJ, 2020</a> discussed potential degeneracies in using certain line combinations. The one-line CLEDB inversion directly utilizes the methods and results described in this work.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021ApJ...923..186S/abstract">Schiffmann, Brage, Judge, Paraschiv &amp; Wang, ApJ, 2021</a> performed large-scale Lande g factor calculations for our ions of interest and discusses degeneracies in context of their results.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract">Casini &amp; Judge, ApJ, 1999</a> and <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract">Judge &amp; Casini, ASP proc., 2001</a> described the theoretical line formation process implemented by CLE, the coronal forward synthesis Fortran code that is currently utilized by CLEDB.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Documentation for the CLEDB Distribution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="module_overview.html" class="btn btn-neutral float-right" title="Module Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

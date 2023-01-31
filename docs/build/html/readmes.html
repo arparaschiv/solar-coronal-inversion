@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focused Readme Files &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="List of changes and TODO tasks" href="changelog.html" />
+    <link rel="prev" title="Output Products" href="outputs.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Run Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis and Inversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Focused Readme Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main-readme">MAIN README</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cledb-coronal-field-database-inversion"><strong>CLEDB CORONAL FIELD DATABASE INVERSION</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#solar-coronal-inversion-repository-on-github">solar-coronal-inversion repository on github</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documentation"><strong>Documentation</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#system-platform-compatibility"><strong>System platform compatibility</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples"><strong>Examples</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scholarly-works-supporting-the-cledb-inversion"><strong>Scholarly works supporting the CLEDB inversion</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#readme-rundb">README-RUNDB</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cledb-parallel-database-generator"><strong>CLEDB Parallel Database Generator</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#solar-coronal-inversion-repository-on-github">solar-coronal-inversion repository on github</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#readme-slurm">README-SLURM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cledb-research-computing-runs"><strong>CLEDB Research Computing Runs</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#solar-coronal-inversion-repository-on-github">solar-coronal-inversion repository on github</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slurm-enabled-research-computing-interactive-or-headless-runs"><strong>SLURM ENABLED RESEARCH COMPUTING INTERACTIVE OR HEADLESS RUNS</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slurm-enabled-test-scripts">1. Slurm enabled test scripts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation-and-run-instructions-for-rc-systems">2. Installation and run instructions for RC systems</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Focused Readme Files</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readmes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="focused-readme-files">
+<h1>Focused Readme Files<a class="headerlink" href="#focused-readme-files" title="Permalink to this heading"></a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<ul class="simple">
+<li><p>The sections below are dinamically linked to standalone readme markdown files. A documentation rebuild will capture changes in any of the files.</p></li>
+<li><p>Consequentially, some dynamic links to functions will not work when displayed here as they would from the direct rendering of the readmes. This is because relative paths can not be kept consistent.</p></li>
+</ul>
+</div>
+<section id="main-readme">
+<span id="readme-main-label"></span><h2>MAIN README<a class="headerlink" href="#main-readme" title="Permalink to this heading"></a></h2>
+<section id="cledb-coronal-field-database-inversion">
+<h3><strong>CLEDB CORONAL FIELD DATABASE INVERSION</strong><a class="headerlink" href="#cledb-coronal-field-database-inversion" title="Permalink to this heading"></a></h3>
+<section id="solar-coronal-inversion-repository-on-github">
+<h4><a class="reference external" href="https://github.com/arparaschiv/solar-coronal-inversion/">solar-coronal-inversion repository on github</a><a class="headerlink" href="#solar-coronal-inversion-repository-on-github" title="Permalink to this heading"></a></h4>
+<p>Main repository for <strong>CLEDB</strong>; the Coronal Line Emission DataBase inversion code distribution.</p>
+<p><strong>Authors:</strong> Alin Paraschiv &amp; Philip Judge.  High Altitude Observatory &amp; National Solar Observatory</p>
+<p><strong>Contact:</strong> arparaschiv “at” ucar.edu; paraschiv.alinrazvan+cledb “at” gmail.com</p>
+<section id="main-aim">
+<h5><strong>Main aim:</strong><a class="headerlink" href="#main-aim" title="Permalink to this heading"></a></h5>
+<p>Invert coronal vector magnetic field products from observations of polarized light.
+The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations to derive line of sight and/or full vector magnetic field products.</p>
+</section>
+<section id="applications">
+<h5><strong>Applications:</strong><a class="headerlink" href="#applications" title="Permalink to this heading"></a></h5>
+<p>Inverting magnetic field information from spectro-polarimetric solar coronal observations from instruments like DKIST Cryo-NIRSP; DL-NIRSP; COMP/UCOMP.</p>
+</section>
+</section>
+<section id="documentation">
+<h4><strong>Documentation</strong><a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Extensive documentation, <strong>including installation instruction, dependencies, algorithm schematics and much more</strong> is available in a dedicated documentation write-up. <span class="xref myst">README-CODEDOC.pdf</span>.</p></li>
+<li><p>In-depth documentation for the Bash &amp; Fortran parallel database generation module is provided in <span class="xref myst">README-RUNDB.md</span>.</p></li>
+<li><p>Installation and usage on RC systems is described in <span class="xref myst">README-SLURM.md</span>.</p></li>
+<li><p>This is a beta-level release. Not all functionality is implemented. <span class="xref myst">TODO.md</span> documents updates, current issues, and functions to be implemented in the near future.</p></li>
+</ol>
+</section>
+<section id="system-platform-compatibility">
+<h4><strong>System platform compatibility</strong><a class="headerlink" href="#system-platform-compatibility" title="Permalink to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Debian+derivatives Linux x64           – all inversion modules are fully working.</p></li>
+<li><p>RC system CentOS linux x64             – all inversion modules are fully working. Additional binary executable is provided. May require local compiling.</p></li>
+<li><p>OSX (Darwin x64) Catalina and Big Sur  – all inversion modules are fully working; One additional homebrew package required. See <span class="xref myst">README-CODEDOC.pdf</span>.</p></li>
+<li><p>Windows platform                       – not tested.</p></li>
+</ol>
+</section>
+<section id="examples">
+<h4><strong>Examples</strong><a class="headerlink" href="#examples" title="Permalink to this heading"></a></h4>
+<p>Install the CLEDB distribution, generate databases, and update the database save location in the <em><span class="xref myst">ctrlparams.py</span></em> class, as described in the <span class="xref myst">README-CODEDOC</span>.
+Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples</p>
+<ol class="arabic simple">
+<li><p><span class="xref myst">test_1line.ipynb</span></p></li>
+<li><p><span class="xref myst">test_2line.ipynb</span></p></li>
+</ol>
+<p>The synthetic CLE test data is <a class="reference external" href="https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing">hosted separately here</a>.</p>
+<p>For terminal only compute systems the test data can be downloaded via the shell interface with the following method:</p>
+<p>i. Load the following gdrive wrapper script into your bash window directly, or introduce it in your .bash_alias setup.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>function gdrive_download () {   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate &quot;https://docs.google.com/uc?export=download&amp;id=$1&quot; -O- | sed -rn &#39;s/.*confirm=([0-9A-Za-z_]+).*/\1\n/p&#39;);   wget --load-cookies /tmp/cookies.txt &quot;https://docs.google.com/uc?export=download&amp;confirm=$CONFIRM&amp;id=$1&quot; -O $2;   rm -rf /tmp/cookies.txt; }
+</pre></div>
+</div>
+<p>ii. Download the file using its gdrive FILE_ID from the download link (<em>test data FILE_ID = 1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m</em>):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
+</pre></div>
+</div>
+<p>Note: The script versions of both tests <em><span class="xref myst">test_1line.py</span></em> and <em><span class="xref myst">test_2line.py</span></em> together with the <em><span class="xref myst">test_cledb_slurm.sh</span></em> are slurm enabled to be used for headless RC system runs.
+These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated <span class="xref myst">README-SLURM</span> for additional information.</p>
+<p>Both test examples are expected to fully execute with parallel job spawning via <a class="reference external" href="https://numba.readthedocs.io/en/stable/">Numba/JIT</a> in a correct installation.</p>
+</section>
+<section id="scholarly-works-supporting-the-cledb-inversion">
+<h4><strong>Scholarly works supporting the CLEDB inversion</strong><a class="headerlink" href="#scholarly-works-supporting-the-cledb-inversion" title="Permalink to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract">Paraschiv &amp; Judge, SolPhys, 2022</a> covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract">Judge, Casini, &amp; Paraschiv, ApJ, 2021</a> discussed the importance of scattering geometry when solving for coronal magnetic fields.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract">Ali, Paraschiv, Reardon, &amp; Judge, ApJ, 2022</a> performed a spectroscopic exploration of the infrared regions of emission lines available for inversion with CLEDB.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract">Dima &amp; Schad, ApJ, 2020</a> discussed potential degeneracies in using certain line combinations. The one-line CLEDB inversion utilizes the methods and results described in this work.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021ApJ...923..186S/abstract">Schiffmann, Brage, Judge, Paraschiv &amp; Wang, ApJ, 2021</a> performed large-scale Lande g factor calculations for ions of interest and discusses degeneracies in context of their results.</p></li>
+<li><p><a class="reference external" href="https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract">Casini &amp; Judge, ApJ, 1999</a> and <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract">Judge &amp; Casini, ASP proc., 2001</a> described the theoretical line formation process implemented in CLE, the coronal forward-synthesis code that is currently utilized by CLEDB.</p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="readme-rundb">
+<span id="readme-rundb-label"></span><h2>README-RUNDB<a class="headerlink" href="#readme-rundb" title="Permalink to this heading"></a></h2>
+<section id="cledb-parallel-database-generator">
+<h3><strong>CLEDB Parallel Database Generator</strong><a class="headerlink" href="#cledb-parallel-database-generator" title="Permalink to this heading"></a></h3>
+<p>README for running CLE database calculations on multiple CPU threads.</p>
+<section id="solar-coronal-inversion-repository-on-github">
+<h4><a class="reference external" href="https://github.com/arparaschiv/solar-coronal-inversion/">solar-coronal-inversion repository on github</a><a class="headerlink" href="#solar-coronal-inversion-repository-on-github" title="Permalink to this heading"></a></h4>
+<p>Contact: Alin Paraschiv (arparaschiv&#64;ucar.edu)</p>
+<section id="history-for-build-module">
+<h5><strong>History for BUILD module:</strong><a class="headerlink" href="#history-for-build-module" title="Permalink to this heading"></a></h5>
+<ul class="simple">
+<li><p>ARP: 20210617 - initial release.</p></li>
+<li><p>ARP: 20210827 - Added a Slurm enabled version of the script for batch jobs on RC systems.</p></li>
+<li><p>ARP: 20210915 - Rewrote the thread scaling to allocate tasks uniformly across threads; Both interactive and batch scripts now can utilize RC Slurm capabilities. The interactive version can only use Slurm allocated resources inside interactive jobs. The batch dedicated version can utilize scratch directories; It copies final outputs in a user’s project directory after finalizing tasks.</p></li>
+<li><p>ARP: 20221222 - Updated both scripts to fix an error with calculating the optimal heights that are scaled across available nodes.</p></li>
+</ul>
+</section>
+<section id="scope">
+<h5><strong>SCOPE:</strong><a class="headerlink" href="#scope" title="Permalink to this heading"></a></h5>
+<p>This is a simple bash script implementation that launches separate parallel processes for building Stokes IQUV databases as part of the CLEDB_BUILD module.
+Two versions are provisioned:</p>
+<ol class="arabic simple">
+<li><p><em><span class="xref myst">rundb_1line.sh</span></em>    (For local <strong>interactive</strong> runs; can be utilized inside slurm interactive environments too.)</p></li>
+<li><p><em><span class="xref myst">rundb_1line_slurm.sh</span></em>    (For <strong>batch</strong> and/or headless runs.)</p></li>
+</ol>
+</section>
+<section id="install-and-usage">
+<h5><strong>INSTALL and USAGE:</strong><a class="headerlink" href="#install-and-usage" title="Permalink to this heading"></a></h5>
+<ul>
+<li><p>make sure the scripts are executable:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  chmod u+x rundb_1line.sh
+  chmod u+x rundb_1line_slurm.sh
+</pre></div>
+</div>
+</li>
+<li><p>(Only on OSX) Install gnu-sed (See notes below):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  brew install gnu-sed
+</pre></div>
+</div>
+</li>
+<li><p>(Optional if needed) OSX might have issues with running executables (“cannot execute binary file”).
+To fix try:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  xattr -d com.apple.quarantine /path/to/file
+</pre></div>
+</div>
+</li>
+<li><p>(Optional) for interactive jobs on RC systems, the correct modules may need to be preloaded in order for scripts to execute.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  module load slurm/blanca
+  module load gcc/10.2.0                (gcc is preloaded automatically in the batch version of the script.)
+</pre></div>
+</div>
+</li>
+<li><p>run interactive jobs with (after starting the interactive node; see README_SLURM):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  ./rundb_1line.sh
+</pre></div>
+</div>
+</li>
+<li><p>run batch/headless jobs with:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  sbatch rundb_1line_slurm.sh
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="notes">
+<h5><strong>NOTES:</strong><a class="headerlink" href="#notes" title="Permalink to this heading"></a></h5>
+<ul>
+<li><p>The interactive <em><span class="xref myst">rundb_1line.sh</span></em> script requires two manual keyboard user inputs.</p>
+<p>i. select how many CPU threads to use;</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  Hi
+  You have xx CPU threads available.
+  How many to use?
+</pre></div>
+</div>
+<p>ii. which ion/line to compute. Each ion/line will create its own subfolder in the directory structure to store computations.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  Please indicate the line to generate. Options are:
+  1:    FE XIII 1074.7nm
+  2:    FE XIII 1079.8nm
+  3:    Si X    1430.1nm
+  4:    Si IX   3934.3nm
+</pre></div>
+</div>
+</li>
+<li><p>The batch <em><span class="xref myst">rundb_1line_slurm.sh</span></em> script has no keyboard inputs, but has manually defined variables that control the ions to generate and system paths.</p></li>
+<li><p>Most directory and file pointers are dynamically linked to the CLEDB distribution directory. Local runs should run without interference. Some directory/system containing variables are defined to be compatible with the CURC system (scratch, project, etc. dirs). These may need to be updated for different systems.</p></li>
+<li><p>** NEWLY COMPLETED RUNS WILL DELETE/OVERWRITE PREVIOUSLY COMPUTED CALCULATIONS AND LOGS IN THE CORRESPONDENT SUBFOLDER**</p></li>
+<li><p>The scripts are configured to produce one line database outputs. All atomic data for the four ions of interest along with the configuration files are available in the <em>config</em> directory. This setup selects the relevant inputs automatically.</p></li>
+<li><p>Outside of the two batch scripts, the only user editable file is the <span class="xref myst">config/DB.INPUT</span> that configures the database number of calculations (parameter resolution).</p></li>
+<li><p>Database output, header, and logs will be written in the correspondent ion sub-directory. Intermediary folders and files will be deleted upon completion. The logs are dynamically written and calculation status can be checked anytime with <em>tail</em>; e.g.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  tail BASHJOB_0.LOG
+</pre></div>
+</div>
+</li>
+<li><p>The ./rundb scripts will wait for all thread tasks to finish before exiting.
+Due to limitation in CPU process ID (PID) tracking, the user is not notified in order of threads finalizing, but in the order they were scheduled. e.g. if thread 2 finishes before thread 0, the user will find out only after thread 0 and thread 1 finish. A bug might manifest if a new unrelated task is scheduled with the same PID as one of the runs, but this should not occur in normal circumstances. If such a case occurs, a tail of the logs will verify that everything went well and scripts can be exited manually.</p></li>
+<li><p>The number of Y-heights to calculate between the ymin and ymax ranges are not always a multiple of the number of CPU threads.
+The scripts will efficiently scale the tasks on the available threads. If you request less tasks (via <span class="xref myst">DB.INPUT</span>) than threads (via keyboard or sbatch), the script will not utilize all pre-allocated resources.</p></li>
+<li><p>The script heavily relies on the SED function.
+SED has different implementations on Linux (GNU) vs mac (BSD) which makes commands not be directly correspondent. A function wrapper <em>SEDI</em> that disentangles GNU vs BSD syntax is provided in the scripts. OSX users need to install a gnu implementation of sed (gnu-sed) for the script to be portable between systems (via the gsed command).</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  brew install gnu-sed
+</pre></div>
+</div>
+</li>
+<li><p>The script cuts and appends midline on the DB.INPUT file, to set the ymin and ymax ranges for each CPU thread.
+The number of decimals for all variables and 3 spaces in between them need to be kept in the configuration file in order to not introduce bugs.</p></li>
+<li><p>Executables (dbxxx) need to be build (from CLE) on the current architecture: ELF(linux) or Mach-O(OSX)
+If non-correct executables are called a “cannot execute binary file” error is produced. Architecture can be checked with the <em>file</em> command. The configuration deduces the OS in use and selects and uses the proper dbxxx executable in each case, where both Darwin and LINUX executables exist. The linux executable has a CURC cross compiled executable compiled with gcc/10.2.0 for use in RC systems.</p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+<section id="readme-slurm">
+<span id="readme-slurm-label"></span><h2>README-SLURM<a class="headerlink" href="#readme-slurm" title="Permalink to this heading"></a></h2>
+<section id="cledb-research-computing-runs">
+<h3><strong>CLEDB Research Computing Runs</strong><a class="headerlink" href="#cledb-research-computing-runs" title="Permalink to this heading"></a></h3>
+<section id="solar-coronal-inversion-repository-on-github">
+<h4><a class="reference external" href="https://github.com/arparaschiv/solar-coronal-inversion/">solar-coronal-inversion repository on github</a><a class="headerlink" href="#solar-coronal-inversion-repository-on-github" title="Permalink to this heading"></a></h4>
+<p><strong>Contact:</strong> arparaschiv “at” ucar.edu; paraschiv.alinrazvan+cledb “at” gmail.com</p>
+</section>
+<section id="slurm-enabled-research-computing-interactive-or-headless-runs">
+<h4><strong>SLURM ENABLED RESEARCH COMPUTING INTERACTIVE OR HEADLESS RUNS</strong><a class="headerlink" href="#slurm-enabled-research-computing-interactive-or-headless-runs" title="Permalink to this heading"></a></h4>
+<p>Detailed instructions for setting up and running the CLEDB inversion distribution on research computing (RC) systems.</p>
+</section>
+<section id="slurm-enabled-test-scripts">
+<h4>1. Slurm enabled test scripts<a class="headerlink" href="#slurm-enabled-test-scripts" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p><span class="xref myst">test_cledb_slurm.sh</span></p></li>
+<li><p><span class="xref myst">test_1line.py</span></p></li>
+<li><p><span class="xref myst">test_2line.py</span></p></li>
+</ul>
+<p>Note: the <em><span class="xref myst">test_1line.py</span></em> and <em><span class="xref myst">test_2line.py</span></em> scripts are plain script versions of the test notebooks.
+These are directly exported from the Jupyter .ipynb notebooks. All changes to the notebooks should be exported to the scripts.</p>
+</section>
+<section id="installation-and-run-instructions-for-rc-systems">
+<h4>2. Installation and run instructions for RC systems<a class="headerlink" href="#installation-and-run-instructions-for-rc-systems" title="Permalink to this heading"></a></h4>
+<p>These instructions are following the <a class="reference external" href="https://curc.readthedocs.io/en/latest/index.html">CURC system guidelines</a> and scripts are provisioned to be compatible with the blanca-nso compute nodes.</p>
+<ul>
+<li><p>Activate the slurm/blanca module with:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  module load slurm/blanca
+</pre></div>
+</div>
+</li>
+</ul>
+<section id="a-interactive-runs">
+<h5>2.a Interactive runs<a class="headerlink" href="#a-interactive-runs" title="Permalink to this heading"></a></h5>
+<ul>
+<li><p>Start an interactive job:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  sinteractive --partition=blanca-nso --time=01:00:00 --ntasks=2 --nodes=1 --m=12gb
+</pre></div>
+</div>
+</li>
+<li><p>Install <strong>CLEBD</strong> via git clone in the /projects/$USER/ directory following the instructions in <span class="xref myst">README-codedoc.PDF</span>.</p></li>
+<li><p>Create or update a .condarc file with the following contents so that anaconda environments and packages install to your /projects/$USER/ directory instead of /home/$USER/ directory due to lack of storage space.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  pkgs_dirs:
+  - /projects/$USER/.conda_pkgs
+  envs_dirs:
+  - /projects/$USER/software/anaconda/envs
+</pre></div>
+</div>
+</li>
+<li><p>Anaconda install/enable. This step needs to be run at <strong>each</strong> sinteractive login to enable Anaconda.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  source /curc/sw/anaconda3/latest
+</pre></div>
+</div>
+</li>
+<li><p>Install the <strong>CLEDBenv</strong> anaconda environment using the <span class="xref myst">CLEDBenv.yml</span> file. Detailed instructions in <span class="xref myst">README-codedoc.PDF</span>.<br>
+Note: Install inside the sinteractive run or a compile node following the CURC guidelines. Don’t perform the installation from the login node.</p></li>
+<li><p>Activate your new environment</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  conda activate CLEDBenv
+</pre></div>
+</div>
+</li>
+<li><p>Generate a database:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  module load gcc/10.2.0
+  ./CLEDB_BUILD/rundb_1line.sh
+</pre></div>
+</div>
+</li>
+<li><p>Note: A Fortran executable cross compiled on the CURC system with gcc/10.2.0 is provided and will be automatically used by the script. If libraries are missing, and runs are not executing, please contact us for the CLE source code distribution. The most current CLE distribution is <strong>not yet</strong> publicly hosted, but available upon request.</p></li>
+<li><p>Update the database save location in the <em><span class="xref myst">ctrlparams.py</span></em> class, and then run any of the two .py test scripts.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  python3 test_1line.py
+  python3 test_2line.py
+</pre></div>
+</div>
+</li>
+<li><p>Everything should work (remember to download the test data to the main CLEDB root dir) with the exception of remotely connecting to a Jupyter notebook server spawned inside an sinteractive session (which on CURC refuses to connect). CURC offers dedicated <a class="reference external" href="https://curc.readthedocs.io/en/latest/gateways/jupyterhub.html">Jupyter notebook/lab compute nodes</a>, but beware of how the low resource allocation (usually 1 thread) might interact negatively with the Numba/JIT parallel enabled functions.</p></li>
+</ul>
+</section>
+<section id="b-batch-headless-runs">
+<h5>2.b Batch/headless runs<a class="headerlink" href="#b-batch-headless-runs" title="Permalink to this heading"></a></h5>
+<ul>
+<li><p>The database generating scripts in CLEDB_BUILD directory have a dedicated headless run script <em><span class="xref myst">rundb_1line_slurm.sh</span></em> which has slurm headers and where all user inputs are disabled.
+RC resources are requested via the sbatch commands in the script header. The ion to generate the database along with some path variables need to be manually edited in the script before running. This version of the database generation script will perform disk I/O on $SCRATCH partitions, and not on local directories. Databases will be moved back to the /projects/$USER/ directories after computations are finished.</p></li>
+<li><p>Call it using sbatch after editing for the ion and paths to generate for each ion (multiple sbatch commands can be run concurrently if resources are available):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  sbatch rundb_1line_slurm.sh
+</pre></div>
+</div>
+</li>
+<li><p>The bash <em><span class="xref myst">test_cledb_slurm.sh</span></em> wrapper script is a starting point for running test/production headless runs via the sbatch command. It provisionally calls one of the two above mentioned .py scripts based on a decision tree.</p></li>
+<li><p>The script is to be <em>updated/finalized</em> when production runs are ready and data and header ingestion procedures are known.</p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="outputs.html" class="btn btn-neutral float-left" title="Output Products" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="List of changes and TODO tasks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Motivation for the CLEDB approach: &#8212; solar-coronal-inversion update-readthedocs documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Synopsis and Motivation" href="synopsis.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="motivation-for-the-cledb-approach">
+<h1>Motivation for the CLEDB approach:<a class="headerlink" href="#motivation-for-the-cledb-approach" title="Permalink to this heading">¶</a></h1>
+<p>By utilizing 2-line observations, we recover the 3D magnetic field information for single point voxels using a <span class="math notranslate nohighlight">\({\chi}^2\)</span> fitting approach. We employ the CLE spectral synthesis code to  generate forward-model calculations in the order of 10<sup>7</sup>-10<sup>9</sup> atomic plasma and magnetic configurations are needed in order to satisfy a solution resolution criteria. Forward modeling such solutions in a dynamic fashion is time consuming. Such a calculation (e.g. iterating for 1 pixel) has execution times in the order of 10 hours, on a single thread, with a fast implementation of the FORTRAN CLE code.</p>
+<p>Building a separate database (the <code class="docutils literal notranslate"><span class="pre">CLEDB\_BUILD</span></code> module in our algorithm) to store a vast set of synthetic Stokes observations, along with the input plasma and magnetic field configurations responsible for producing polarized emission, proved to be a significantly more feasible approach.</p>
+<p>Additionally, the database theoretical calculations gain intrinsic access to otherwise un-observables input parameters (e.g. atomic alignment <span class="math notranslate nohighlight">\({\sigma}_0^2\)</span>, intrinsic magnetic field angles <span class="math notranslate nohighlight">\({\vartheta}_B\)</span>, <span class="math notranslate nohighlight">\({\varphi}_B\)</span> etc.) that can be used to break inherent degeneracies encountered when attempting analytical inversions (as for example occuring in the 1-line branch implementation). The dimensionality of the problem at hand can be further reduced by 1-2 orders of magnitude by using native symmetries when building and querying databases. More details on the physics aspects of dimensionality reduction and degeneracy breaking effects can be found in citet{2020ApJ…889..109D,2021ApJ…912…18J}, citet{schiffmann2021} and citet{par2022}.</p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">solar-coronal-inversion</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Motivation for the CLEDB approach:</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="synopsis.html" title="previous chapter">Synopsis and Motivation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Alin Paraschiv.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/motivation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

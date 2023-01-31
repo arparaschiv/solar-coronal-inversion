@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation and Run Instructions &mdash; CLEDB solar-coronal-inversion update-readthedocs documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Input Variables and Parameters" href="inputvars.html" />
+    <link rel="prev" title="Module Overview" href="module_overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CLEDB solar-coronal-inversion
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="synopsis.html">Synopsis and Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_overview.html">Module Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation and Run Instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-distribution-download">Code Distribution Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-cledbenv-python-environment">A CLEDBenv Python Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-run-example">Basic Run Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#headless-slurm-runs-overview">Headless Slurm Runs Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="inputvars.html">Input Variables and Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_build.html">CLEDB_BUILD - Database Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_prepinv.html">CLEDB_PREPINV - Pre-processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cledb_proc.html">CLEDB_PROC - Analysis &amp; Inversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outputs.html">Output Products</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Dedicated Readme Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">List of changes and TODO tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CLEDB solar-coronal-inversion</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Installation and Run Instructions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation-and-run-instructions">
+<h1>Installation and Run Instructions<a class="headerlink" href="#installation-and-run-instructions" title="Permalink to this heading"></a></h1>
+<section id="code-distribution-download">
+<h2>Code Distribution Download<a class="headerlink" href="#code-distribution-download" title="Permalink to this heading"></a></h2>
+<p>The CLEDB coronal field inversion code distribution is publicly hosted on Github:</p>
+<p><a class="reference external" href="https://github.com/arparaschiv/solar-coronal-inversion">https://github.com/arparaschiv/solar-coronal-inversion</a></p>
+<p>To create a local deployment use the git clone function:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/arparaschiv/solar-coronal-inversion
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">CLEDB_BUILD</span></code> uses CLE precompiled GNU compatible Fortran binary executable files to generate databases. The module is run by utilizing a Bash script that enables parallel runs of serial computations. Binaries for both Darwin and Linux architectures are provided. More details are found in the <a class="reference internal" href="cledb_build.html#cledb-build-label"><span class="std std-ref">CLEDB_BUILD - Database Generation</span></a> module.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The CLE FORTRAN source code is not included in this package. It is hosted in a separate repository <a class="reference external" href="https://github.com/arparaschiv/coronal-line-emission">https://github.com/arparaschiv/coronal-line-emission</a>.</p>
+</div>
+</section>
+<section id="a-cledbenv-python-environment">
+<h2>A CLEDBenv Python Environment<a class="headerlink" href="#a-cledbenv-python-environment" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">CLEDB_PREPINV</span></code> and <code class="docutils literal notranslate"><span class="pre">CLEDB_PROC</span></code> modules of CLEDB are written in Python.
+The Anaconda environment system is utilized. Anaconda documentation and installation instructions can be <a class="reference external" href="https://docs.continuum.io/anaconda/install/">found here</a>.</p>
+<p>We provide a configuration file <code class="docutils literal notranslate"><span class="pre">CLEDBenv.yml</span></code> to create a custom Anaconda environment that groups the CLEDB utilized Python modules briefly <a class="reference internal" href="module_overview.html#python-modules-label"><span class="std std-ref">described above</span></a>.</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CLEDBenv</span><span class="w"></span>
+<span class="nt">channels</span><span class="p">:</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">defaults</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">numba</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conda-forge</span><span class="w"></span>
+<span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python=3.10</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">numpy=1.23</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">numba=0.56</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyyaml</span><span class="w">         </span><span class="c1">## used only in ctrlparams for NUMBA global options</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scipy=1.9</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ipython=8.6</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ipympl</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jupyter</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jupyterlab</span><span class="w"></span>
+<span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">matplotlib</span><span class="w"></span>
+<span class="c1"># - sphinx=5.0.2        ## Not required by CLEDB; used only to build the documentation## fixed version also stated in docs/requirements.txt</span><span class="w"></span>
+<span class="c1"># - myst-parser=0.18.1  ## Not required by CLEDB; used to add markdown parsing to documentation building.</span><span class="w"></span>
+<span class="c1"># - sphinx-rtd-theme=1.1.1 ## Not required by CLEDB; theme for the documentation</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The configuration file is used to configure the required and optional CLEDB Python packages. In a terminal session you can create the environment via:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda env create -f CLEDBenv.yml
+</pre></div>
+</div>
+<p>After installing all packages the environment can be activated via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate CLEDBenv
+</pre></div>
+</div>
+<p>The user can return to the standard Python package base by running</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda deactivate
+</pre></div>
+</div>
+<p>If dependency problems arise for any reason, CLEDBenv can be deleted and recreated with the default fixed-version packages from <code class="docutils literal notranslate"><span class="pre">CLEDBenv.yml</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda remove --name CLEDBenv --all
+</pre></div>
+</div>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">CLEDBenv</span></code> anaconda environment installs specific version packages. Cross-compatibility is verified by us. This feature ensures additional codebase stability. Updating the individual Python packages inside the CLEDBenv environment is not recommended and might break code functionality.</p>
+</div>
+</section>
+<section id="basic-run-example">
+<h2>Basic Run Example<a class="headerlink" href="#basic-run-example" title="Permalink to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Databases can be built with:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./CLEDB_BUILD/rundb_1line.sh
+</pre></div>
+</div>
+<p>See detailed database build instructions via the dedicated <a class="reference internal" href="readmes.html#readme-rundb-label"><span class="std std-ref">README-RUNDB</span></a> found in the CLEDB_BUILD directory.</p>
+</div></blockquote>
+</li>
+<li><p>Two examples of running the full inversion package (assuming databases are already built) are provided as Jupyter notebooks and/or lab sessions.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./jupyter-lab test_1line.ipynb
+./jupyter-lab test_2line.ipynb
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Script versions for <code class="docutils literal notranslate"><span class="pre">test_1line</span></code> and <code class="docutils literal notranslate"><span class="pre">test_2line</span></code> are also available. These are tailored to be used in headless runs.</p>
+</div>
+</section>
+<section id="headless-slurm-runs-overview">
+<h2>Headless Slurm Runs Overview<a class="headerlink" href="#headless-slurm-runs-overview" title="Permalink to this heading"></a></h2>
+<p>A few optimizations and modifications are provided in order to ensure a straightforward run of CLEDB on headless systems like research computing clusters. The <a class="reference external" href="https://slurm.schedmd.com/documentation.html">Slurm environment</a> is utilized.</p>
+<p>Namely:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Instructions for resource allocation, installing, and running the inversion in both interactive and batch modes of Slurm research computing setups are provided.</p></li>
+<li><p>The database building bash script has a dedicated headless version, <em>rundb_1line_slurm.sh</em>, where user options are hard-coded.</p></li>
+<li><p>Pure python test scripts (test_*.py) are exported/generated from the Jupyter notebooks (test_*.ipynb) to be compatible with batch allocations.</p></li>
+</ul>
+</div></blockquote>
+<p>A dedicated readme covering this topic can be <a class="reference internal" href="readmes.html#readme-slurm-label"><span class="std std-ref">consulted here</span></a> or as standalone in the mian CLEDB directory. The instructions are provided following the templates set by the <a class="reference external" href="https://curc.readthedocs.io/en/latest/index.html">Colorado University Research Computing User Guide</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="module_overview.html" class="btn btn-neutral float-left" title="Module Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="inputvars.html" class="btn btn-neutral float-right" title="Input Variables and Parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alin Paraschiv.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
