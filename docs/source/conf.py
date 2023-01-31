@@ -27,6 +27,7 @@ release = 'update-readthedocs'
 
 # -- General configuration ---------------------------------------------------
 import sphinx_rtd_theme ##PAR import as in https://sphinx-rtd-theme.readthedocs.io/en/stable/installing.html
+import myst_parser
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
