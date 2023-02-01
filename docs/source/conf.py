@@ -56,20 +56,4 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-myst_enable_extensions = [
-    "amsmath",
-    "attrs_inline",
-    "colon_fence",
-    "deflist",
-    "dollarmath",
-    "fieldlist",
-    "html_admonition",
-    "html_image",
-    "inv_link",
-    "linkify",
-    "replacements",
-    "smartquotes",
-    "strikethrough",
-    "substitution",
-    "tasklist",
-]
+myst_enable_extensions = ["amsmath", "attrs_inline", "colon_fence", "deflist", "dollarmath", "fieldlist", "html_admonition", "html_image", "inv_link", "linkify", "replacements", "smartquotes", "strikethrough", "substitution", "tasklist"]
