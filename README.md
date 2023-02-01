@@ -20,7 +20,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 
 ### **Documentation**
 
-1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available on [readthedocs.io.](https://cledb.readthedocs.io/en/latest/) A git [distribution PDF build](./docs/cledb-readthedocs-io-en-latest.pdf) is also provided.
+1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available on [readthedocs.io.](https://cledb.readthedocs.io/en/latest/) A git distribution [PDF build](./docs/cledb-readthedocs-io-en-update-iqud.pdf) is also provided.
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README-SLURM.md](./README-SLURM.md).
 4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
