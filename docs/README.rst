@@ -6,6 +6,6 @@ This document describes the main concepts, functions, and variables, comprising 
 
 Online version hosted by `Readthedocs.io <https://cledb.readthedocs.io/en/latest/>`_
 
-A local :doc:`pre-compiled PDF version<doc/cledb-readthedocs-io-en-update-iqud.pdf>` is available in this directory.
+A local :doc:`pre-compiled PDF version <cledb-readthedocs-io-en-update-iqud.pdf>` is available in this directory.
 
 A tarball latex version prior to git commit *update-readthedocs* is also included.
