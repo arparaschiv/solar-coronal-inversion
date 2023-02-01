@@ -20,7 +20,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 
 ### **Documentation**
 
-1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available on [READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) A git distribution [PDF build](./docs/cledb-readthedocs-io-en-update-iqud.pdf) is also provided.
+1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available on [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) A git distribution [PDF build](./docs/cledb-readthedocs-io-en-update-iqud.pdf) is also provided.
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README-SLURM.md](./README-SLURM.md).
 4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
@@ -58,7 +58,7 @@ These offer the same functionality as the notebooks (from which they are directl
 Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/stable/) in a correct installation.
 
 
-### **Scholarly works supporting the CLEDB inversion**
+### **Works that fundament and support the CLEDB inversion**
 
 1. [Paraschiv & Judge, SolPhys, 2022](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract) covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 2. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) discussed the importance of scattering geometry when solving for coronal magnetic fields.
