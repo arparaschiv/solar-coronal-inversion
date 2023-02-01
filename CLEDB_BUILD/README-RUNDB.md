@@ -1,10 +1,10 @@
 # **CLEDB Parallel Database Generator**
 
+[![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
+
 README for running CLE database calculations on multiple CPU threads.
 
-### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
-
-Contact: Alin Paraschiv (arparaschiv@ucar.edu)
+Contact: Alin Paraschiv (arparaschiv at ucar edu)
 
 #### **History for BUILD module:**
 

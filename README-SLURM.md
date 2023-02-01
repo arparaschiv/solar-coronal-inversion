@@ -1,6 +1,6 @@
 # **CLEDB Research Computing Runs**
 
-### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
+[![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 
 **Contact:** arparaschiv "at" ucar.edu; paraschiv.alinrazvan+cledb "at" gmail.com
 
