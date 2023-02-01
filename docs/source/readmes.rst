@@ -1,4 +1,4 @@
-Focused Readme Files
+Thorough Readme Files
 ======================
 
 .. warning::
