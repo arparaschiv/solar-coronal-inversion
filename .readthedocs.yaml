@@ -1,3 +1,5 @@
+## This is the configuration file
+## for the readthedocs builder that is cross-linked to git updates
 version: 2
 
 build:

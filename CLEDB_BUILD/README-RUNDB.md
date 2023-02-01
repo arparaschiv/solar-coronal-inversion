@@ -1,5 +1,4 @@
 # **CLEDB Parallel Database Generator**
-
 [![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 
 README for running CLE database calculations on multiple CPU threads.

@@ -1,4 +1,5 @@
 ### **CLEDB coronal inversion UPDATES and TODO list**
+[![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 
 **Github update history**
 
