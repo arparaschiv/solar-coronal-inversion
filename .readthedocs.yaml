@@ -5,15 +5,16 @@ build:
   tools:
     python: "3.10"  ## should keep this same as python environment for CLEDBenv
 
-# Build from the docs/ directory with Sphinx
+## Build from the docs/ directory with Sphinx
 sphinx:
   configuration: docs/source/conf.py
-#  builder: html
-#  fail_on_warning: false
 
-# Explicitly set the version of Python and its requirements
+## Explicitly set the version of Python and its requirements
 python:
   install:    
     - requirements: docs/requirements.txt
-#    - method: pip
-#      path: .
+
+##
+formats:
+  - epub
+  - pdf
