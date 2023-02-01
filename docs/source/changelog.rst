@@ -1,10 +1,5 @@
 .. _todo-label:
 
----
-myst:
-  enable_extensions: ["strikethrough"]
----
-
 List of changes and TODO tasks
 ==============================
 

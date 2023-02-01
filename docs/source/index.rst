@@ -5,15 +5,15 @@
 
 Documentation for the **CLEDB** Distribution
 ============================================
+[![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 
-`CLEDB is a publicly hosted on Github <https://github.com/arparaschiv/solar-coronal-inversion>`_
 
 ------------------------------------------------------
 
 **Purpose:**
 
 
-The **C**\ oronal **L**\ ine **E**\ mission **D**\ ata\ **B**\ ase inversion is a Python based tool and pipeline that is used to infer magnetic field information from SpectroPolariemtric observations of the Solar Corona.
+The **C**\ oronal **L**\ ine **E**\ mission **D**\ ata\ **B**\ ase inversion is a **public** Python based tool and pipeline that is used to infer magnetic field information from SpectroPolariemtric observations of the Solar Corona.
 This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for inverted coronal magnetic fields.
 
 -----------------------------------------------------------------------------
