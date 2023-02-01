@@ -5,8 +5,9 @@
 
 Documentation for the **CLEDB** Distribution
 ============================================
-[![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
-
+.. image:: https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat
+   :target: https://github.com/arparaschiv/solar-coronal-inversion
+   :alt: CLEDB repository
 
 ------------------------------------------------------
 
