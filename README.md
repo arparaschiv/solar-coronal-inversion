@@ -5,7 +5,7 @@
 
 
 
-### Main repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion distribution.
+### Repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion distribution.
 
 **Authors:** Alin Paraschiv & Philip Judge.  High Altitude Observatory & National Solar Observatory 
 
