@@ -1,9 +1,11 @@
-# **CLEDB Coronal Field Database Inversion**
-### [solar-coronal-inversion repository on github](https://github.com/arparaschiv/solar-coronal-inversion/)
-
+# **CLEDB Coronal Magnetic Field Database Inversion**
+[![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 [![Documentation Status](https://readthedocs.org/projects/cledb/badge/?version=latest)](https://cledb.readthedocs.io/en/latest/?badge=latest)
+[![ADS](https://img.shields.io/badge/NASA%20ADS-SoPhys%2C%20V297%2C%20%2063-red)](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract)
 
-Main repository for **CLEDB**, the Coronal Line Emission DataBase inversion code distribution.
+
+
+Main repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion code distribution.
 
 **Authors:** Alin Paraschiv & Philip Judge.  High Altitude Observatory & National Solar Observatory 
 
@@ -14,11 +16,11 @@ Invert coronal vector magnetic field products from observations of polarized lig
 The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations to derive line of sight and/or full vector magnetic field products.
 
 #### **Applications:** 
-Inverting magnetic field information from spectro-polarimetric solar coronal observations from instruments like DKIST Cryo-NIRSP; DL-NIRSP; COMP/UCOMP.
+Inverting magnetic field information from spectro-polarimetric solar coronal observations from instruments like DKIST Cryo-NIRSP; DL-NIRSP; MLSO COMP/UCOMP.
 
 ### **Documentation**
 
-1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available in a dedicated documentation write-up. [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
+1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available in a dedicated documentation write-up. [README-CODEDOC.pdf](./docs/cledb-readthedocs-io-en-latest.pdf).
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README-SLURM.md](./README-SLURM.md).
 4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.

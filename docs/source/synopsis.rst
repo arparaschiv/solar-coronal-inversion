@@ -31,7 +31,7 @@ Additionally, the database theoretical calculations gain intrinsic access to oth
 List of Relevant Publications
 -----------------------------
 
-Academic journal papers that helped build and justify CLEDB:
+Academic journal papers that helped fundament,build and justify CLEDB:
 
 1. `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 2. `Judge, Casini, & Paraschiv, ApJ, 2021 <https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract>`_ discussed the importance of scattering geometry when solving for coronal magnetic fields.
