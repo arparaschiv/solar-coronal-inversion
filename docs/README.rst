@@ -5,5 +5,7 @@ The **C**\ oronal **L**\ ine **E**\ mission **D**\ ata\ **B**\ ase inversion is 
 This document describes the main concepts, functions, and variables, comprising the CLEDB inversion algorithm for coronal magnetic fields.
 
 Online version hosted by `Readthedocs.io <https://cledb.readthedocs.io/en/latest/>`_
-Pdf version in the xxxx directory
-Latex version prior to commit *update-readthedocs* is in location xxxx
+
+A local :download:`pre-compiled PDF version<doc/cledb-readthedocs-io-en-update-iqud.pdf>` is available in this directory.
+
+A tarball latex version prior to git commit *update-readthedocs* is also included.
