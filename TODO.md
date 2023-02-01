@@ -18,7 +18,7 @@
 
 1.  Add the ISSUEMASK setup as outlined in the documentation.
 
-2.  ~~Needed observation Keywords are currently manually implemented, where a synthetic CLE observation is used. Information from observation keywords will need to be ingested after observations will become available.~~ *update-iqud*: Keywords are now ingested with data. 
+2.  ~~Needed observation keywords are currently manually implemented, where a synthetic CLE observation is used. Information from observation keywords will need to be ingested after observations will become available.~~ *update-iqud*: Keywords are now ingested with data. 
 
 3.  Develop and use a public test case for more convoluted MURAM data.
 
