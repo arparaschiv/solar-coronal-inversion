@@ -56,7 +56,7 @@ Code 16
     Database fit failed to converge reliably (for 2-line obs).
 
 Code 32
-    One or more of B, :math:`\Phi_B`, :math:`\Theta_B` are lower than noise threshold (for 2-line observations).
+    One or more of B, :math:`\Phi_B`, :math:`\Theta_B` :math:`\vartheta` :math:`\varphi` are lower than noise threshold (for 2-line observations).
 
 Code 64
 	\----------------TBD----------------------    

@@ -31,6 +31,20 @@ This document describes the main concepts, functions, and variables, comprising 
 
 .. Check out the :doc:`usage` section for further information.
 
+.. caution::
+   Vector coronal magnetometry is not yet advanced enough as to recover HMI-like magnetograms. 
+   A user should not expect such a product. 
+   Solution degeneracies exist, and the user 
+   is required to make a decision on how to interpret the inversion outputs and 
+   which products to utilize for their science. 
+
+.. Danger::
+   This setup should be considered at best beta-level release. 
+   This setup tackles a problem for which currently no observation data exists and where 
+   a complex forward-model + inversion is required. 
+   Bugs or unintentional bad outcomes will still exist at this point in time. 
+   Please get in touch with us about any "feature" you discover.
+
 .. note::
    Last updated at the :ref:`*update-readthedocs*<todo-label>` commit tag.
 

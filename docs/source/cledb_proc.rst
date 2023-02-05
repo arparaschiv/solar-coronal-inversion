@@ -209,7 +209,7 @@ CLEDB_INVPROC Main Variables
     Input variable to CLEDB_INVPROC described :ref:`here<sobs_totrot-label>`.
 
 ``sobs_dopp``
-    Doppler oscillation magnetic field strength and POS orientation resulting from wave tracking. 
+    Doppler oscillation magnetic field strength and :term:`POS` orientation resulting from wave tracking. 
 
 .. caution::
     ``sobs_dopp`` is only used as input to CLEDB_MATCHIQUD when *ctrlparams* :ref:`iqud <ctrl_iqud-label>` is enabled. For Numba consistency, an empty array is also passed to CLEDB_INVPROC when performing full IQUV inversions, but it is never used.
@@ -248,10 +248,10 @@ CLEDB_INVPROC Main Variables
             Due to how the problem is posed, **CLEDB_MATCHIQUV** can only use bcalc = 0, 1, or 2 while **CLEDB_MATCHIQUD** can only use :ref:`bcalc<ctrl_bcalc-label>` = 3.
 
     * invout[:,:,:,6]
-        Magnetic field :term:`LOS` angle in CLE frame. Range is 0 to :math:`2\pi`.
+        Magnetic field :math:`\varphi` :term:`LOS` angle in CLE frame. Range is 0 to :math:`2\pi`.
 
     * invout[:,:,:,7]
-        Magnetic field azimuth angle in CLE frame. Range is 0 to :math:`\pi`.
+        Magnetic field :math:`\vartheta` :term:`POS` \ :term:`Azimuth` angle in CLE frame. Range is 0 to :math:`\pi`.
 
     * invout[:,:,:,8]
         B\ :sub:`x` cartesian projected magnetic field depth/:term:`LOS` component. Units are [G].

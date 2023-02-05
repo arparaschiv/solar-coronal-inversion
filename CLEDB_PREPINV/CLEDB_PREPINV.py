@@ -68,7 +68,7 @@ import time
 import glob
 import os
 import sys
-import numexpr as ne
+#import numexpr as ne ## Disabled as of update-iqud. No database compression going forward
 
 import ctrlparams 
 params=ctrlparams.ctrlparams()    ## just a shorter label

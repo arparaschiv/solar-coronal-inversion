@@ -82,10 +82,10 @@ DB.INPUT Parameters
 	Due to geometric considerations, setting ``xmin`` and ``xmax`` values to more than :math:`\pm` 1.0 R\ :math:`_\odot` will most probably not result in practical benefits. This is because a higher 1.5 R\ :math:`_\odot` apparent height, a 1.0 R\ :math:`_\odot` depth would correspond to an actual height above the limb of 1.8 R\ :math:`_\odot`. This is in the more extreme range of the polarization formation vs height issue described above.
 
 ``nbphi, bpmin, bpmax``
-	Number and range of CLE magnetic :term:`LOS` angles to compute. The ``nbphi`` angles are spread along a ``bpmin`` - ``bpmax``  range set to 0 - 2\ :math:`\pi` by default.
+	Number and range of CLE :math:`\varphi` magnetic :term:`LOS` angles to compute. The ``nbphi`` angles are spread along a ``bpmin`` - ``bpmax``  range set to 0 - 2\ :math:`\pi` by default.
 	
 ``nbtheta, btmin, btmax``	
-	Number and range of magnetic CLE azimuth angles to compute. The ``nbtheta`` range is set to ``btmin`` - ``btmax`` .  By default this is set to a 0 - 1\ :math:`\pi` reduced range due to spherical transformation definitions.
+	Number and range of magnetic CLE :math:`\vartheta` :term:`Azimuth` angles to compute. The ``nbtheta`` range is set to ``btmin`` - ``btmax`` .  By default this is set to a 0 - 1\ :math:`\pi` reduced range due to spherical transformation definitions.
 
 .. Danger::
 	Due to how the problem is posed, please do not interchange the maximum ranges between the two magnetic angles, as it would lead to execution errors.	

@@ -10,7 +10,7 @@
 class ctrlparams:
     def __init__(self):
         ## general params
-        self.dbdir        = '/home/noxpara/Documents/physics_prog/cle/db204_R500_UPDT/'                       ## directory for database
+        self.dbdir        = '/home/noxpara/Documents/physics_prog/cle/db204_R0500_UPDT/'                  ## directory for database
         self.verbose      = 1                                                                             ## verbosity parameter
         
         ## Used in CLEDB_PREPINV

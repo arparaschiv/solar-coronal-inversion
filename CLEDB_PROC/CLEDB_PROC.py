@@ -191,7 +191,7 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
                 ## linear degree of polarization total
                 lpol = np.sqrt(sobs_tot[xx,yy,1+(4*zz)]**2 + sobs_tot[xx,yy,2+(4*zz)]**2)
                 ## compute the azimuthal component (phi) of the magnetic field from linear polarization
-                blosout[xx,yy,3,zz] = - 0.5 * np.arctan2(sobs_tot[xx,yy,2+(4*zz)],sobs_tot[xx,yy,1+(4*zz)])
+                blosout[xx,yy,3,zz] = + 0.5 * np.arctan2(sobs_tot[xx,yy,2+(4*zz)],sobs_tot[xx,yy,1+(4*zz)])
                 if (sobs_tot[xx,yy,0+(4*zz)] != 0) and (np.isnan(sobs_tot[xx,yy,4*zz:4*(zz+1)]).any() == False):          ### captures for nans or division by 0
                     ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
                     ## sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 to minimize deviation from "true" solution.
@@ -509,7 +509,6 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
         outredindex = np.empty((nbphi,nsearch),dtype=np.float32)                           ## In this branch, outredindex is never used, but numba does not properly compile because the array is presumably presumably used for matching.
         database_sel = np.reshape(database_sel,(ned*ngx*nbphi*nbtheta,8))                  ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
         outargs=np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3]) )[:,0]     ## keeps the argument for the reduced entry based on the sign of Stokes V.
-        print
         database_sel = database_sel[np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3])]   ## check and presort the sign along the first line 
 
         if verbose >= 2:
@@ -520,18 +519,21 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
     ##normalize the input data to the strongest component
     norm_fact=sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0,0]]
     sobs_1pix[:]=sobs_1pix[:]/norm_fact
+    scale_fact=10**(-np.floor(np.log10(np.abs(sobs_1pix[:]))) - 1)
+    sobs_1pix[:]=sobs_1pix[:]*scale_fact
+
         
     ## Geometric solution is based on a reduced chi^2 measure fit.
     ## match sobs data with database_sel using the reduced chi^2 method
     ## If Observation has Stokes V, we include it in the difference for the chi^2 measurement
     diff = np.zeros((database_sel.shape[0],8),dtype=np.float32)
-    diff = (database_sel[:,:8] - sobs_1pix)/rms  #/ (rms / norm_fact)
+    diff = (database_sel[:,:8]*scale_fact - sobs_1pix)#/rms  #/ (rms / norm_fact)
     
     ndata = 4*2-1         ## Number of observables
     denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
     diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
     chisq = np.zeros((diff.shape[0]),dtype=np.float32)
-    np.round_( np.sum( diff, axis=1)/denom,15,chisq)
+    np.round_( np.sum( diff, axis=1)/denom,6,chisq)
     
     ## Unorthodox definition: chisq needs to be initialized separately, because np.round_ is not supported as a addressable function
     ## This is the only numba compatible implementation possible with current numba (0.51).
@@ -580,7 +582,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_sel,dbhdr,rms,nsearch
 
             # Magnetic field strength from ratio of database with V/I ratios or wave data of observations and database
             if bcalc == 0: ## using first line
-                bfield =np.float32(np.float64( sobs_1pix[3]/(database_sel[ixr,3]+1e-8) )) ## for division operation precision when database bfields are close to 0;
+                bfield = sobs_1pix[3]/(database_sel[ixr,3]*scale_fact[3]+1e-8) ## for division operation precision when database bfields are close to 0;
             if bcalc == 1: ## using second line
                 bfield = sobs_1pix[7]/(database_sel[ixr,7]+1e-8)
             if bcalc == 2: ## using the average of the two lines

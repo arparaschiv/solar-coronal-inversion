@@ -2,6 +2,8 @@ Glossary
 ========
 
 .. glossary::
+	Azimuth
+		Usually reffering to angles traversing the plane of the sky. These are :math:`\vartheta` or :math:`\Phi_B` depending on geometrical references. 
 
 	ADU
 		Arbitrary Data Units; detector calibrated counts when no absolute intensity calibration exists.
@@ -43,7 +45,7 @@ Glossary
 		`Just In Time <https://numba.readthedocs.io/en/stable/reference/jit-compilation.html>`_ compilation decorator from the Numba library package.
 
 	LOS
-		Line Of Sight.
+		Line Of Sight. In CLE references this direction is along the x-axis. The CLE :math:`\varphi` angle traverses this direction. In the observer geometry, the :math:`\Theta_B` angle traverses this direction. 
 
 	Normal distribution
 		A Gaussian function, or a bell curve. Probability distribution that is symmetric around a mean value, in which data near the mean are more frequent in occurrence than data far from the mean. 
@@ -62,6 +64,9 @@ Glossary
 
 	Pixel
 		A 2D representation for a signal integrating area. This is equivalent to a LOS integration of a voxel. This is also the fundamental storage datatype for Python/Numpy arrays. In this document we refer to pixels when discussing data/array elements. 
+		
+	POS
+		Plane Of Sky. In CLE references this direction is correspondent to the zy-plane. The CLE :math:`\vartheta` angle traverses this direction. In the observer geometry, the :math:`\Phi_B` angle traverses this direction.
 
 	Radiative transfer
 	    Transfer of electromagnetic radiation through a medium.
