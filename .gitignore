@@ -135,6 +135,8 @@ obsstokes*.pkl
 outparams*.pkl
 ## other test scripts
 Untitled.ipynb
+Untitled1.ipynb
+test_2line_IQUD.ipynb
 ## output plots
 specout*.pdf
 invout*.pdf

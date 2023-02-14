@@ -57,7 +57,7 @@ Note: Install inside the sinteractive run or a compile node following the CURC g
 
 - Note: A Fortran executable cross compiled on the CURC system with gcc/10.2.0 is provided and will be automatically used by the script. If libraries are missing, and runs are not executing, please contact us for the CLE source code distribution. The most current CLE distribution is **not yet** publicly hosted, but available upon request.
 
-- Update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, and then run any of the two .py test scripts. 
+- Update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, and then run any of the three .py test scripts. 
 
         python3 test_1line.py
         python3 test_2line.py

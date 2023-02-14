@@ -84,14 +84,14 @@ def sobs_preprocess(sobs_in,headkeys,params):
 ## Main script to read data and header information to prepare it for analysis.
 
     if params.verbose >=1: 
-        print('------------------------------------\n--------OBS PROCESSING START--------\n------------------------------------')
-        if params.verbose >= 3:start0=time.time()        
+        print('------------------------------------\n----SOBS_PREPROCESS - READ START----\n------------------------------------')
+        if params.verbose >= 2:start0=time.time()        
 
 ## unpack the minimal number of header keywords
     keyvals=obs_headstructproc(sobs_in,headkeys,params)
     if(keyvals == -1):
         if params.verbose >=1: 
-            print('------------------------------------\n-----OBS KEYWORD PROCESSING FAIL----\n------------------------------------')
+            print('SOBS_PREPROCESS: FATAL! OBS KEYWORD PROCESSING FAIL. Aborting!')
         return -1
     
 ##calculate an observation height and integrate the stokes profiles
@@ -106,28 +106,30 @@ def sobs_preprocess(sobs_in,headkeys,params):
 
     if keyvals[3] == 2:
     ## for two-line inversions we require a rotation of the linear polarization Q and U components
-        sobs_totrot = np.copy(sobs_tot)
-        aobs        = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
+        ## both variables are now initialized inside obs_qurotate
+        #sobs_totrot = np.copy(sobs_tot)
+        #aobs        = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
         
-        sobs_totrot,aobs = obs_qurotate(sobs_tot,yobs,keyvals)        
+        sobs_totrot,aobs = obs_qurotate(sobs_tot,keyvals)        
         
         ## placeholder for [update issuemask]
 
 
         if params.verbose >=1:
-            if params.verbose >= 3:
+            if params.verbose >= 2:
                 print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL OBS PREPROCESS INTEGRATION AND ROTATION')
-            print('------------------------------------\n-----OBS PREPROCESS FINALIZED-------\n------------------------------------')
+            print('------------------------------------\n--SOBS_PREPROCESS - READ FINALIZED--\n------------------------------------')
 
         return sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs
+
     else:
 
         ## placeholder for [update issuemask]
 
         if params.verbose >=1:
-            if params.verbose >= 3:
+            if params.verbose >= 2:
                 print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL OBS PREPROCESS AND INTEGRATION')
-            print('------------------------------------\n-----OBS PREPROCESS FINALIZED-------\n------------------------------------')
+            print('------------------------------------\n--SOBS_PREPROCESS - READ FINALIZED--\n-----------------------------------')
 
         return sobs_tot,yobs,rms,background,keyvals,np.zeros((sobs_tot.shape)),np.zeros((yobs.shape)) ## return the 0 arrays to keep returns consistent between 1 and 2 line inputs (it helps numba/jit).
 ###########################################################################
@@ -142,8 +144,8 @@ def sdb_preprocess(yobs,keyvals,params):
 ## this is made compatible to Numba object mode with loop-lifting to read all the necessary database in a parallel fashion
 
     if params.verbose >=1: 
-        print('------------------------------------\n----------DB READ START-------------\n------------------------------------')
-        if params.verbose >= 3:start0=time.time()        
+        print('------------------------------------\n----SDB_PREPROCESS - READ START-----\n------------------------------------')
+        if params.verbose >= 2: start0=time.time()        
     ######################################################################
     ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx = keyvals[0]
@@ -154,8 +156,12 @@ def sdb_preprocess(yobs,keyvals,params):
     ######################################################################
     ## Preprocess the string information
     dbnames,dbynumbers,dbsubdirs=sdb_fileingest(params.dbdir,nline,tline,params.verbose)
-    if params.verbose >=1:print("CLEDB covers a span of",dbynumbers.shape[0],"heights between",1+np.min(dbynumbers)/1000,"-",1+np.max(dbynumbers)/1000,"Solar radius")
-   
+    
+    ## No database could be read? NO RUN!!!
+    if dbsubdirs == 'Ingest Error':
+        if params.verbose >=1: print("SDB_PREPROCESS: FATAL! Could not read database")
+        return None,None,None
+      
     ######################################################################
     ## Create a file encoding showing which database to read for which voxel
     ## the encoding labels at this stage do not have an order.
@@ -167,7 +173,10 @@ def sdb_preprocess(yobs,keyvals,params):
             db_enc_flnm[xx,yy]=sdb_findelongation(yobs[xx,yy],dbynumbers)   
 
     db_uniq=np.unique(db_enc_flnm) ## makes a list of unique databases to read; the full list might have repeated entries
-    if params.verbose >= 1: print("Load DB datafiles for",db_uniq.shape[0]," heights in memory for",nline,"line(s).\n------------------------------------")
+    
+    if params.verbose >= 1: 
+        print("CLEDB databases cover a span of",dbynumbers.shape[0],"heights between",1+np.min(dbynumbers)/1000,"-",1+np.max(dbynumbers)/1000,"Solar radius")    
+        print("Load DB datafiles for",db_uniq.shape[0]," heights in memory for",nline,"line(s).\n------------------------------------")
 
     ######################################################################
     ## read the required databases and their header----------
@@ -213,9 +222,9 @@ def sdb_preprocess(yobs,keyvals,params):
 
 
     if params.verbose >=1:
-        if params.verbose >= 3:
+        if params.verbose >= 2:
             print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL DB SEARCH AND FIND')
-        print('------------------------------------\n--------DB READ FINALIZED-----------\n------------------------------------')
+        print('------------------------------------\n--SDB_PREPROCESS - READ FINALIZED---\n------------------------------------')
     return db_enc,database,dbhdr
 ###########################################################################
 ###########################################################################
@@ -265,12 +274,12 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
             return [names,None],dbynumbers,'twolineDB' ##double return of names +none is superfluous; reason is to keep returns consistent regardless in terms of datatype of the if case
 
         elif sum(line_bin) ==1:
-            if verbose >=1: print("Two line observation provided! Requires two individual databases in directory")    
-            return [None,None],None,'ingest error' 
+            if verbose >=2: print("SDB_FILEINGEST: FATAL! Two line observation provided! Requires two individual ion databases in directory. Only one database is computed.")    
+            return [None,None],None,'Ingest Error'
 
         else: 
-            if verbose >=1:print("No database or incomplete calculations found in directory ")
-            return [None,None],None,'ingest error' 
+            if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
+            return [None,None],None,'Ingest Error' 
 
 ## one line db prepare
     elif nline ==1:
@@ -287,8 +296,8 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
             return [namesA,None],dbynumbers,dbsubdirs
 
         else:
-            if verbose >=1:print("No database or incomplete calculations found in directory ")
-            return [None,None],None,'Ingest error' 
+            if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
+            return [None,None],None,'Ingest Error' 
 ###########################################################################
 ###########################################################################
 
@@ -332,7 +341,7 @@ def sdb_parseheader(dbheaderfile):
     
     for k in range(0,nline): wavel[k]=g[13+k]    
 
-    return g, ned, ngx, nbphi, nbtheta, xed, gxmin,gxmax, bphimin, bphimax,\
+    return g, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
         bthetamin, bthetamax, nline, wavel 
 ###########################################################################
 ###########################################################################
@@ -343,7 +352,7 @@ def sdb_parseheader(dbheaderfile):
 def sdb_read(fildb,dbhdr,verbose):
 ## here reading data is done and stored in variable database of size (ncalc,line,4)
 ## due to calling dcompress nad np.fromfile, this is incompatible with numba    
-    if verbose >=3: start=time.time()    
+    if verbose >=2: start=time.time()    
     
     ######################################################################
     ## unpack dbcgrid parameters from the database accompanying db.hdr file 
@@ -360,7 +369,12 @@ def sdb_read(fildb,dbhdr,verbose):
     #db=sdb_dcompress(np.fromfile(fildb, dtype=np.int16),verbose)
     db=np.fromfile(fildb, dtype=np.float32)
     
-    if verbose >= 3: print("{:4.6f}".format(time.time()-start),' SECONDS FOR INDIVIDUAL DB READ\n----------')
+    if verbose >=2:
+        print("SDB_READ: ",np.int64(sys.getsizeof(db)/1.e6)," MB in DB file")
+        if np.int64(sys.getsizeof(db)/1.e6) > 250 : print("SDB_READ: WARNING! Very large DB. Lots of RAM are required. Processing will be slow!")
+
+    
+    if verbose >= 2: print("{:4.6f}".format(time.time()-start),' SECONDS FOR INDIVIDUAL DB READ\n----------')
 
     return np.reshape(db,(ned,ngx,nbphi,nbtheta,nline*4))
 ###########################################################################
@@ -433,7 +447,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
                 ## the headkey is a bytes type so conversion to UTF-8 is needed 
                 ## the [0] unpacks the one element lists where used. 
             else:
-                print("Can't read line information from keywords; aborting")
+                if params.verbose >=2: print("OBS_HEADSTRUCTPROC: FATAL! Can't read line information from keywords.")
                 return -1     #catastrophic exit
         else:
             tline=[linestr[0],linestr[1]]   ## for Cryo-NIRSP; static! no keywords yet implemented
@@ -444,7 +458,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
         
     ## check if nline is correct. the downstream inversion modules are contingent on this keyword
     if nline != 1 and nline != 2:
-        print("Not a one or two line observation; aborting")
+        if params.verbose >=2: print("OBS_HEADSTRUCTPROC: FATAL! Not a one or two line observation; aborting")
         # placeholder for [update issuemask]
         return -1        #catastrophic exit
 
@@ -509,8 +523,9 @@ def obs_headstructproc(sobs_in,headkeys,params):
         cdelt3 = [0.0,0.0]                                                                    ## not used for integrated data such as CoMP
     elif (str(headkeys[0].instrume[0], "UTF-8") == "Cryo-NIRSP"):                 #CASE 3: Cryo-NIRSP OBSERVATIONS
         ##To be updated
-        print("Cryo-NIRSP header not yet implemented")
-    else: print("Observation keywords not recognised.")                                       ## only CoMP, MURAM, and CLE examples are currently implemented
+        if params.verbose >=1: print("OBS_HEADSTRUCTPROC: FATAL! Cryo-NIRSP header not yet implemented")
+    else: 
+        if params.verbose >=1: print("OBS_HEADSTRUCTPROC: FATAL!Observation keywords not recognised.") ## only CoMP, MURAM, and CLE examples are currently implemented
 
 ## Additional keywords of importance thatm might or might not be included in observations.
 ## check for the direction for the reference direction of linear polarization.
@@ -624,20 +639,26 @@ def obs_integrate(sobs_in,keyvals):
                     ## Leave here commented lines for clarity of how RMS is computed.
                     ## First, here is variance of each state with detector/physical counts
                     ## Here is variance varis in ((I+S) - (I-S))/2 = S, in counts
-                    #variance = np.abs((background[xx,yy,0] +background[xx,yy,0])/2.) ##
-                    ## here is the variance in y = S/I:  var(y)/y^2 = var(S)/S^2 + var(I)/I^2
-                    #var =  variance/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + variance/sobs_tot[xx,yy,0]**2
-                    #var *= (sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2 ## this is  form of normalization that is not required as the data is not normalized here.
-                    #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt(var)
-                    #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation; this is to save as much computation time possible
+                    # variance = np.abs((background[xx,yy,0] +background[xx,yy,0])/2.) ##
+                    # # here is the variance in y = S/I:  var(y)/y^2 = var(S)/S^2 + var(I)/I^2
+                    # var =  variance/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + variance/sobs_tot[xx,yy,0]**2
+                    # var *= (sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2 
+                    # rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt(var)
+                    #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation; this is to save as much computation time possible. Due to parallelization, this calculation needs to be done separately. see below
                     #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.) ## canonical RMS estimation; not the same as implementation above
+                    
+                    ## distribution standard deviation 
+                    # for kk in range(4):
+                    #     rms[xx,yy,(4*zz)+kk] = np.std(sobs_in[zz][xx,yy,:,kk]/np.max(np.abs(sobs_in[zz][xx,yy,:,kk]))) ##a standard deviation in normalized units as normalized data is matched in cledb_matchiquv
+                        #rms[xx,yy,(4*zz)+kk] = (0.5*np.std(sobs_in[zz][xx,yy,0:lr0[0,0]+1,kk]/np.max(np.abs(sobs_in[zz][xx,yy,0:lr0[0,0]+1,kk])))+0.5*np.std(sobs_in[zz][xx,yy,lr0[-1,0]:,kk]/np.max(np.abs(sobs_in[zz][xx,yy,lr0[-1,0]:,kk]))) )
                 # else:
                 #     issuemask.....
-    ## RMS is dependent on background and sobs_tot of first line ([xx,xy,0]) Because zz parralelization above might compute second line first, an error is introduced.
-    ## This extra trtaversal removes the RMS calculation from the fast loops to avoid this issue. It only adds few seconds in computing time.
+    ## RMS is dependent on background and sobs_tot of first line ([xx,xy,0]) Because zz parallelization above might compute second line first, an error is introduced.
+    ## This extra traversal removes the RMS calculation from the fast loops to avoid this issue. It only adds few seconds in computing time.
     for xx in prange(nx): 
         for yy in prange(ny): 
-            rms[xx,yy,:]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,:]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,:]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation            
+            rms[xx,yy,:] = np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,:]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,:]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation based on the above formulation    
+   
     return sobs_tot,rms,background
 ###########################################################################
 ###########################################################################
@@ -645,7 +666,7 @@ def obs_integrate(sobs_in,keyvals):
 ###########################################################################
 ###########################################################################
 @njit(parallel=params.jitparallel,cache=params.jitcache)
-def obs_qurotate(sobs_tot,yobs,keyvals):
+def obs_qurotate(sobs_tot,keyvals):
 ## rotates the linear polarization components with the corresponding angle
 ## this implicitly assumes that yobs is kept in the same units as the header keys, either R_sun or arcsec.
 
@@ -662,12 +683,10 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
         crval2 = crval2 - (crpix2 * cdelt2)
 
     aobs=np.empty((nx,ny),dtype=np.float32)
-    ## copy the sobs array 
-    sobs_totrot=np.copy(sobs_tot)
+    sobs_totrot=np.copy(sobs_tot)             ## copy the sobs array as only QU need to be updated
 
     for xx in range(nx):
         for yy in prange(ny):
-            #aobs[xx,yy]=2*np.pi-2*np.pi-linpolref + np.arccos((crval1 +xx*cdelt1)/yobs[xx,yy])
             aobs[xx,yy]= - np.arctan2((crval1 +xx*cdelt1),(crval2 +yy*cdelt2)) ## assuming the standard convention for arcsecond coordinates <--> trigonometric circle
             if (aobs[xx,yy] <0):
                 aobs[xx,yy] =2*np.pi + aobs[xx,yy]
@@ -685,8 +704,11 @@ def obs_qurotate(sobs_tot,yobs,keyvals):
             sobs_totrot[xx,yy,2]=sobs_tot[xx,yy,1]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,2]*np.cos(2*aobs[xx,yy])
             sobs_totrot[xx,yy,5]=sobs_tot[xx,yy,5]*np.cos(2*aobs[xx,yy])-sobs_tot[xx,yy,6]*np.sin(2*aobs[xx,yy])
             sobs_totrot[xx,yy,6]=sobs_tot[xx,yy,5]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,6]*np.cos(2*aobs[xx,yy])
+            
+            ## It would be more efficient to normalize sobs_totrot here, but then the normalization factor can not be easily transported to cledb_quderotate to bring back the profiles that can be compared to sobs_tot.
+            ## The normalization is done inside cledb_matchiquv or cledb_matchiqud
+            ## sobs_totrot[xx,yy,:]=sobs_totrot[xx,yy,:]/sobs_totrot[xx,yy,np.argwhere(sobs_totrot[xx,yy,:] == np.max(sobs_totrot[xx,yy,:]))[0,0]]
 
-    #if verbose >= 1: print("\n Observation Q and U intensities are rotated by",linpolref,"degrees around the unit circle.")
     return sobs_totrot,aobs
 ###########################################################################
 ###########################################################################

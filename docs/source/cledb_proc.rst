@@ -10,6 +10,8 @@ Three main functions, **SPECTRO_PROC**, **BLOS_PROC**, and **CLEDB_INVPROC** are
 .. image:: figs/4_CLEDB_PROC.png
    :width: 800
 
+.. _cledb_spectro-label:
+
 The SPECTRO_PROC Function
 -------------------------
 
@@ -89,7 +91,10 @@ SPECTRO_PROC Main Variables
     
     * specout[:, :, :, 9]
         Non-thermal component of the FWHM line width. A measure or estimation of the instrumental line broadening/width will significantly increase the accuracy of this determination. Units are [nm].
-    
+
+        .. attention::
+            Sporadic pixels close to limb in synthetic data exhibited very narrow profiles but otherwise they were deemed usable by the statistics tests. This turns into a problem that will throw invalid value runtime warnings when computing this wuantity. To fix, we set ``specout[:, :, :, 9]`` = 0 in all such occurences. 
+
     * specout[:, :, :, 10]
         Fraction of linear polarization P\ :sub:`l` with respect to the total :term:`Stokes I` counts. Dimensionless.                              
     
@@ -99,7 +104,7 @@ SPECTRO_PROC Main Variables
 .. Attention::
 	Regardless if solving for 1-line or 2-line observations, ``specout`` will return both ``nline`` dimensions. In the case of 1-line observations, the ``nline`` = 1 dimension corresponding to the hypothetical second line is returned as 0 for all pixel locations. The unused dimension can be removed from the upstream example script, if needed. This behavior is known and enforced to keep output casting static, making the codebase compatible with Numba and speeding up execution.
 
-
+.. _cledb_blos-label:
 
 The BLOS_PROC Function
 ----------------------
@@ -174,9 +179,10 @@ CLEDB_INVPROC Main Functions
     Matches a set of two partial Stokes IQU observations with a model observation of the same Stokes quantities. The matched solutions are initially more degenerate than **CLEDB_MATCHIQUV**, usually 4 timee with respect to LOS and signed field strength combinations. Additional information from Doppler oscillation tracking are brought-in to recover field strengths and reduce degeneracies (to 2 times). Matching is done individually for one pixel in the input array. This is a computationally demanding and time consuming function.
 
     .. note::
-        Based on the *ctrlparams* :ref:`iqud key<ctrl_iqud-label>` only one of CLEDB_MATCHIQUV or CLEDB_MATCHIQUD setups is selected and utilized.
+        Based on the *ctrlparams* :ref:`iqud key<ctrl_iqud-label>` only one of the CLEDB_MATCHIQUV or CLEDB_MATCHIQUD setups is selected and utilized.
 
-    
+    .. _cledb_gs-label:
+
     :math:`\triangleright` CLEDB_GETSUBSET
         When :ref:`enabled<ctrl_red-label>` via *ctrlparams*, the information encoded in the Stokes Q and U magnetic azimuth is used to reduce the matched database by approximately 1 order of magnitude in terms of observation-comparable calculations.
 
@@ -200,10 +206,10 @@ CLEDB_INVPROC Main Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``database [ned,nx,nbphi,nbtheta,nline*4] list of float arrays``
-    Individual entries from the database list are fed to the **CLEDB_MATCHIQUV** or **CLEDB_MATCHIQUD** functions. From the database list, only the best matching height entry via :ref:`db_enc<dbenc-label>` variable is passed via the *database_sel* internal variable. 
+    Individual entries from the database list are fed to the **CLEDB_MATCHIQUV** or **CLEDB_MATCHIQUD** functions. From the database list, only the best matching height entry via :ref:`db_enc<dbenc-label>` variable is passed via the *database_in* internal variable. 
 
 ``database_sel [ned,nx,nbphi,nbtheta,nline*4] float array``  
-    Subset index of the database list that is fed to CLEDB_MATCHIQUV or CLEDB_MATCHIQUD for matching the observation in one pixel. This alleviates memory shuffling and array slicing operations. The array is then reshaped into a 2D  [ned\*nx\*nbphi\*nbtheta,nline\*4] form (e.g. [index,nline\*4]). In the case where *ctrlparams* :ref:`reduction key<ctrl_red-label>` is enabled, *database_sel* is additionally reduced with respect to the number of potential indexes to match. 
+    An element reduced database list that is used by CLEDB_MATCHIQUV or CLEDB_MATCHIQUD for matching the observation in one pixel. This alleviates memory shuffling and array slicing operations. The array is reshaped into a 2D  [ned\*nx\*nbphi\*nbtheta,nline\*4] form (e.g. [index,nline\*4]). In the case where *ctrlparams* :ref:`reduction key<ctrl_red-label>` is enabled, *database_sel* is additionally reduced with respect to the number of potential indexes to match. Otherwise, the variable is only trimmed of the entries where the sign of Stokes V does not math the observation.
 
 ``sobs_totrot``
     Input variable to CLEDB_INVPROC described :ref:`here<sobs_totrot-label>`.
@@ -217,11 +223,13 @@ CLEDB_INVPROC Main Variables
 ``chisq [ned*nx*nbphi*nbtheta,nline*4] float array``
      Computes the squared difference between the voxel IQUV measurements [nline\*4] and each index element of the database [index,nline\*4].
 
-``sfound [nx,ny,nsearch,nline*4] output float array;``
-     Returns the first ``nsearch`` de-rotated and matched Stokes IQUV sets from the database.
+.. _sfound-label:
 
-     .. warning::
-        Solutions are skipped if the :math:`\chi^2` fitting residuals are greater than the limit set by the *ctrlparams* :ref:`maxchisq key<ctrl_maxchisq-label>`. Thus, it is possible and even expected that less than requested  *ctrlparams* :ref:`nsearch <ctrl_nsearch-label>` solutions to be returned for one observed voxel.
+``sfound [nx,ny,nsearch,nline*4] output float array;``
+     Returns the first ``nsearch`` de-rotated and matched Stokes IQUV sets from the database. These can be compared to the input Stokes observation.
+
+     .. caution::
+        As the databases are only computed for B = 1 G, the Stokes V profiles will not match accurately. The sign should match. 
 
 .. _invout-label:
 
@@ -245,7 +253,10 @@ CLEDB_INVPROC Main Variables
         Magnetic field strength recovered via the ratio of observed stokes V to database Stokes V (computed for B = 1 G); Uses *ctrlparams* class :ref:`bcalc key<ctrl_bcalc-label>`. Units are [G].
 
         .. warning::
-            Due to how the problem is posed, **CLEDB_MATCHIQUV** can only use bcalc = 0, 1, or 2 while **CLEDB_MATCHIQUD** can only use :ref:`bcalc<ctrl_bcalc-label>` = 3.
+            Due to how the problem is posed, **CLEDB_MATCHIQUV** can only use :ref:`bcalc<ctrl_bcalc-label>` = 0, 1, or 2 while **CLEDB_MATCHIQUD** can only use :ref:`bcalc<ctrl_bcalc-label>` = 3.
+
+        .. attention::
+            The bcalc estimation employs a logical test to avoid division by 0 in cases where the Zeeman signal vanishes due to geometry in teh database. If the database Stokes V component is less than 1e-7, then the matched field strength is set to 0 regardless of what the signal is in the observation(usually it is very small, or noise)
 
     * invout[:,:,:,6]
         Magnetic field :math:`\varphi` :term:`LOS` angle in CLE frame. Range is 0 to :math:`2\pi`.
@@ -262,5 +273,8 @@ CLEDB_INVPROC Main Variables
     * invout[:,:,:,10]
         B\ :sub:`z` cartesian projected magnetic field vertical component. Units are [G].
 
-.. attention::
-   Regardless of the number of solutions (if any) that are found inside the *ctrlparams* :ref:`maxchisq<ctrl_maxchisq-label>` and :ref:`nsearch <ctrl_nsearch-label>` constraints, the ``invout`` output array will keep its dimensions fixed and return "0" value fields to keep output data shapes consistent. This is a Numba requirement. Only the index is set to "-1" to notify the user that no result was outputted.	                        
+.. warning::
+    * Solutions are skipped if the :math:`\chi^2` fitting residuals are greater than the limit set by the *ctrlparams* :ref:`maxchisq key<ctrl_maxchisq-label>`. Thus, it is possible and even expected that less than requested  *ctrlparams* :ref:`nsearch <ctrl_nsearch-label>` solutions to be returned for one observed voxel in both ``invout`` and ``sfound``.
+
+    * Regardless of the number of solutions (if any) that are found inside the *ctrlparams* :ref:`maxchisq<ctrl_maxchisq-label>` and :ref:`nsearch <ctrl_nsearch-label>` constraints, the ``invout`` output array will keep its dimensions fixed and return "0" value fields to keep output data shapes consistent. This is a Numba requirement. Only the index is set to "-1" to notify the user that no result was outputted. ``sfound`` behaves similarly.   
+                        

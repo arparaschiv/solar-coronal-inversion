@@ -27,7 +27,6 @@ import numpy as np           ## Defines variables to store/load headers
 from numba.typed import List ## Most numba functions are loaded by the CLEDB modules; non-reflected lists are needed to create a list of 2 observation arrays
 
 
-
 # ### 1. Import the synthetic CLE observation.
 
 # In[3]:
@@ -38,25 +37,25 @@ from numba.typed import List ## Most numba functions are loaded by the CLEDB mod
 ## sobsa is the combined 3 dipole output
 ## waveA and waveB are the wavelength arrays for the two Fe XIII lines
 
-with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
-    sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
-### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
-sobsa=sobsa[:,:,::-1,:]
+# with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
+#     sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
+# ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
+# sobsa=sobsa[:,:,::-1,:]
 
-## A fake minimal header for CLE
-## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun. The wavelength raferences (vacuum), ranges and spectral resolutions are unique. See CLE outfiles and grid.dat.
-head_in =  [np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
-                     -0.75, 0.8, 1074.62686-0.0124,\
-                     (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0247,"CLE-SIM"),\
-                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
-                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
-                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
-            np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
-                     -0.75, 0.8, 1079.78047-0.0124,\
-                     (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0249,"CLE-SIM"),\
-                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
-                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
-                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume', 'U7')]).view(np.recarray)  ]
+# ## A fake minimal header for CLE
+# ## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun. The wavelength raferences (vacuum), ranges and spectral resolutions are unique. See CLE outfiles and grid.dat.
+# head_in =  [np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
+#                      -0.75, 0.8, 1074.62686-0.0124,\
+#                      (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0247,"CLE-SIM"),\
+#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
+#             np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
+#                      -0.75, 0.8, 1079.78047-0.0124,\
+#                      (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0249,"CLE-SIM"),\
+#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume', 'U7')]).view(np.recarray)  ]
 
 # 
 #waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
@@ -83,42 +82,52 @@ head_in =  [np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
 # In[5]:
 
 
-# load the fake observation muram data.             
-# FE XIII 1074+1079
+## load the fake observation muram data.             
+## FE XIII 1074+1079
 
-# with open('obsstokes_avg_muram3.pkl','rb') as f:
-#     sobsa = pickle.load(f) 
-# sobsa=sobsa[0]  
+with open('obsstokes_avg_muram3.pkl','rb') as f:
+    sobsa = pickle.load(f) 
+sobsa=sobsa[0]  
 
 ## A fake minimal header for MURAM
 ## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun (from muram xvec and yvec arrays). The wavelength raferences (vacuum), ranges and spectral resolutions are unique (muram wvvec1 and wvvce2 arrays).
-# head_in =  [np.array((0, 0, 0,\
-#                      -0.071, 0.989, 1074.257137,\
-#                      0.0001379,  0.0000689, 0.0071641,"MUR-SIM" ),\
-#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
-#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
-#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
-#             np.array((0, 0, 0,\
-#                     -0.071, 0.989, 1079.420513,\
-#                      0.0001379,  0.0000689, 0.0071985,"MUR-SIM" ),\
-#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
-#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
-#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray)  ]
+head_in =  [np.array((0, 0, 0,\
+                     -0.071, 0.989, 1074.257137,\
+                     0.0001379,  0.0000689, 0.0071641,"MUR-SIM" ),\
+                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
+            np.array((0, 0, 0,\
+                    -0.071, 0.989, 1079.420513,\
+                     0.0001379,  0.0000689, 0.0071985,"MUR-SIM" ),\
+                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray)  ]
 
 ## muram data too big to include as test data!!!!
+
+
+# In[6]:
+
+
+## Loading of the doppler data. THIS IS REQUIRED by Numba.
+## The Numba non-python cledb_prepinv implmentation needs static inputs, that forces including sobs_dopp for hypotethically running iqud setups.
+## In this case, the array is just set to empty and not used internally.
+if params.iqud == False:
+    sobs_dopp=np.empty((sobsa.shape[0],sobsa.shape[1],2),dtype=np.float32) 
 
 
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
 
 # ##### Remember to set your personal options and database paths in the ctrlparams class (in the parent directory) before continuing.
 
-# In[6]:
+# In[7]:
 
 
 import CLEDB_PREPINV.CLEDB_PREPINV as prepinv  ##imports from the CLEDB_PREPINV subdirectory
 
 
-# In[7]:
+# In[8]:
 
 
 ## arrange the two observation "files" in a simple list;
@@ -128,25 +137,26 @@ import CLEDB_PREPINV.CLEDB_PREPINV as prepinv  ##imports from the CLEDB_PREPINV 
 sobs_lst=[sobsa[:,:,:,0:4],sobsa[:,:,:,4:8]]  ## standard python lists will be deprecated ; they do not work well with numba
 sobs_in = List()                              ## this is the List object implemented by numba; It utilizes memory in a column-like fashion.
 [sobs_in.append(x) for x in sobs_lst]         ## Numba developers claim that it is a significantly faster performing object
+##delete the large arrays from memory
+sobs_lst = 0
+sobsa = 0
 
 
 # ##### preprocess the observation "files"
 
-# In[8]:
+# In[9]:
 
 
 importlib.reload(prepinv)       ## If module is modified, reload the contents
-#sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,head_in,params)
 sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,head_in,params)
 
 
-# In[9]:
+# In[10]:
 
 
 ## select and pre-read the database files based on the observation preprocessing
 ## At this point, the database should be generated and properly linked.
-
-#importlib.reload(prepinv)       ## If module is modified, reload the contents
+importlib.reload(prepinv)       ## If module is modified, reload the contents
 db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 ## Warning, this might be memory consuming; see details in documentation
 
@@ -155,7 +165,7 @@ db_enc,database,dbhdr=prepinv.sdb_preprocess(yobs,keyvals,params)
 
 # ### 3. Test the CLEDB_PROC module with the same synthetic data.
 
-# In[10]:
+# In[11]:
 
 
 import CLEDB_PROC.CLEDB_PROC as procinv
@@ -163,67 +173,39 @@ import CLEDB_PROC.CLEDB_PROC as procinv
 
 # ##### Process the spectroscopy outputs
 
-# In[11]:
+# In[ ]:
 
 
-importlib.reload(procinv)       ## If module is modified, reload the contents 
-specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params)      ## when storing to disk do an if to reduce dimensions for 1 line cases
+importlib.reload(procinv)                                                                ## If module is modified, reload the contents 
+specout=procinv.spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params) 
 
 
 # ##### Process the LOS magnetic fields from the first line
 
-# In[12]:
+# In[13]:
 
 
-#importlib.reload(procinv)       ## If module is modified, reload the contents 
-blosout=procinv.blos_proc(sobs_tot[:,:,0:4],rms[:,:,0:4],keyvals,consts,params)
+importlib.reload(procinv)       ## If module is modified, reload the contents 
+blosout=procinv.blos_proc(sobs_tot,rms,keyvals,consts,params)
 
 
 # ##### Process the full vector magnetic field inversion products
 
-# In[13]:
-
-
-importlib.reload(procinv)       ## If module is modified, reload the contents
-sobs_dopp=np.zeros((600,280,3))
-invout,sfound=procinv.cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.iqud,params.reduced,params.verbose)
-## WARNING: This step has a significantly long execution time.
-
-
 # In[14]:
 
 
-#invout_iquv=invout
-#smatch_iquv=sfound
-# invout_iqud=invout
-# smatch_iqud=sfound
-invout_iquvrms=invout
-smatch_iquvrms=sfound
-
-
-# In[15]:
-
-
-print(invout_iquvrms[300,100,:,:])   
-
-
-# In[15]:
-
-
-#print(invout_iqud[300,100,:,:])   
+## WARNING: This step has a significantly long execution time.
+importlib.reload(procinv)       ## If module is modified, reload the contents
+invout,sfound=procinv.cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.iqud,params.reduced,params.verbose)
+## To enable timing of this function when verbose >= 2, use it via its wrapper. See comments.
+#invout,sfound=procinv.cledb_invproc_time(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyvals,params.nsearch,params.maxchisq,params.bcalc,params.iqud,params.reduced,params.verbose)
 
 
 # ## All should be good if we reached this point; all the outputs should be computed and saved in memory.
 
-# In[17]:
-
-
-#print(invout_iquv[300,100,:,:])   
-
-
 # ## 4. OPTIONAL tidbits
 
-# In[16]:
+# In[15]:
 
 
 ##optionally needed libraries and functions
@@ -235,7 +217,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 ## interactive plotting; use only on local machines if widget is installed
-##%matplotlib widget       
+get_ipython().run_line_magic('matplotlib', 'widget')
 
 # colorbar function to have nice colorbars in figures with title
 def colorbar(mappable,*args,**kwargs):
@@ -246,7 +228,7 @@ def colorbar(mappable,*args,**kwargs):
     fig = ax.figure
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
-    cbar = fig.colorbar(mappable, cax=cax,format='%.2f')
+    cbar = fig.colorbar(mappable, cax=cax,format='%.3f')
     #cbar.formatter.set_powerlimits((0, 0))
     title= kwargs.get('title', None)
     cbar.set_label(title)
@@ -257,7 +239,7 @@ def colorbar(mappable,*args,**kwargs):
 
 # ### 4.a DUMP results (optional)
 
-# In[17]:
+# In[16]:
 
 
 ## Remove old file saves and keep just the last run
@@ -269,60 +251,64 @@ if len(lst) >0:
 ## save the last run 
 datestamp = datetime.now().strftime("%Y%m%d-%H:%M:%S")        
 
-# if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
-#     os.makedirs('./testrun_outputs')
+if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
+    os.makedirs('./testrun_outputs')
 
-# with open(f'./testrun_outputs/outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-#     pickle.dump([specout,blosout,invout,sfound], f)
+if os.path.isfile(f"testrun_outputs/outparams_2line_{datestamp}.pkl"):
+    print("Save data exists; Are you sure you want to overwrite?")
+else:
+    with open(f'./testrun_outputs/outparams_2line_{datestamp}.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+        pickle.dump([specout,blosout,invout,sfound], f)
 
 
 # ### 4.b PLOT the outputs (optional)
 
-# In[18]:
+# In[17]:
 
 
 ## Plot utils
 
-linen=0                ## choose which line to plot; range is [0:1] for 2 line input
+linen=0               ## choose which line to plot; range is [0:1] for 2 line input
 
-## plot subranges for soome in snapshots
-# ## 3dipole
-srx1=230
-srx2=400
-sry1=65
-sry2=195
-rnge=[0.8,1.5,-1.1,1.1]
+## plot subranges for some input snapshots
+## 3dipole
+# srx1=230
+# srx2=400
+# sry1=65
+# sry2=195
+# rnge=[0.8,1.5,-1.1,1.1]
 
-##muram      ## muram data not offered as part of the test scripts due to large sizes.
-# srx1=0
-# srx2=1023
-# sry1=0
-# sry2=1023
-# rnge=[0.989,1.060,-0.071,0.071]
+# #muram      ## muram data not offered as part of the test scripts due to large sizes.
+srx1=0
+srx2=1024
+sry1=0
+sry2=1024
+rnge=[0.989,1.060,-0.071,0.071]
 
 
-# In[19]:
+# In[18]:
 
 
 ##Plot spectroscopy
 
 fig, plots = plt.subplots(nrows=3, ncols=4, figsize=(12,10))
 
-## remove the 0 values and unreasonable/outlier values.
+
+## remove the 0 values and unreasonable/outlier values outside of the range of the four lines.
 mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,0], mask=specout[srx1:srx2,sry1:sry2,linen,0]==0)
 mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,0]>= 3950)
 mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,0]<= 1070)
 vvmin=np.min(mx)
 vvmax=np.max(mx)
-ab=plots[0,0].imshow(specout[srx1:srx2,sry1:sry2,linen,0],extent=rnge,vmin=vvmin,vmax=vvmax,cmap='bone')
+ab=plots[0,0].imshow(specout[srx1:srx2,sry1:sry2,linen,0],extent=rnge,vmin=vvmin,vmax=vvmax,cmap='PuOr',interpolation='none')
 plots[0,0].set_title('Wavelength')
 colorbar(ab,title="[nm]")
 plots[0,0].set_ylabel('Z [R$_\odot$]')
 #plots[0,0].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-## for correctly scaling in doppler scales
-## remove unreasonable/outlier values.
+
+## for correctly scaling in doppler scales # remove unreasonable/outlier values of > 2 nm.
 mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,1], mask=specout[srx1:srx2,sry1:sry2,linen,1]>= 2 )
 mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,1]<= -2 )
 vvmax=np.max(mx)
@@ -331,14 +317,15 @@ if np.abs(vvmin) >  np.abs(vvmax):
     vr=np.abs(vvmin)
 else:
     vr=np.abs(vvmax)
-ab=plots[0,1].imshow(specout[srx1:srx2,sry1:sry2,linen,1],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
+ab=plots[0,1].imshow(specout[srx1:srx2,sry1:sry2,linen,1],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic',interpolation='none')
 plots[0,1].set_title('Doppler shift')
 colorbar(ab,title="[nm]")
 #plots[0,1].set_ylabel('Z [R$_\odot$]')
 #plots[0,1].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-## for correctly scaling in doppler scales
+
+## for correctly scaling in speed scales # remove unreasonable/outlier values of > 1000km/s.
 mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,2], mask=specout[srx1:srx2,sry1:sry2,linen,2]>= 1000 )
 mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,2]<= -1000 )
 vvmax=np.max(mx)
@@ -348,7 +335,7 @@ if np.abs(vvmin) >  np.abs(vvmax):
 else:
     vr=np.abs(vvmax)
 ## back to plotting    
-ab=plots[0,2].imshow(specout[srx1:srx2,sry1:sry2,linen,2],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
+ab=plots[0,2].imshow(specout[srx1:srx2,sry1:sry2,linen,2],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic',interpolation='none')
 plots[0,2].set_title('Doppler shift')
 colorbar(ab,title="[km s$^{-1}$]")
 #plots[0,2].set_ylabel('Z [R$_\odot$]')
@@ -356,19 +343,21 @@ colorbar(ab,title="[km s$^{-1}$]")
 ############################################################
 
 
-ab=plots[0,3].imshow(specout[srx1:srx2,sry1:sry2,linen,7],extent=rnge,vmin=0,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,7]),cmap='Reds')
+ab=plots[0,3].imshow(specout[srx1:srx2,sry1:sry2,linen,7],extent=rnge,vmin=0,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,7]),cmap='Reds',interpolation='none')
 plots[0,3].set_title('Stokes I bkg.')
-colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+colorbar(ab,title="Signal [erg cm$^{-2}$ s$^{-1}$]")
 #plots[0,3].set_ylabel('Z [R$_\odot$]')
 #plots[0,3].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-ab=plots[1,0].imshow(specout[srx1:srx2,sry1:sry2,linen,3],extent=rnge,vmin=0,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,3]),cmap='Reds')
-plots[1,0].set_title('Stokes I int. (linecore)')
+
+ab=plots[1,0].imshow(specout[srx1:srx2,sry1:sry2,linen,3],extent=rnge,vmin=0,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,3]),cmap='Reds',interpolation='none')
+plots[1,0].set_title('Stokes I int. (linecore-bkg)')
 colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
 plots[1,0].set_ylabel('Z [R$_\odot$]')
 #plots[1,0].set_xlabel('Y [R$_\odot$]')
 ############################################################
+
 
 vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,4])
 vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,4])
@@ -376,12 +365,13 @@ if np.abs(vvmin) >  np.abs(vvmax):
     vr=np.abs(vvmin)
 else:
     vr=np.abs(vvmax)
-ab=plots[1,1].imshow(specout[srx1:srx2,sry1:sry2,linen,4],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
-plots[1,1].set_title('Stokes Q int. (linecore)')
-colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+ab=plots[1,1].imshow(specout[srx1:srx2,sry1:sry2,linen,4],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic',interpolation='none')
+plots[1,1].set_title('Stokes Q int. (linecore-bkg)')
+colorbar(ab,title="Signal [erg cm$^{-2}$ s$^{-1}$]")
 #plots[1,1].set_ylabel('Z [R$_\odot$]')
 #plots[1,1].set_xlabel('Y [R$_\odot$]')
 ############################################################
+
 
 vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,5])
 vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,5])
@@ -389,12 +379,13 @@ if np.abs(vvmin) >  np.abs(vvmax):
     vr=np.abs(vvmin)
 else:
     vr=np.abs(vvmax)
-ab=plots[1,2].imshow(specout[srx1:srx2,sry1:sry2,linen,5],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
-plots[1,2].set_title('Stokes U int. (linecore)')
-colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+ab=plots[1,2].imshow(specout[srx1:srx2,sry1:sry2,linen,5],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic',interpolation='none')
+plots[1,2].set_title('Stokes U int. (linecore-bkg)')
+colorbar(ab,title="Signal [erg cm$^{-2}$ s$^{-1}$]")
 #plots[1,2].set_ylabel('Z [R$_\odot$]')
 #plots[1,2].set_xlabel('Y [R$_\odot$]')
 ############################################################
+
 
 vvmin=np.min(specout[srx1:srx2,sry1:sry2,linen,6])
 vvmax=np.max(specout[srx1:srx2,sry1:sry2,linen,6])
@@ -402,35 +393,30 @@ if np.abs(vvmin) >  np.abs(vvmax):
     vr=np.abs(vvmin)
 else:
     vr=np.abs(vvmax)
-ab=plots[1,3].imshow(specout[srx1:srx2,sry1:sry2,linen,6],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic')
-plots[1,3].set_title('Stokes V int. (linecore)')
-colorbar(ab,title="Signal [erg cm${-2}$ s$^{-1}$]")
+ab=plots[1,3].imshow(specout[srx1:srx2,sry1:sry2,linen,6],extent=rnge,vmin=-vr,vmax=vr,cmap='seismic',interpolation='none')
+plots[1,3].set_title('Stokes V int. (linecore-bkg)')
+colorbar(ab,title="Signal [erg cm$^{-2}$ s$^{-1}$]")
 #plots[1,3].set_ylabel('Z [R$_\odot$]')
 #plots[1,3].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
 
-## remove unreasonable/outlier values.
-mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,8], mask=specout[srx1:srx2,sry1:sry2,linen,8]>= 0.45 )
-mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,8]<= 0.01 )
+## remove unreasonable/outlier values from plotting range. Typical Fe XIII widths are 0.15. Outliers > 0.5 are excluded from scaling.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,8], mask=specout[srx1:srx2,sry1:sry2,linen,8] >= 0.50 )
 vvmax=np.max(mx)
-vvmin=np.min(mx)
-
-ab=plots[2,0].imshow(specout[srx1:srx2,sry1:sry2,linen,8],extent=rnge,vmin=vvmin,vmax=vvmax,cmap='YlGnBu')
-plots[2,0].set_title('Line full width half max.')
+ab=plots[2,0].imshow(specout[srx1:srx2,sry1:sry2,linen,8],extent=rnge,vmin=0.0,vmax=vvmax,cmap='YlGnBu',interpolation='none')
+plots[2,0].set_title('Line full width at half max')
 colorbar(ab,title="[nm]")
 plots[2,0].set_ylabel('Z [R$_\odot$]')
 plots[2,0].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-## remove unreasonable/outlier values.
-## PLOT INSIDE THE SAME SUBRANGES AS FULL WIDTHS TO SHOW THAT THEY ARE FRACTIONS.
-mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,9], mask=specout[srx1:srx2,sry1:sry2,linen,9]>= 0.35 )
-vvmax=np.nanmax(mx)
-mx = np.ma.masked_array(mx, mask=specout[srx1:srx2,sry1:sry2,linen,9]<= 0.01 )
-vvmin=np.nanmin(mx)
 
-ab=plots[2,1].imshow(specout[srx1:srx2,sry1:sry2,linen,9],extent=rnge,vmin=0.1,vmax=vvmax,cmap='YlGnBu')
+## remove unreasonable/outlier values from plotting range. Typical Fe XIII widths are 0.15. Outliers > 0.5 are excluded from scaling.
+## PLOT INSIDE THE SAME SUBRANGES AS FULL WIDTHS above.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,9], mask=specout[srx1:srx2,sry1:sry2,linen,9] >= 0.50 )
+vvmax=np.nanmax(mx)
+ab=plots[2,1].imshow(specout[srx1:srx2,sry1:sry2,linen,9],extent=rnge,vmin=0.0,vmax=vvmax,cmap='YlGnBu',interpolation='none')
 plots[2,1].set_title('Line non-thermal width')
 colorbar(ab,title="[nm]")
 #plots[2,1].set_ylabel('Z [R$_\odot$]')
@@ -438,7 +424,10 @@ plots[2,1].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
 
-ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.00,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,10]),cmap='YlOrRd')
+## remove unreasonable/outlier values from plotting range. These should be a small addition to the total line widths. Change the 0.02 range as seems fit.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,10], mask=specout[srx1:srx2,sry1:sry2,linen,10] >= 0.020 )
+vvmax=np.nanmax(mx)
+ab=plots[2,2].imshow(specout[srx1:srx2,sry1:sry2,linen,10],extent=rnge,vmin=0.0,vmax=vvmax,cmap='YlOrRd',interpolation='none')
 plots[2,2].set_title('Linear polarization fraction')
 colorbar(ab,title="L / I ratio")
 #plots[0,0].set_ylabel('Z [R$_\odot$]')
@@ -446,48 +435,52 @@ plots[2,2].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
 
-ab=plots[2,3].imshow(specout[srx1:srx2,sry1:sry2,linen,11],extent=rnge,vmin=0.01,vmax=np.max(specout[srx1:srx2,sry1:sry2,linen,11]),cmap='YlOrRd')
+## remove unreasonable/outlier values from plotting range. These should be a small addition to the total line widths. Change the 0.02 range as seems fit.
+mx = np.ma.masked_array(specout[srx1:srx2,sry1:sry2,linen,11], mask=specout[srx1:srx2,sry1:sry2,linen,11] >= 0.020 )
+vvmax=np.nanmax(mx)
+ab=plots[2,3].imshow(specout[srx1:srx2,sry1:sry2,linen,11],extent=rnge,vmin=0.0,vmax=vvmax,cmap='YlOrRd',interpolation='none')
 plots[2,3].set_title('Total polarization fraction')
 colorbar(ab,title="P / I ratio")
 #plots[2,3].set_ylabel('Z [R$_\odot$]')
 plots[2,3].set_xlabel('Y [R$_\odot$]')
 ############################################################
 
-plt.tight_layout()
 
+plt.tight_layout()
 ### Save the putput plots
 if not os.path.exists('./testrun_outputs'):               ## make an output directory to keep things clean
     os.makedirs('./testrun_outputs')
 plt.savefig(f"./testrun_outputs/specout_1line_line{linen}_{datestamp}.pdf")
 
 
-# In[20]:
+# In[19]:
 
 
 ## plot 1-line BLOS
+linen=0
 
 fig, plots = plt.subplots(nrows=2, ncols=2, figsize=(8,8))
-ab=plots[0,0].imshow(blosout[srx1:srx2,sry1:sry2,0]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=60)
+ab=plots[0,0].imshow(blosout[srx1:srx2,sry1:sry2,0,linen],extent=rnge,cmap='seismic',interpolation='none',vmin=-120,vmax=120)
 plots[0,0].set_title('1$^{st}$ degenerate magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 plots[0,0].set_ylabel('Z [R$_\odot$]')
 #plots[0,0].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[0,1].imshow(blosout[srx1:srx2,sry1:sry2,1]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=60)
+ab=plots[0,1].imshow(blosout[srx1:srx2,sry1:sry2,1,linen],extent=rnge,cmap='seismic',interpolation='none',vmin=-120,vmax=120)
 plots[0,1].set_title('2$^{nd}$ degenerate magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 #plots[0,1].set_ylabel('Z [R$_\odot$]')
 #plots[0,1].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[1,0].imshow(blosout[srx1:srx2,sry1:sry2,2]*1e10,extent=rnge,cmap='bone_r',vmin=-60,vmax=60)
+ab=plots[1,0].imshow(blosout[srx1:srx2,sry1:sry2,2,linen],extent=rnge,cmap='seismic',interpolation='none',vmin=-120,vmax=120)
 plots[1,0].set_title('Classic magnetograph solution')
 colorbar(ab,title="B$_{LOS}$ [G]")
 plots[1,0].set_ylabel('Z [R$_\odot$]')
 plots[1,0].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[1,1].imshow(blosout[srx1:srx2,sry1:sry2,3],extent=rnge,cmap='twilight_shifted')
-plots[1,1].set_title('Magnetic Azimuth')
-colorbar(ab,title="B$_{LOS}$ [G]")
+ab=plots[1,1].imshow(blosout[srx1:srx2,sry1:sry2,3,linen],extent=rnge,cmap='twilight_shifted',interpolation='none',vmin=-np.pi/2,vmax=np.pi/2)
+plots[1,1].set_title('$\Phi_B$ Magnetic Azimuth')
+colorbar(ab,title="$\Phi_B$ [rad]")
 plots[1,1].set_xlabel('Y [R$_\odot$]')
 
 plt.tight_layout()
@@ -498,68 +491,88 @@ if not os.path.exists('./testrun_outputs'):              ## make an output direc
 plt.savefig(f"./testrun_outputs/blosout_1line_{datestamp}.pdf")
 
 
-# In[23]:
+# In[20]:
+
+
+##### Purely cosmetic manipulation. #####
+## We know the sets of two solutions are degenerate with respect to the LOS position
+## Solving for only the geometry, we get a set of 4 solutions;  degenetate with respect to the LOS and sign of B.
+## Based on the sign of B, either entries 1-3 or 2-4 are discarded. But this leads to a complete randomization of the order of the LOS in the solution: 1-3 is +- and 2-4 is -+.
+## We can reverse the order of some the solutions such that only +- order is followed in every pixel without changing the inverted solutions. 
+## This will create a better looking plot, but !!!!!!!!! DOES NOT REPLACE a DISAMBIGUATION !!!!!!!!!!!!!!!
+##### DO NOT BELIEVE THAT THIS OUTPUT IS EQUIVALENT TO A FULLY RESOLVED AND NON-DEGENERATE B FIELD! #####
+
+for ii in range(invout.shape[0]):
+    for jj in range(invout.shape[1]):
+        for kk in range(0,invout.shape[2],2):
+            if np.sign(invout[ii,jj,kk,4]) < 0:
+                temp                 = np.copy(invout[ii,jj,kk  ,:]) 
+                invout[ii,jj,kk  ,:] = invout[ii,jj,kk+1,:]
+                invout[ii,jj,kk+1,:] = temp
+
+
+# In[21]:
 
 
 ## Plot magnetic inversion
 
-soln=0    ## selects the colution to plot < nsearch
+soln=0   ## selects the solution to plot < nsearch
 
-fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(16,14))
+fig, plots = plt.subplots(nrows=4, ncols=3, figsize=(12,20))
 
-ab=plots[0,0].imshow(np.log10(invout[srx1:srx2,sry1:sry2,soln,0]),extent=rnge,cmap='Set1')#,vmin=1e6,vmax=11e6)
+ab=plots[0,0].imshow(np.log10(invout[srx1:srx2,sry1:sry2,soln,0]),extent=rnge,cmap='tab20c',interpolation='none')
 plots[0,0].set_title(f'Database entry for sol. {soln}')
-colorbar(ab, title='Log of Index')
+colorbar(ab, title='Log of Matched DB Index')
 plots[0,0].set_ylabel('Z [R$_\odot$]')
 
-ab=plots[0,1].imshow(invout[srx1:srx2,sry1:sry2,soln,1],extent=rnge,cmap='Reds',vmin=0,vmax=20)
+ab=plots[0,1].imshow(invout[srx1:srx2,sry1:sry2,soln,1],extent=rnge,cmap='Reds',interpolation='none')
 plots[0,1].set_title('Fit residual')
-colorbar(ab, title='$\chi^2$ metric')
+colorbar(ab, title='Reduced $\chi^2$ metric')
 
 plots[0, 2].axis('off') ###leave one empty panel
 
-ab=plots[1,0].imshow(invout[srx1:srx2,sry1:sry2,soln,2],cmap='Greens',extent=rnge,vmin=6,vmax=10)
+ab=plots[1,0].imshow(invout[srx1:srx2,sry1:sry2,soln,2],cmap='Greens',interpolation='none',extent=rnge,vmin=7,vmax=10)
 plots[1,0].set_title('Plasma density ')
 colorbar(ab, title='Log of N$_e$')
 plots[1,0].set_ylabel('Z [R$_\odot$]')
 
-ab=plots[1,1].imshow(invout[srx1:srx2,sry1:sry2,soln,3],extent=rnge,cmap='OrRd',vmin=0.95,vmax=1.5)
+ab=plots[1,1].imshow(invout[srx1:srx2,sry1:sry2,soln,3],extent=rnge,cmap='OrRd',interpolation='none',vmin=0.95,vmax=1.5)
 plots[1,1].set_title('Computed obs. height')
-colorbar(ab, title='R$_\odot$')
+colorbar(ab, title='Height from limb [R$_\odot$]')
 
-ab=plots[1,2].imshow(invout[srx1:srx2,sry1:sry2,soln,4],extent=rnge,cmap='RdBu',vmin=-1.5,vmax=1.5)
+ab=plots[1,2].imshow(invout[srx1:srx2,sry1:sry2,soln,4],extent=rnge,cmap='bwr',interpolation='none',vmin=-1.5,vmax=1.5)
 plots[1,2].set_title('LOS position')
-colorbar(ab, title='Distance along X dimension R$_\odot$')
+colorbar(ab, title='Distance along X dimension [R$_\odot$]')
 
 
-ab=plots[2,0].imshow(invout[srx1:srx2,sry1:sry2,soln,5],extent=rnge,cmap='bone',vmin=0,vmax=4000)
-plots[2,0].set_title('LVS field strength')
-colorbar(ab, title='|B| [G]')
+ab=plots[2,0].imshow(invout[srx1:srx2,sry1:sry2,soln,5],extent=rnge,cmap='bone_r',interpolation='none',vmin=0,vmax=100)
+plots[2,0].set_title('Obs. Field Strength |B|')
+colorbar(ab, title='[G]')
 plots[2,0].set_ylabel('Z [R$_\odot$]')
 
-ab=plots[2,1].imshow(invout[srx1:srx2,sry1:sry2,soln,6],extent=rnge,vmin=0,vmax=6.28,cmap='twilight_shifted')
-plots[2,1].set_title('LVS B$_\phi$ [rad]')
+ab=plots[2,1].imshow(invout[srx1:srx2,sry1:sry2,soln,6],extent=rnge,cmap='twilight_shifted',interpolation='none',vmin=0,vmax=6.28)
+plots[2,1].set_title('CLE $\\varphi$')
 colorbar(ab, title='[rad]')
 
-ab=plots[2,2].imshow(invout[srx1:srx2,sry1:sry2,soln,7],extent=rnge,vmin=0,vmax=3.14,cmap='twilight_shifted')
-plots[2,2].set_title('LVS B$_\Theta$')
+ab=plots[2,2].imshow(invout[srx1:srx2,sry1:sry2,soln,7],extent=rnge,cmap='twilight_shifted',interpolation='none',vmin=0,vmax=3.14)
+plots[2,2].set_title('CLE $\\vartheta$ ')
 colorbar(ab, title='[rad]')
 
 
-ab=plots[3,0].imshow(invout[srx1:srx2,sry1:sry2,soln,8],extent=rnge,cmap='seismic',vmin=-600,vmax=600)
-plots[3,0].set_title('LOS cartesian B$_x$')
-colorbar(ab, title='[G]')
+ab=plots[3,0].imshow(invout[srx1:srx2,sry1:sry2,soln,8],extent=rnge,cmap='seismic',interpolation='none',vmin=-60,vmax=60)
+plots[3,0].set_title('Obs. cartesian B$_x$')
+colorbar(ab, title='B$_x$ [G]')
 plots[3,0].set_ylabel('Z [R$_\odot$]')
 plots[3,0].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,1].imshow(invout[srx1:srx2,sry1:sry2,soln,9],extent=rnge,cmap='seismic',vmin=-600,vmax=600)
-plots[3,1].set_title('LOS cartesian B$_y$')
-colorbar(ab, title='[G]')
+ab=plots[3,1].imshow(invout[srx1:srx2,sry1:sry2,soln,9],extent=rnge,cmap='seismic',interpolation='none',vmin=-60,vmax=60)
+plots[3,1].set_title('Obs. cartesian B$_y$')
+colorbar(ab, title='B$_y$ [G]')
 plots[3,1].set_xlabel('Y [R$_\odot$]')
 
-ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',vmin=-600,vmax=600)
-plots[3,2].set_title('LOS cartesian B$_z$')
-colorbar(ab, title='[G]')
+ab=plots[3,2].imshow(invout[srx1:srx2,sry1:sry2,soln,10],extent=rnge,cmap='seismic',interpolation='none',vmin=-30,vmax=30)
+plots[3,2].set_title('Obs. cartesian B$_z$')
+colorbar(ab, title='B$_z$ [G]')
 plots[3,2].set_xlabel('Y [R$_\odot$]')
 
 plt.tight_layout()
@@ -570,16 +583,22 @@ if not os.path.exists('./testrun_outputs'):              ## make an output direc
 plt.savefig(f"./testrun_outputs/invout_2line__sol{soln}_{datestamp}.pdf")
 
 
-# In[24]:
+# In[29]:
 
 
-##Print inversion solution in a human readable way
+##Print pixelwise inversion solution in a human readable way
 
-np.set_printoptions(linewidth=200,suppress=False)   ## Suppress can be set to true to disable exponential notation.
-xx=301      ## x pixel position
-yy=105      ## y pixel positions
+np.set_printoptions(linewidth=200,suppress=True)   ## Suppress can be set to true to disable exponential notation.
+xx=391      ## x pixel position
+yy=675      ## y pixel position
 
-
-print("||    DB Index   ||     chi^2    ||  ne density  ||  y (height)  || x (LOS pos.) ||      B       ||    B_theta   ||    B_phi     ||      Bx      ||      By      ||     Bz       ||")
+# print("||  DB Index    ||    chi^2    ||  ne density ||  y (height) || x(LOS pos.) ||      B      ||    varphi   ||  vartheta   ||     Bx      ||      By     ||     Bz       ||") ###for supress=False
+print("||  DB Index         ||    chi^2    ||  ne density    ||  y (height)  ||   x(LOS pos.)   ||      B      ||    varphi      ||   vartheta     ||     Bx       ||      By      ||     Bz       ||") ###for supress=True
 print(invout[xx,yy,:,:])
+
+
+# In[ ]:
+
+
+
 

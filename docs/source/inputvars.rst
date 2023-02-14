@@ -77,15 +77,15 @@ General Parameters
 .. _verbosity-label:
 
 ``verbose [] uint``
-	Verbosity controlling parameter that takes vales 0-3. Levels are incremental (e.g. lev 3 includes outputs from levels 1 and 2) Due to Numba library incompatibilities, enabling higher level verbosity will block Numba optimization of the code. 
+	Verbosity controlling parameter that takes vales 0-3. Levels are incremental (e.g. lev 3 includes outputs from levels 1 and 2). 
 
-	* verbose == 0: Production; silent run.
+	* verbose == 0: **Production** - Silent run.
 
-	* verbose == 1: Debug; prints the current module and operation being run.
+	* verbose == 1: **Interactive Production** - Prints the current module, basic information, and loop steps along with operations currently being run. Global errors will produce a message.
 
-	* verbose == 2: Debug; implements warnings for common caveats.
+	* verbose == 2: **Debug** - Enables additional warnings for common caveats and error messages. This will also enable execution timing for selected sections.
 	
-	* verbose == 3: Debug; will enable execution timing for selected sections. Numba will fall-back to object-mode.
+	* verbose == 3: **Heavy Debug** - Will reveal the pixel being run along with any issues or warnings detected at the pixel level. Output will be hard to navigate!
 
 PREPINV Parameters
 ^^^^^^^^^^^^^^^^^^
@@ -133,7 +133,13 @@ PROC Parameters
 .. _ctrl_red-label:
 
 ``reduced [] boolean``
-	Parameter to reduce the database size before searching for solutions by using the linear polarization measurements. Dimensionality of db is reduced by over 1 order of magnitude, enabling significant sped-ups. Solution ordering might be altered in certain circumstances.
+	Parameter to reduce the database size before searching for solutions by using the linear polarization measurements. Dimensionality of db is reduced by over 2 orders of magnitude, enabling significant speed-ups. 
+
+	.. warning::
+		Below figure shows that the solution ordering, or even sistematic differences might be altered in certain circumstances when compared to a full search. This is occuring predominantly near field component reversals and around Van Vleck locii where meaningful solutions are harder to recover. 98% of pixels are not affected. Needlesly, even in the affected areas, the angle differences are modulo 2:math:`\pi`, and thus the basic geometrical orientation would not be significantly altered.
+
+.. image:: figs/full-red.jpg
+	:width: 800
 
 .. _ctrl_iqud-label:
 

@@ -18,10 +18,10 @@ class ctrlparams:
         
         ## Used in CLEDB_PROC
         self.nsearch      = 4                                                                             ## number of closest solutions to compute
-        self.maxchisq     = 100000000                                                                     ## Stop computing solutions above this chi^2 threshold
+        self.maxchisq     = 10000                                                                         ## Stop computing solutions above this chi^2 threshold
         self.gaussfit     = 2                                                                             ## Gaussian parametric fitting to use instead of the standard CDF fitting
         self.bcalc        = 0                                                                             ## control parameter for computing the B magnitude for two line observations.
-        self.reduced      = False                                                                         ## Boolean; parameter for reduced database search 
+        self.reduced      = True                                                                          ## Boolean; parameter for reduced database search using linear polarization azimuth
         self.iqud         = False                                                                         ## Boolean; parameter for IQU + Doppled data matching when Stokes V is not measurable
     
         ##numba jit flags

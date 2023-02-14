@@ -17,6 +17,9 @@ The main CLEDB inversion algorithm outputs are stored in the following variables
 * **invout**  
 	11 **CLEDB_INVPROC** output products. These are described :ref:`here <invout-label>`\ .
 
+* **sfound**  
+	11 **CLEDB_INVPROC** matched profile list. These are described :ref:`here <sfound-label>`\ .
+
 * **issuemask**  
 	Records any issues that arise in processing for each pixel (to be implemented). The issuemask will be updated by both modules.
 

@@ -37,8 +37,7 @@ Install the CLEDB distribution, generate databases, and update the database save
 Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
 1. [test_1line.ipynb](./test_1line.ipynb)
-2. [test_2line.ipynb](./test_2line.ipynb)
-
+2. [test_2line_IQUV.ipynb](./test_2line.ipynb)
 
 The synthetic CLE test data is [hosted separately here](https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing).
 
@@ -52,7 +51,7 @@ ii. Download the file using its gdrive FILE_ID from the download link (*test dat
 
     gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
 
-Note: The script versions of both tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs. 
+Note: The script versions of all tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs. 
 These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated [README-SLURM](./README-SLURM.md) for additional information.
 
 Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/stable/) in a correct installation.

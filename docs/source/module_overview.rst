@@ -20,9 +20,9 @@ The CLEDB inversion algorithm can be split into three parts:
 
 * The ``CLEDB_BUILD`` module contains pre-configured scripts for generating a database used downstream to fit the observations. Fortran binaries and Bash scripting is used by this module. Running the default configured ``rundb_1line.sh`` script for each line of your observation is enough in most cases. Please see the dedicated :ref:`readme-rundb-label` for more detailed instructions. 
  
-* The ``CLEDB_PREPINV`` module prepares the data for analysis and matches required databases to read into memory (for the 2-line branch). Two main functions **SOBS_PREPROCESS** and **SDB_PREPROCESS** match and prepare the data and databases for analysis. The *ctrlparams* and *constants* classes are imported separately and fed to the module.
+* The ``CLEDB_PREPINV`` module prepares the data for analysis and matches required databases to read into memory (for the 2-line branch). Two main functions :ref:`SOBS_PREPROCESS <sobs_preprocess-label>` and :ref:`SDB_PREPROCESS <sdb_preproc-label>` match and prepare the data and databases for analysis. The *ctrlparams* and *constants* classes are imported separately and fed to the module.
 
-*  The ``CLEDB_PROC`` module encompasses the main data analysis functions **SPECTRO_PROC**, **BLOS_PROC**, and/or **CLEDB_INVPROC**. These apply :term:`analytical solutions` or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the ``OUTPUTS``). 
+*  The ``CLEDB_PROC`` module encompasses the main data analysis functions :ref:`SPECTRO_PROC <cledb_spectro-label>`, :ref:`BLOS_PROC <cledb_blos-label>`, and/or :ref:`CLEDB_INVPROC <cledb_invproc-label>`. These apply :term:`analytical solutions` or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the :ref:`OUTPUTS <outputs-label>`). 
 
 .. hint::
 	The :ref:`readme-main-label` contains instructions on how to end-to-end run the provided examples.
@@ -34,7 +34,7 @@ The CLEDB inversion algorithm can be split into three parts:
 The flowchart schematic presents the modules along with the main inputs and outputs. Each module is described separately in the following sections along with detailed operation flowcharts. The most important variables and functions are described for each inversion module component. The definitions and accompanying diagrams are not meant to be 1:1 mirrors of the coding, but merely to trace the most crucial operations and resulting outputs. Common terminology is defined in the last section. 
 
 .. note::
-	Additionally, more extended comments can be found in each module's Python/Bash scripts.
+	Additional extended comments on specific code blocks and function inner-workings can be found in each module's Python/Bash scripts.
 
 
 .. _python_modules-label:
@@ -75,5 +75,5 @@ The following Python packages are required. For numerical computation efficiency
 * Time and Sys 
 	Used during debug runs with high level of :ref:`verbosity <verbosity-label>`.
 
-* Sphinx, Sphinx-rtd-theme and Mist-parser 
-	Libraries for building documentation and processing markdown files. Disabled as these are not required by the inversion.
+* Sphinx, Sphinx-rtd-theme and Myst-parser 
+	Libraries for building documentation and processing markdown files. Disabled by default as these are not required for running the inversion.
