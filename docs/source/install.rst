@@ -93,4 +93,65 @@ Namely:
 
 	* Pure python test scripts (test\_\*.py) are exported/generated from the Jupyter notebooks (test\_\*.ipynb) to be compatible with batch allocations.
 
-A dedicated readme covering this topic can be :ref:`consulted here <readme-slurm-label>` or as standalone in the mian CLEDB directory. The instructions are provided following the templates set by the `Colorado University Research Computing User Guide <https://curc.readthedocs.io/en/latest/index.html>`_.
+A dedicated readme covering this topic can be :ref:`consulted here <readme-slurm-label>` or as standalone in the main CLEDB directory. The instructions are provided following the templates set by the `Colorado University Research Computing User Guide <https://curc.readthedocs.io/en/latest/index.html>`_.
+
+Example Test Data
+-----------------
+
+A number of examples are included to help a user get started with inverting magnetic fields. The test jupyter or python scripts will load different datafiles corresponding to one selected test case.
+Some cases are not yet fully implemented or available. The available datafiles can be donwloaded from the links below, or by following the :ref:`Readme.md instructions <readme-main-label>`. The Readme.md file also contains a method for downloading the data using only the terminal for headless systems.
+
+	* IQUV test example 1.a 
+		Full Stokes IQUV data.
+		A `CLE <https://github.com/arparaschiv/coronal-line-emission>` computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a dipole generator program (See CLE dipolv.f).
+		Three independent magnetic dipoles are generated at different positions along the :term:`LOS`. These outputs are combined into a single LOS projected observation.
+
+		.. image:: figs/STOKES_out.png
+			:width: 800
+
+		`The 1.a data can be downloaded from gdrive <https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing>`_.
+
+	* IQUV test example 1.b
+		Full Stokes IQUV data.
+		A `CLE <https://github.com/arparaschiv/coronal-line-emission>`_ computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a current sheet generator program (See CLE sheet.f).	
+		Five simple independent magnetic structures will are generated along the LOS to test the algorithm's matching for :term:`LOS` positions.	
+
+		.. image:: figs/los23.png
+			:width: 800
+
+		
+		.. Attention::
+			Two structures are confounded with respect to the LOS leading the inversion to give eroneous results for these locations. This is expected. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_.
+		
+		This testcase will be included soon in the example list.
+
+	* IQUV test example 1.c
+		Full Stokes IQUV data.
+		A MURAM simulation of a dipolar structure at the POS. Fe XIII forward-synthesis via `PyCELp <https://github.com/tschad/pycelp>`_.
+		This is a large datafile that is used only for internal testing and can't be shared with the community.
+
+	.. Note::
+		For all above examples, a user should expect solutions that are degenerate in pairs of **two** with respect to the LOS position. These need to be properly disambiguated for each observation. A human analysis and decision is required. 
+
+	* IQUD test example 1.d 
+		Stokes IQU data. No Stokes V.
+		This is an example that unpickles a real observation from CoMP logged on March 27 2012. CoMP is not capable of routinely measuring Stokes V.
+		Multiple real-life coronal structures are observed. Because Stokes V is not measured, we do not get access to a analytical solution via the :ref:`BLOS_PROC <blos-label>` module.
+
+		.. image:: figs/comp_iqu.png
+			:width: 800
+
+		`The 1.d data can be downloaded from gdrive <not yet generated.>`_.
+
+	* Test data 1.e - Doppler oscillation analysis results for data in 1.d
+		This is the additional data that needs to be brought in in order to obtain a vector magnetic solution for the CoMP observation offered as part of the 1.d example.
+		The two utilized dimensions are ``sobs_dopp[:,:,0]`` and ``sobs_dopp[:,:,1]`` representing respectively the magnetic field strength and the wave angle derived from the Doppler oscillation analysis. The two other dimensions represent :term:`POS` projections of the magnetic field, but are not currently utilized.
+		The *test_2line* scripts will just create an empty array when a full Stokes IQUV inversion is requested as in the 1.a - 1.c examples.
+
+		`The 1.e data can be downloaded from gdrive <not yet generated.>`_.
+
+	.. Note::
+		For the two datafiles corresponding to the IQUD example, a user should expect solutions that are degenerate in pairs of **four** with respect to the LOS position and the magnetic polarity. Currently a more degenerate solution is retrieved when compared with the full Stokes IQUV inversions. Solutions to further disambiguate IQUD results are currently being trialed. Noteworthy is the fact that the two degeneracies (LOS position and magnetic polarity) are independent with respect to how the problem is posed. Thus, a selection of solutions should not be made as x in set [0,1,2,3] but as x in [1,4] or [2,3] solutions for an observed pixel. As mentioned above, these solutions need to be properly disambiguated for each observation. A human analysis and decision is required.
+
+.. Hint::
+	A mapping of the magnetic field strength can be obtained from any of the IQUV test 1.a - 1.c cases. These alongside a calculation of the linear polarization azimuth can be fed as a ``sobs_dopp`` observation in a IQUD inversion scheme applied to the same test data. (CLEDB will ignore the Stokes V information in this case). A set of **four** degenerate solutions will be obtained. One subset of **two** solutions will be geometrically identical to the full IQUV inversion output.

@@ -132,6 +132,7 @@ dmypy.json
 
 ## test datacubes; available via google drive.
 obsstokes*.pkl
+obsdopp*.pkl
 outparams*.pkl
 ## other test scripts
 Untitled.ipynb

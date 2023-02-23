@@ -93,7 +93,7 @@ SPECTRO_PROC Main Variables
         Non-thermal component of the FWHM line width. A measure or estimation of the instrumental line broadening/width will significantly increase the accuracy of this determination. Units are [nm].
 
         .. attention::
-            Sporadic pixels close to limb in synthetic data exhibited very narrow profiles but otherwise they were deemed usable by the statistics tests. This turns into a problem that will throw invalid value runtime warnings when computing this wuantity. To fix, we set ``specout[:, :, :, 9]`` = 0 in all such occurences. 
+            Sporadic pixels close to limb in synthetic data exhibited very narrow profiles but otherwise they were deemed usable by the statistics tests. This turns into a problem that will throw invalid value runtime warnings when computing this quantity. To fix, we set ``specout[:, :, :, 9]`` = 0 in all such occurences. 
 
     * specout[:, :, :, 10]
         Fraction of linear polarization P\ :sub:`l` with respect to the total :term:`Stokes I` counts. Dimensionless.                              
@@ -176,15 +176,21 @@ CLEDB_INVPROC Main Functions
 	Matches a set of two full Stokes IQUV observations with a model observation of the same Stokes quantities. Solutions are 2 times degenerate with respect to the :term:`LOS`. Matching is done individually for one pixel in the input array. This is a computationally demanding and time consuming function.
 
 :math:`\diamond` **CLEDB_MATCHIQUD**
-    Matches a set of two partial Stokes IQU observations with a model observation of the same Stokes quantities. The matched solutions are initially more degenerate than **CLEDB_MATCHIQUV**, usually 4 timee with respect to LOS and signed field strength combinations. Additional information from Doppler oscillation tracking are brought-in to recover field strengths and reduce degeneracies (to 2 times). Matching is done individually for one pixel in the input array. This is a computationally demanding and time consuming function.
+    Matches a set of two partial Stokes IQU observations with a model observation of the same Stokes quantities. The matched solutions are initially more degenerate than **CLEDB_MATCHIQUV**, usually 4 timee with respect to LOS and signed field strength combinations. We are currently evaluating the feasibility of including additional information from Doppler oscillation tracking to recover field strengths and reduce degeneracies (to 2 times). Matching is done individually for one pixel in the input array. This is a computationally demanding and time consuming function.
 
     .. note::
         Based on the *ctrlparams* :ref:`iqud key<ctrl_iqud-label>` only one of the CLEDB_MATCHIQUV or CLEDB_MATCHIQUD setups is selected and utilized.
 
     .. _cledb_gs-label:
 
-    :math:`\triangleright` CLEDB_GETSUBSET
+    :math:`\triangleright` CLEDB_GETSUBSETIQUV
         When :ref:`enabled<ctrl_red-label>` via *ctrlparams*, the information encoded in the Stokes Q and U magnetic azimuth is used to reduce the matched database by approximately 1 order of magnitude in terms of observation-comparable calculations.
+
+    :math:`\triangleright` CLEDB_GETSUBSETIQUD
+        When :ref:`reduced is enabled<ctrl_red-label>` via *ctrlparams*, the information encoded in the doppler wave angle azimuth is used to reduce the matched database by approximately 1 order of magnitude in terms of observation-comparable calculations.
+
+    .. Attention::
+        Tests done on CoMP and uCoMP data showed that when Doppler oscialtions are avaialble, using the phase angle as a proxy (as opposed to the default linear polarization azimuth) for running :ref:`reduced<ctrl_red-label>` runs, produces a more sharp output with better details especially around regions where magnetic polarity reverses. **CLEDB_GETSUBSETIQUD** will use this information if available. This option can not be directly enabled for IQUV matches yet, as the doppler oscilation data requires special observing conditions and separate processing. Some altering of matching and subset selecting functions by the user will be required to enable such a setup.
 
     .. important::
         If the subset calculation is :ref:`enabled <ctrl_red-label>` via :ref:`ctrlparams<ctrl-label>`, execution time in the case of large databases is significantly decreased.
@@ -215,7 +221,7 @@ CLEDB_INVPROC Main Variables
     Input variable to CLEDB_INVPROC described :ref:`here<sobs_totrot-label>`.
 
 ``sobs_dopp``
-    Doppler oscillation magnetic field strength and :term:`POS` orientation resulting from wave tracking. 
+    Doppler oscillation magnetic field strength and :term:`POS` orientation resulting from Doppler oscillation analysis. The two utilized dimensions are ``sobs_dopp[:,:,0]`` and ``sobs_dopp[:,:,1]`` representing respectively the magnetic field strength and the wave angle. The two other dimensions represent :term:`POS` projections of the magnetic field computed either via the linear polarization azimuth or the afore mentioned wave angle, but are not currently utilized.
 
 .. caution::
     ``sobs_dopp`` is only used as input to CLEDB_MATCHIQUD when *ctrlparams* :ref:`iqud <ctrl_iqud-label>` is enabled. For Numba consistency, an empty array is also passed to CLEDB_INVPROC when performing full IQUV inversions, but it is never used.

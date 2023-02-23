@@ -83,12 +83,12 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 def sobs_preprocess(sobs_in,headkeys,params):
 ## Main script to read data and header information to prepare it for analysis.
 
-    if params.verbose >=1: 
+    if params.verbose >= 1: 
         print('------------------------------------\n----SOBS_PREPROCESS - READ START----\n------------------------------------')
         if params.verbose >= 2:start0=time.time()        
 
 ## unpack the minimal number of header keywords
-    keyvals=obs_headstructproc(sobs_in,headkeys,params)
+    keyvals = obs_headstructproc(sobs_in,headkeys,params)
     if(keyvals == -1):
         if params.verbose >=1: 
             print('SOBS_PREPROCESS: FATAL! OBS KEYWORD PROCESSING FAIL. Aborting!')
@@ -429,7 +429,8 @@ def sdb_dcompress(i,verbose):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache) ##Functiona like hasattr are not nopython compatible. Revert to object
+##@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache) ##Functiona like hasattr are not non-python compatible. Revert to object
+## can not be numba object due to CoMP recarrays containing dtypes
 def obs_headstructproc(sobs_in,headkeys,params):
 ## This is the ingestion for a minimal number of needed keywords from the observation headerfile
 ## Most keywords are defined statically as DKIST specs were not available at the time of this update. Dummy headkeys input should be used
@@ -441,13 +442,13 @@ def obs_headstructproc(sobs_in,headkeys,params):
     if len(sobs_in) == 2:
         nline = 2
         if params.integrated == True:                   ## for CoMP/uCoMP/COSMO
-            if hasattr(headkeys[0],'wavetype') and hasattr(headkeys[1],'wavetype'):
+            if hasattr(headkeys[0],'WAVETYPE') and hasattr(headkeys[1],'WAVETYPE'):
                 tline=[[i for i in linestr if str(headkeys[0].wavetype[0],'UTF-8') in i][0],[i for i in linestr if str(headkeys[1].wavetype[0],'UTF-8') in i][0]] 
                 ## searches for the "wavetype" substring in the linestr list of available lines.
                 ## the headkey is a bytes type so conversion to UTF-8 is needed 
                 ## the [0] unpacks the one element lists where used. 
             else:
-                if params.verbose >=2: print("OBS_HEADSTRUCTPROC: FATAL! Can't read line information from keywords.")
+                if params.verbose >= 2: print("OBS_HEADSTRUCTPROC: FATAL! Can't read line information from keywords.")
                 return -1     #catastrophic exit
         else:
             tline=[linestr[0],linestr[1]]   ## for Cryo-NIRSP; static! no keywords yet implemented
@@ -455,14 +456,14 @@ def obs_headstructproc(sobs_in,headkeys,params):
         nline=1                                
         tline=["fe-xiii_1074"]   ## for Cryo-NIRSP; static! no keywords yet implemented
         ##Placeholder: one line setup for integrated or iuqd CoMP/uCoMP/COSMO data not yet implemented
-        
+
     ## check if nline is correct. the downstream inversion modules are contingent on this keyword
     if nline != 1 and nline != 2:
-        if params.verbose >=2: print("OBS_HEADSTRUCTPROC: FATAL! Not a one or two line observation; aborting")
+        if params.verbose >= 2: print("OBS_HEADSTRUCTPROC: FATAL! Not a one or two line observation; aborting")
         # placeholder for [update issuemask]
         return -1        #catastrophic exit
 
-    if params.verbose >=1: 
+    if params.verbose >= 1: 
         print('We are inverting observations of',nline,'coronal line(s) ')
         if nline >= 1:
             if   tline[0] == linestr[0]:
@@ -523,19 +524,20 @@ def obs_headstructproc(sobs_in,headkeys,params):
         cdelt3 = [0.0,0.0]                                                                    ## not used for integrated data such as CoMP
     elif (str(headkeys[0].instrume[0], "UTF-8") == "Cryo-NIRSP"):                 #CASE 3: Cryo-NIRSP OBSERVATIONS
         ##To be updated
-        if params.verbose >=1: print("OBS_HEADSTRUCTPROC: FATAL! Cryo-NIRSP header not yet implemented")
+        if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL! Cryo-NIRSP header not yet implemented")
     else: 
-        if params.verbose >=1: print("OBS_HEADSTRUCTPROC: FATAL!Observation keywords not recognised.") ## only CoMP, MURAM, and CLE examples are currently implemented
+        if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL!Observation keywords not recognised.") ## only CoMP, MURAM, and CLE examples are currently implemented
 
-## Additional keywords of importance thatm might or might not be included in observations.
-## check for the direction for the reference direction of linear polarization.
-## angle direction is trigonometric; values are in radians
+## Additional keywords of importance that might or might not be included in observations.
+## assign the database reference direction of linear polarization. See CLE routine db.f line 120.
+## Angle direction is trigonometric; values are in radians
 ## 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU.
-    linpolref = 0 #np.pi/2. <-- reference used in paraschiv & Judge 2022 for the direction used in computing the database (along Z axis)
+    linpolref = params.dblinpolref ##  0 is the reference used in paraschiv & Judge 2022 for the direction used in computing the database (at Z=0 plane). 
 
 ## instrumental line broadening/width should be read and quantified here
 ## not clear at this point if this will be a constant or a varying keyword
-    instwidth=0
+## a 0 value will skip including asn instrumental contribution to computing non-thermal widths
+    instwidth = params.instwidth 
 
     ## pack the decoded keywords into a comfortable python list variable to feed to downstream functions/modules
     return nx,ny,nw,nline,tline,crpix1,crpix2,crpix3,crval1,crval2,crval3,cdelt1,cdelt2,cdelt3,linpolref,instwidth

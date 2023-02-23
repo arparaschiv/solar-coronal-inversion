@@ -19,10 +19,10 @@ Input Data and Metadata
 	Spatial (x,y) or spectral (w) platescale sampling along a direction.
 
 	``*keys to linpolref [] float``
-	(0, 2\ :math:`{\pi}`) range; Direction of reference for the linear polarization. This is a physical convention based on the fixed orientation of a spectrograph retarder. ``linpolref`` = 0 implies the direction is corresponding to a horizontal axis, analogous to the unit circle reference. Direction is trigonometric. The units are in radians. 
+	(0, 2\ :math:`{\pi}`) range; Direction of database reference for the linear polarization. ``linpolref`` = 0 implies the direction is corresponding to a horizontal axis, analogous to the unit circle reference. Direction is trigonometric. The units are in radians. This is controlled via *ctrlparams*. 
 
 	``*keys to instwidth [] float``
-	Measure of the utilized instrument's intrinsic line broadening coefficient. The units are in nm or km s\ :math:`^{-1}`.
+	Measure of the utilized instrument's intrinsic line broadening coefficient. The units are in nm. This is controlled via *ctrlparams*.
 
 	``*keys to nline [] int``
 	Number of targeted lines; CLEDB can accept 1-line or 2-line observations.  
@@ -92,6 +92,12 @@ PREPINV Parameters
 	
 ``integrated [] boolean``
 	To use for calibrated COMP/UCOMP data. In this case, the profiles are integrated across the line sampling points. This parameter defaults to 0 to be applicable to spectroscopic data such as DKIST. 
+
+``dblinpolref [] rad``
+	Assign the database reference direction of linear polarization. Angle direction is trigonometric. Values are in radians; e.g. 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU. `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ and the `CLE <https://github.com/arparaschiv/coronal-line-emission>` database building functions conventionally use a vertical direction for the direction used in computing the database (at Z=0 plane) of dblinpolref =0. See CLE routine db.f line 120. If the database building reference direction is changed, this parameter needs to match that change.
+
+``instwidth [] nm``
+	Instrumental line broadening/width in nm units should be included here if known. It is not clear at this point if this will be a constant or a varying keyword for one instrument. Setting a instwidth = 0 value will skip including an instrumental contribution when computing non-thermal widths (:ref:`specout[:,:,:,9]<specout-label>`) output in the :ref:`SPECTRO_PROC <cledb_spectro-label>` module.
 
 PROC Parameters
 ^^^^^^^^^^^^^^^

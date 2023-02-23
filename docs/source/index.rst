@@ -40,7 +40,7 @@ This document describes the main concepts, functions, and variables, comprising 
 
 .. Danger::
    This setup should be considered at best a beta-level release. 
-   This setup tackles a problem for which currently no observation data exists and where 
+   This setup tackles a problem for which currently no complete observation data exists and where 
    a complex forward-model + inversion is required. 
    Bugs or unintentional bad outcomes will still exist at this point in time. 
    Please get in touch with us about any "feature" you discover.

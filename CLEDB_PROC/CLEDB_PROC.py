@@ -200,58 +200,63 @@ def blos_proc(sobs_tot,rms,keyvals,consts,params):
 
 ## script will produce a set of 2 times degenerate magnetograph along with a classic magnetograph and a field azimuth for each fed line/observation.
 
-    if params.verbose >= 1: 
-        print('--------------------------------------\n---BLOS_PROC: B LOS ESTIMATION START--\n--------------------------------------')
-        if params.verbose >= 2: start = time.time()  
-    
-    ## unpack needed values from keywords (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
-    nx,ny = keyvals[0:2]
-    tline = keyvals[4] 
-    
-    ## needed array initialization
-    blosout = np.zeros((nx,ny,4,len(tline)),dtype=np.float32)
-    
-    for zz in range(0,len(tline)):
-        ## initialize constants
-        const = consts.Constants(tline[zz])                       ## for each line load the correct constants
+    if params.iqud == True:              ## No Los analytical expression without Stokes V
+        print("FATAL! No Stokes V data available to compute analytical line-of-sight projected magnetic fields.")
+        return 0
 
-        ## the list of the F factors from Dima & Schad 2020 for lines of interest are saved in the constants class; 
-        ## both Fe XIII and SI IX have F == 0.
-        if params.verbose >= 2 and tline[zz] == "si-x_1430":
-            print('BLOS_PROC: Constrained magnetograph solutions will have an additional correction applied.')
+    else:
+        if params.verbose >= 1: 
+            print('--------------------------------------\n---BLOS_PROC: B LOS ESTIMATION START--\n--------------------------------------')
+            if params.verbose >= 2: start = time.time()  
 
-        ## two degenerate solutions are produced for blos; Indexes 0 and 1
-        ## the accurate solution matches sign with \sigma ^2_0 atomic alignment.
-        ## the "standard" magnetograph formulation (index 2) represents, in practice, the average accuracy between the two degenerate solutions.
-        ## Note: this solution is inaccurate in almost all cases; with the exception of fields tangential to the radial direction.
-        
-        ## blos_proc runs fast and does not have subfunctions and their associated errors. There is no need to print each loop iteration
-        for xx in range(nx):
-            for yy in prange(ny):          
-                lpol                = np.sqrt(sobs_tot[xx,yy,1+(4*zz)]**2 + sobs_tot[xx,yy,2+(4*zz)]**2)         ## linear polarization total
-                blosout[xx,yy,3,zz] = + 0.5 * np.arctan2(sobs_tot[xx,yy,2+(4*zz)],sobs_tot[xx,yy,1+(4*zz)])      ## the azimuthal component (phi)
-                if (sobs_tot[xx,yy,0+(4*zz)] != 0) and (np.isnan(sobs_tot[xx,yy,4*zz:4*(zz+1)]).any() == False): ## captures nans or division by 0
-                    ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
-                    ## where we use sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 
-                    ## to minimize deviation from "true" solution when computing the last F ferm dependent correction.
-                    ## 1e9 converts SI constants to nm to divide by the reference wavelength also in nm
-                    blosout[xx,yy,0,zz] = (const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2)) *\
-                    (-sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] - lpol) - 0.66*const.F_factor*(lpol/1.)))  ## deg. solution +
-                    blosout[xx,yy,1,zz] = (const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2)) *\
-                    (-sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] + lpol) + 0.66*const.F_factor*(lpol/1.)))  ## deg. solution -
-                    blosout[xx,yy,2,zz] = (const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2)) *\
-                    (-sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*sobs_tot[xx,yy,0+(4*zz)]))                                           ## magnetograph
-                #else:
-                #    blosout[xx,yy,0:3,zz]==np.nan  ## else branch not needed. blosout is already nan in pixels where field can't be computed
+        ## unpack needed values from keywords (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
+        nx,ny = keyvals[0:2]
+        tline = keyvals[4] 
 
-    ######################################################################
-    ## [placeholder for issuemask]
+        ## needed array initialization
+        blosout = np.zeros((nx,ny,4,len(tline)),dtype=np.float32)
 
-    if params.verbose >= 1:
-        if params.verbose >= 2: print("{:4.6f}".format(time.time()-start),' SECONDS FOR TOTAL BLOS PROCESSING')
-        print('--------------------------------------\n---BLOS_PROC: B LOS ESTIMATION END----\n--------------------------------------')   
+        for zz in range(0,len(tline)):
+            ## initialize constants
+            const = consts.Constants(tline[zz])                       ## for each line load the correct constants
 
-    return blosout
+            ## the list of the F factors from Dima & Schad 2020 for lines of interest are saved in the constants class; 
+            ## both Fe XIII and SI IX have F == 0.
+            if params.verbose >= 2 and tline[zz] == "si-x_1430":
+                print('BLOS_PROC: Constrained magnetograph solutions will have an additional correction applied.')
+
+            ## two degenerate solutions are produced for blos; Indexes 0 and 1
+            ## the accurate solution matches sign with \sigma ^2_0 atomic alignment.
+            ## the "standard" magnetograph formulation (index 2) represents, in practice, the average accuracy between the two degenerate solutions.
+            ## Note: this solution is inaccurate in almost all cases; with the exception of fields tangential to the radial direction.
+
+            ## blos_proc runs fast and does not have subfunctions and their associated errors. There is no need to print each loop iteration
+            for xx in range(nx):
+                for yy in prange(ny):          
+                    lpol                = np.sqrt(sobs_tot[xx,yy,1+(4*zz)]**2 + sobs_tot[xx,yy,2+(4*zz)]**2)         ## linear polarization total
+                    blosout[xx,yy,3,zz] = + 0.5 * np.arctan2(sobs_tot[xx,yy,2+(4*zz)],sobs_tot[xx,yy,1+(4*zz)])      ## the azimuthal component (phi)
+                    if (sobs_tot[xx,yy,0+(4*zz)] != 0) and (np.isnan(sobs_tot[xx,yy,4*zz:4*(zz+1)]).any() == False): ## captures nans or division by 0
+                        ## for corrected magnetograph magnetic field implement eq.17 from Dima & Schad 2020
+                        ## where we use sin^Theta_B ==1; theta_b=90 cf chap 4.3 Dima & Schad 2020 
+                        ## to minimize deviation from "true" solution when computing the last F ferm dependent correction.
+                        ## 1e9 converts SI constants to nm to divide by the reference wavelength also in nm
+                        blosout[xx,yy,0,zz] = (const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2)) *\
+                        (-sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] - lpol) - 0.66*const.F_factor*(lpol/1.)))  ## deg. solution +
+                        blosout[xx,yy,1,zz] = (const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2)) *\
+                        (-sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*(sobs_tot[xx,yy,0+(4*zz)] + lpol) + 0.66*const.F_factor*(lpol/1.)))  ## deg. solution -
+                        blosout[xx,yy,2,zz] = (const.planckconst/const.bohrmagneton*const.l_speed*1.e9/(const.line_ref**2)) *\
+                        (-sobs_tot[xx,yy,3+(4*zz)] / (const.g_eff*sobs_tot[xx,yy,0+(4*zz)]))                                           ## magnetograph
+                    #else:
+                    #    blosout[xx,yy,0:3,zz]==np.nan  ## else branch not needed. blosout is already nan in pixels where field can't be computed
+
+        ######################################################################
+        ## [placeholder for issuemask]
+
+        if params.verbose >= 1:
+            if params.verbose >= 2: print("{:4.6f}".format(time.time()-start),' SECONDS FOR TOTAL BLOS PROCESSING')
+            print('--------------------------------------\n---BLOS_PROC: B LOS ESTIMATION END----\n--------------------------------------')   
+
+        return blosout
 ###########################################################################
 ###########################################################################
 
@@ -262,130 +267,136 @@ def spectro_proc(sobs_in,sobs_tot,rms,background,keyvals,consts,params):
 ## calculates 12 spectroscopic products
 ## Background is used both as an output product and as a preprocess parameter. More details in cdf_statistics comments.
 
-    if params.verbose >= 1: 
-        print('--------------------------------------\n---SPECTRO_PROC - SPECTROSCOPY START--\n--------------------------------------')
-        if params.verbose >= 2: start=time.time()  
+
+    if params.integrated == True: ## No spectroscopy on integrated data.
+        print("FATAL! Integrated data for IQUD does not have a wavelength dimension. No spectroscopy products to compute!")            
+        return 0
     
-    ## load what is needed from keyvals. These are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.
-    nx,ny,nw = keyvals[0:3]
-    nline    = keyvals[3]
-    tline    = keyvals[4]
-    crpix3   = keyvals[7]         ## The wavelength domains will be different for each input line. nl keeps the index of the line to solve.
-    crval3   = keyvals[10]
-    cdelt3   = keyvals[13]
-    
-    ## needed data arrays
-    specout  = np.zeros((nx,ny,nline,12),dtype=np.float32)         ## output array containing the spectroscopic products.
-    wlarr    = np.zeros((nw,nline),dtype=np.float32)               ## wavelength array
-    sobs_cal = np.zeros((nx,ny,nw,nline*4),dtype=np.float32)       ## define this as 0 and later check if the calibs are performed.
-    ##NOTE: sobs_cal output should be in the same shape of the input array; e.g. [x,y,w,4*nline]
-    
-    ## create a wavelength array based on keywords for each line to be processed
-    for i in prange(nline):
-        if crpix3[i] == 0:                                         ## simple; just cycle and update
-            for j in range(nw):
-                wlarr[j,i] = crval3[i]+(j*cdelt3[i])
-        else:                                                      ## If reference pixel is not 0, cycle forwards and backwards from crpix3
-            for j in range(crpix3[i],nw):                          ## forward cycle
-                wlarr[j,i] = crval3[i]+((j-crpix3[i])*cdelt3[i])
-            for j in range(crpix3[i],-1,-1):                       ## Backwards cycle; -1 end index to fill the 0 index of the array
-                wlarr[j,i] = crval3[i]-((crpix3[i]-j)*cdelt3[i])
+    else:
+        if params.verbose >= 1: 
+            print('--------------------------------------\n---SPECTRO_PROC - SPECTROSCOPY START--\n--------------------------------------')
+            if params.verbose >= 2: start=time.time()  
 
-    ######################################################################
-    ## placeholder for LEV2CALIB_WAVE
-    ## level 2 absolute wavelength calibration using photospheric and telluric absorption profiles.
-    ## to be implemented after LEV1 data corrections are known and detailed (if needed).
-
-    #sobs_cal=lev2calib_wave(sobs_in,rms,params.verbose)
-
-    ######################################################################
-    ## placeholder for LEV2CALIB_ABSINT
-    ## level 2 absolute intensity calibration, using center to limb variation and close-to-limb on-disk flux measurements. 
-    ## to be implemented after LEV1 data corrections are known and detailed (if needed).
-
-    #if np.count_nonzero(sobs_cal) != 0:                           ## Check if LEV2CALIB_WAVE is performed
-    #    sobs_cal=lev2calib_wave(sobs_cal,rms,params.verbose)      ## just update the wavelength calibrated sobs
-    #else:
-    #    sobs_cal=lev2calib_wave(sobs_in,rms,params.verbose)       ## apply the intensity calibration without the wavelength calibration
-
-    ######################################################################
-    ## define sobs_cal if no LEV2CALIB_ABSINT or LEV2CALIB_WAVE is performed
-
-    if np.count_nonzero(sobs_cal) == 0:                            ## make sobs_cal from sobs_in
-        if nline == 2:                                                             
-            sobs_cal=np.append(sobs_in[0],sobs_in[1],axis=3).reshape(nx,ny,nw,8)
-        else:
-            sobs_cal=sobs_in[0]
-            
-    ######################################################################
-    ## process the spectroscopy 
-    if params.verbose >= 3:      ## Some print output          
-        if nline == 2:
-            for xx in range(nx):
-                print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
-                for yy in prange(ny):
-                    print("                 Executing calculation: ",yy," of ",ny)
-                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
-                    specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
-                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)
-        else:
-            for xx in range(nx):
-                print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
-                for yy in prange(ny):
-                    print("                 Executing calculation: ",yy," of ",ny)
-                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)  
-                    
-    elif params.verbose >= 1:    ## Some print output          
-        if nline == 2:
-            for xx in range(nx):
-                print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
-                for yy in prange(ny):
-                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
-                    specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
-                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)
-        else:
-            for xx in range(nx):
-                print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
-                for yy in prange(ny):
-                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)  
-                    
-    else:                        ##No print output
-        if nline == 2:                  
-            for xx in range(nx):
-                for yy in prange(ny):
-                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
-                    specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
-                        background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
-        else:
-            for xx in range(nx):
-                for yy in prange(ny):
-                    specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
-                        background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)             
-                
-    ## NOTE: cdf_statistics will alter sobs_cal; It is not outputed or used downstream, so no issues should appear!
-
-    ######################################################################
-    ## placeholder for ML_LOSDISENTANGLE
-    ## this should use machine learning techniques for population distributions to disentangle multiple "normal" emission profiles along the LOS.
-    ## The goal is to provide an agnostic model that does not require manual input and judgement from the user; 
-    ## e.g. multi-gausisan fit with n functions, where n is a manual judgement.
-
-    ######################################################################
-    ## [placeholder for issuemask]
-
-    ## NOTE: SPECOUT will always have two dimensions at exit to keep data dimensionality consistent. 
-    ##      In the case of just one line observations, the second dimension is not filled in.
-    ##      The array can be reshaped outside of the numba enabled functions to drop the extra dimension if needed.
-    if params.verbose >= 1: 
-        if params.verbose >= 2: print("{:4.6f}".format(time.time()-start),' SECONDS FOR TOTAL SPECTROSCOPY PROCESSING')
-        print('--------------------------------------\n-SPECTRO_PROC - SPECTROSCOPY FINALIZED\n--------------------------------------')
+        ## load what is needed from keyvals. These are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.
+        nx,ny,nw = keyvals[0:3]
+        nline    = keyvals[3]
+        tline    = keyvals[4]
+        crpix3   = keyvals[7]         ## The wavelength domains will be different for each input line. nl keeps the index of the line to solve.
+        crval3   = keyvals[10]
+        cdelt3   = keyvals[13]
         
-    return specout
+        ## needed data arrays
+        specout  = np.zeros((nx,ny,nline,12),dtype=np.float32)         ## output array containing the spectroscopic products.
+        wlarr    = np.zeros((nw,nline),dtype=np.float32)               ## wavelength array
+        sobs_cal = np.zeros((nx,ny,nw,nline*4),dtype=np.float32)       ## define this as 0 and later check if the calibs are performed.
+        ##NOTE: sobs_cal output should be in the same shape of the input array; e.g. [x,y,w,4*nline]
+
+        ## create a wavelength array based on keywords for each line to be processed
+        for i in prange(nline):
+            if crpix3[i] == 0:                                         ## simple; just cycle and update
+                for j in range(nw):
+                    wlarr[j,i] = crval3[i]+(j*cdelt3[i])
+            else:                                                      ## If reference pixel is not 0, cycle forwards and backwards from crpix3
+                for j in range(crpix3[i],nw):                          ## forward cycle
+                    wlarr[j,i] = crval3[i]+((j-crpix3[i])*cdelt3[i])
+                for j in range(crpix3[i],-1,-1):                       ## Backwards cycle; -1 end index to fill the 0 index of the array
+                    wlarr[j,i] = crval3[i]-((crpix3[i]-j)*cdelt3[i])
+
+        ######################################################################
+        ## placeholder for LEV2CALIB_WAVE
+        ## level 2 absolute wavelength calibration using photospheric and telluric absorption profiles.
+        ## to be implemented after LEV1 data corrections are known and detailed (if needed).
+
+        #sobs_cal=lev2calib_wave(sobs_in,rms,params.verbose)
+
+        ######################################################################
+        ## placeholder for LEV2CALIB_ABSINT
+        ## level 2 absolute intensity calibration, using center to limb variation and close-to-limb on-disk flux measurements. 
+        ## to be implemented after LEV1 data corrections are known and detailed (if needed).
+
+        #if np.count_nonzero(sobs_cal) != 0:                           ## Check if LEV2CALIB_WAVE is performed
+        #    sobs_cal=lev2calib_wave(sobs_cal,rms,params.verbose)      ## just update the wavelength calibrated sobs
+        #else:
+        #    sobs_cal=lev2calib_wave(sobs_in,rms,params.verbose)       ## apply the intensity calibration without the wavelength calibration
+
+        ######################################################################
+        ## define sobs_cal if no LEV2CALIB_ABSINT or LEV2CALIB_WAVE is performed
+
+        if np.count_nonzero(sobs_cal) == 0:                            ## make sobs_cal from sobs_in
+            if nline == 2:                                                             
+                sobs_cal=np.append(sobs_in[0],sobs_in[1],axis=3).reshape(nx,ny,nw,8)
+            else:
+                sobs_cal=sobs_in[0]
+
+        ######################################################################
+        ## process the spectroscopy 
+        if params.verbose >= 3:      ## Some print output          
+            if nline == 2:
+                for xx in range(nx):
+                    print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
+                    for yy in prange(ny):
+                        print("                 Executing calculation: ",yy," of ",ny)
+                        specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                            background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
+                        specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
+                            background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)
+            else:
+                for xx in range(nx):
+                    print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
+                    for yy in prange(ny):
+                        print("                 Executing calculation: ",yy," of ",ny)
+                        specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                            background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)  
+
+        elif params.verbose >= 1:    ## Some print output          
+            if nline == 2:
+                for xx in range(nx):
+                    print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
+                    for yy in prange(ny):
+                        specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                            background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
+                        specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
+                            background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)
+            else:
+                for xx in range(nx):
+                    print("SPECTRO_PROC: Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
+                    for yy in prange(ny):
+                        specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                            background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)  
+
+        else:                        ##No print output
+            if nline == 2:                  
+                for xx in range(nx):
+                    for yy in prange(ny):
+                        specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                            background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)    
+                        specout[xx,yy,1,:] = cdf_statistics(sobs_cal[xx,yy,:,4:8],sobs_tot[xx,yy,4:8],\
+                            background[xx,yy,4:8],wlarr[:,1],keyvals,consts.Constants(tline[1]),params.gaussfit,params.verbose)     
+            else:
+                for xx in range(nx):
+                    for yy in prange(ny):
+                        specout[xx,yy,0,:] = cdf_statistics(sobs_cal[xx,yy,:,0:4],sobs_tot[xx,yy,0:4],\
+                            background[xx,yy,0:4],wlarr[:,0],keyvals,consts.Constants(tline[0]),params.gaussfit,params.verbose)             
+
+        ## NOTE: cdf_statistics will alter sobs_cal; It is not outputed or used downstream, so no issues should appear!
+
+        ######################################################################
+        ## placeholder for ML_LOSDISENTANGLE
+        ## this should use machine learning techniques for population distributions to disentangle multiple "normal" emission profiles along the LOS.
+        ## The goal is to provide an agnostic model that does not require manual input and judgement from the user; 
+        ## e.g. multi-gausisan fit with n functions, where n is a manual judgement.
+
+        ######################################################################
+        ## [placeholder for issuemask]
+
+        ## NOTE: SPECOUT will always have two dimensions at exit to keep data dimensionality consistent. 
+        ##      In the case of just one line observations, the second dimension is not filled in.
+        ##      The array can be reshaped outside of the numba enabled functions to drop the extra dimension if needed.
+        if params.verbose >= 1: 
+            if params.verbose >= 2: print("{:4.6f}".format(time.time()-start),' SECONDS FOR TOTAL SPECTROSCOPY PROCESSING')
+            print('--------------------------------------\n-SPECTRO_PROC - SPECTROSCOPY FINALIZED\n--------------------------------------')
+
+        return specout
 ###########################################################################
 ###########################################################################
 
@@ -569,7 +580,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     if reduced == True:
         ## outredindex is the corresponding index for reduced, this is different from the full index. they need to be matched later.
         ## cledb_getsubset will reshape database_in to database_sel of [index,nline*4] shape
-        database_sel,outredindex = cledb_getsubset(sobs_1pix,dbhdr,database_in,nsearch) 
+        database_sel,outredindex = cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch) 
         ## keeps the argument for the reduced entry using the sign of Stokes V. outargs+outredindex will return the correct initial db index below.
         outargs = np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3]))[:,0]   
         ## check and presort the sign along the first line Stokes V. Do not reverse order with above line to keep index mapping consistent!  
@@ -723,10 +734,11 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
     if reduced == True:
         ## outredindex is the corresponding index for reduced, this is different from the full index. they need to be matched later.
         ## cledb_getsubset will reshape database_in to database_sel of [index,nline*4] shape
-        database_sel,outredindex = cledb_getsubset(sobs_1pix,dbhdr,database_in,nsearch) 
+        database_sel,outredindex = cledb_getsubsetiqud(sobs_1pix,sobsd_1pix,dbhdr,database_in,nsearch) 
         ###### Different from IQUV implementation ######    
         ## keeps the argument for the reduced entry based on the sign of B_pos; outargs+outredindex will return the correct initial db index below.
-        outargs = np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobsd_1pix[2]+1e-7))[:,0]   
+        ##outargs = np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobsd_1pix[2]+1e-7))[:,0]   ## not yet validated
+        outargs = np.argwhere(np.sign(database_sel[:,3]) == np.sign(database_sel[:,3]))[:,0]  ## crutch, will yeald 4 deg solutions
         ## check and presort the sign using doppler information. Do not reverse order with above line to keep index mapping consistent!  
         database_sel = database_sel[outargs]                                              
     else:
@@ -736,7 +748,8 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
         database_in = np.reshape(database_in,(ned*ngx*nbphi*nbtheta,8))                  
         ###### Different from IQUV implementation ###### 
         ## keeps the argument for the reduced entry using the sign of B_pos. outargs will return the correct initial db index below.
-        outargs=np.argwhere(np.sign(database_in[:,3]) == np.sign(sobsd_1pix[2]+1e-7))[:,0] 
+        #outargs=np.argwhere(np.sign(database_in[:,3]) == np.sign(sobsd_1pix[2]+1e-7))[:,0] ##not yet validated
+        outargs=np.argwhere(np.sign(database_in[:,3]) == np.sign(database_in[:,3]))[:,0]  ## crutch, will yeald 4 deg solutions
         ## check and presort the sign using doppler information. Do not reverse order with above line to keep index mapping consistent! 
         database_sel = database_in[outargs]                                               
 
@@ -811,7 +824,7 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
             ## Magnetic field strength from wave data of observations.
             ## No bcalc == 1 or bcalc== 2 in a iqud inversion ## This is enforced in the upstream cledb_invproc function
             if bcalc == 3: ## using the fieldstrength from the wave tracking
-                bfield = sobsd_1pix[0]*np.sign(sobsd_1pix[2])
+                bfield = sobsd_1pix[0]
 
             ## matching profiles to compare with the original observation
             smatch[si,:] = cledb_quderotate(database_sel[ixr,:],aobs_1pix,norm_fact)  ## ixr is the right index for database_sel
@@ -988,7 +1001,7 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
 ###########################################################################
 ###########################################################################
 @njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
-def cledb_getsubset(sobs_1pix,dbhdr,database_in,nsearch): 
+def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch): 
 ## returns a subset of the sdb array compatible with the height in yobs
 
     ## unpack dbcgrid parameters from the database accompanying db.hdr file
@@ -1013,7 +1026,65 @@ def cledb_getsubset(sobs_1pix,dbhdr,database_in,nsearch):
 
     ## Observation: compute the PHI_B and its degenerate tangents
     phib_obs      = -0.5*np.arctan2(sobs_1pix[2],sobs_1pix[1]) ## tan Phi_B = sin phi * tan theta
-    tphib_obs     = np.tan(phib_obs)                           ## here is tan Phi_B:
+    tphib_obs     = np.tan(phib_obs)                           ## here is tan Phi_B
+    tphib_obs_deg = np.tan(phib_obs+np.pi/2.)                  ## and its degenerate branch
+
+    # Find those indices compatible with phib observed
+    for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
+        ttp   = tt * np.sin(bphir[ir])
+        diffa = np.abs(tphib_obs - ttp)                        ## this is an array over btheta at each bphi
+        diffb = np.abs(tphib_obs_deg - ttp)                    ## this is an array over btheta at each bphi (degenerate branch)
+        srta  = cledb_partsort(diffa,nsearch)                  ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
+        srtb  = cledb_partsort(diffb,nsearch)
+        #srta=np.argsort(diffa)[0:nsearch]
+        #srtb=np.argsort(diffb)[0:nsearch]
+        ## advanced slicing is not available, the for jj enumeration comes from numba requirements
+        if ir + srta[0] > 0 or ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
+            for jj in range(nsearch):                                             ## NOTE: nsearch = srt.shape[0]
+                datasel[:,:,ir,jj,:]           = np.copy(database_in[:,:,ir,srta[jj],:])   ## Record those indices compatible with phib observed (main branch)
+                outredindex[ir,jj]             = srta[jj]
+                datasel[:,:,ir,jj+(nsearch),:] = np.copy(database_in[:,:,ir,srtb[jj],:])   ## Record those indices compatible with phib observed (deg. branch)
+                outredindex[ir,jj+(nsearch)]   = srtb[jj]
+
+    ## Note: the above block is both faster than concatenating the diff arrays + sorting only once + one subscription for datasel & outredindex.
+
+    ## now work with reduced dataset with nbtheta replaced by nsearch
+    ## the full dimensions of the database are no longer needed. It is converted to a [index,8] shape
+    return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
+###########################################################################
+###########################################################################
+
+###########################################################################
+###########################################################################
+@njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
+def cledb_getsubsetiqud(sobs_1pix,sobsd_1pix,dbhdr,database_in,nsearch): 
+## returns a subset of the sdb array compatible with the height in yobs
+
+    ## unpack dbcgrid parameters from the database accompanying db.hdr file
+    dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
+    bthetamin, bthetamax, nline, wavel = dbhdr 
+
+    ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
+    datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
+    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float32)
+    ##NOTE: the sorting done here only takes into account the linear polarization tangent of the observation. 
+    ##      This sorting is not 1:1 equivalent with the main chi^2 sorting.
+    ##      To be sure all compatible solutions are captured nsearch*2 solutions must be enforced here, and further refined in cledb_match
+
+    ## database: indexes of separate the CLE array calculations for reduction
+    ## Don't use nbphi -1 or nbtheta-1 to avoid adding additional degeneracy at 0--pi or 0--2pi
+    kk      = np.arange(0,nbphi)
+    bphir   = bphimin + kk*(bphimax-bphimin)/(nbphi)           ## cle phi array 
+
+    ll      = np.arange(0,nbtheta)
+    bthetar = bthetamin + ll*(bthetamax-bthetamin)/(nbtheta)   ## cle theta array
+    tt      = np.tan(bthetar)                                  ## cle tan theta array
+
+    ## Observation: compute the PHI_B and its degenerate tangents
+    ## tan Phi_B = sin phi * tan theta
+    ##phib_obs      = -0.5*np.arctan2(sobs_1pix[2],sobs_1pix[1]) ## Disabled
+    phib_obs      = sobsd_1pix[1]                              ## using the wave phase angle instead of polarization arctangent
+    tphib_obs     = np.tan(phib_obs)                           ## here is tan Phi_B
     tphib_obs_deg = np.tan(phib_obs+np.pi/2.)                  ## and its degenerate branch
 
     # Find those indices compatible with phib observed
