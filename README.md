@@ -39,7 +39,13 @@ Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with s
 1. [test_1line.ipynb](./test_1line.ipynb)
 2. [test_2line_IQUV.ipynb](./test_2line.ipynb)
 
-The [1.a synthetic CLE](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing), along with the [1.d CoMP observation](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing), and [1.e CoMP doppler analysis](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing) test data are hosted separately. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html#example-test-data) for more details regarding the included test data.
+The test data are hosted separately. These are called by enabling the corresponding 1.a-1.e cells in the test notebooks and scripts. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html#example-test-data) for extended details regarding the included datafiles.
+
+- [1.a synthetic CLE 3 dipole data](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing).
+- 1.b synthetic CLE current-sheet data will be available soon.
+- 1.c Only for internal testing.
+- [1.d CoMP observation data](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing).
+- [1.e CoMP doppler analysis results for the 1.d datacube](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing).
 
 For terminal only compute systems the test data can be downloaded via the shell interface with the following method:
 
