@@ -109,7 +109,7 @@ Some cases are not yet fully implemented or available. The available datafiles c
 		.. image:: figs/STOKES_out.png
 			:width: 800
 
-		`The 1.a data can be downloaded from gdrive <https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing>`_.
+		`The 1.a data can be downloaded from gdrive <https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing>`_.
 
 	* IQUV test example 1.b
 		Full Stokes IQUV data.
@@ -141,14 +141,14 @@ Some cases are not yet fully implemented or available. The available datafiles c
 		.. image:: figs/comp_iqu.png
 			:width: 800
 
-		`The 1.d data can be downloaded from gdrive <not yet generated.>`_.
+		`The 1.d data can be downloaded from gdrive <https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing>`_.
 
 	* Test data 1.e - Doppler oscillation analysis results for data in 1.d
 		This is the additional data that needs to be brought in in order to obtain a vector magnetic solution for the CoMP observation offered as part of the 1.d example.
 		The two utilized dimensions are ``sobs_dopp[:,:,0]`` and ``sobs_dopp[:,:,1]`` representing respectively the magnetic field strength and the wave angle derived from the Doppler oscillation analysis. The two other dimensions represent :term:`POS` projections of the magnetic field, but are not currently utilized.
 		The *test_2line* scripts will just create an empty array when a full Stokes IQUV inversion is requested as in the 1.a - 1.c examples.
 
-		`The 1.e data can be downloaded from gdrive <not yet generated.>`_.
+		`The 1.e data can be downloaded from gdrive <https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing>`_.
 
 	.. Note::
 		For the two datafiles corresponding to the IQUD example, a user should expect solutions that are degenerate in pairs of **four** with respect to the LOS position and the magnetic polarity. Currently a more degenerate solution is retrieved when compared with the full Stokes IQUV inversions. Solutions to further disambiguate IQUD results are currently being trialed. Noteworthy is the fact that the two degeneracies (LOS position and magnetic polarity) are independent with respect to how the problem is posed. Thus, a selection of solutions should not be made as x in set [0,1,2,3] but as x in [1,4] or [2,3] solutions for an observed pixel. As mentioned above, these solutions need to be properly disambiguated for each observation. A human analysis and decision is required.

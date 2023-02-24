@@ -39,7 +39,7 @@ Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with s
 1. [test_1line.ipynb](./test_1line.ipynb)
 2. [test_2line_IQUV.ipynb](./test_2line.ipynb)
 
-The synthetic CLE test data is [hosted separately here](https://drive.google.com/file/d/1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m/view?usp=sharing).
+The [1.a synthetic CLE](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing), along with the [1.d CoMP observation](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing), and [1.e CoMP doppler analysis](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing) test data are hosted separately. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html#example-test-data) for more details regarding the included test data.
 
 For terminal only compute systems the test data can be downloaded via the shell interface with the following method:
 
@@ -47,7 +47,7 @@ i. Load the following gdrive wrapper script into your bash window directly, or i
 
     function gdrive_download () {   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p');   wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2;   rm -rf /tmp/cookies.txt; }
 
-ii. Download the file using its gdrive FILE_ID from the download link (*test data FILE_ID = 1XpBxEwUUyaqYy1NjbVKyCHJhMUKzoV_m*):
+ii. Download the file using its gdrive FILE_ID from the download link (*1.a test data FILE_ID = 1beyDfZbm6epMne92bqlKXcgPjYI2oGRR*):
 
     gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
 
