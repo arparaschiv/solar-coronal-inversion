@@ -104,15 +104,15 @@ Some cases are not yet fully implemented or available. The available datafiles c
 .. hint::
 	A DKIST Cryo-NIRSP example will be included once such data becomes available to the community.
 
-	* IQUV test example 1.a 
-		Full Stokes IQUV data.
-		A `CLE <https://github.com/arparaschiv/coronal-line-emission>` computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a dipole generator program (See CLE dipolv.f).
-		Three independent magnetic dipoles are generated at different positions along the :term:`LOS`. These outputs are combined into a single LOS projected observation.
+* IQUV test example 1.a 
+	Full Stokes IQUV data.
+	A `CLE <https://github.com/arparaschiv/coronal-line-emission>` computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a dipole generator program (See CLE dipolv.f).
+	Three independent magnetic dipoles are generated at different positions along the :term:`LOS`. These outputs are combined into a single LOS projected observation.
 
-		.. image:: figs/STOKES_out.png
-			:width: 800
+	.. image:: figs/STOKES_out.png
+		:width: 800
 
-		`The 1.a data can be downloaded from gdrive <https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing>`_.
+	`The 1.a data can be downloaded from gdrive <https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing>`_.
 
 	* IQUV test example 1.b
 		Full Stokes IQUV data.
