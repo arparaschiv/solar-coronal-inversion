@@ -28,6 +28,8 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 
 # ### 1. LOAD the input data
 
+# #### 1.a CLE 3dipole along LOS simulation example
+
 # In[3]:
 
 
@@ -39,13 +41,53 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 with open('obsstokes_3dipole_hires_fullspectra.pkl','rb') as f:
     sobs1,sobs2,sobs3,sobsa,waveA,waveB = pickle.load(f)  
 ### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
-sobs1=sobs1[:,:,::-1,:]   
-sobs2=sobs2[:,:,::-1,:]
-sobs3=sobs3[:,:,::-1,:]
 sobsa=sobsa[:,:,::-1,:]
+
+## A fake minimal header for CLE
+## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun. The wavelength raferences (vacuum), ranges and spectral resolutions are unique. See CLE outfiles and grid.dat.
+head_in =  [np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
+                     -0.75, 0.8, 1074.62686-0.0124,\
+                     (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0247,"CLE-SIM" ),\
+                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
+            np.array((0, 0, np.int32(sobsa.shape[2]/2)-1,\
+                     -0.75, 0.8, 1079.78047-0.0124,\
+                     (0.75-(-0.75))/sobsa.shape[0], (1.5-0.8)/sobsa.shape[1], 0.0249,"CLE-SIM" ),\
+                    dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+                              ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+                              ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume', 'U7')]).view(np.recarray)  ]
+
+
 #waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
 #waveB=waveB[::-1]
 
+
+# #### 1.b CLE sheets along LOS example loading
+
+# In[4]:
+
+
+## observations of sheetlos coronal structure of a Fe XIII combined observation
+## sobsa is the combined 5 dipole output
+## waveA and waveB are the wavelength arrays for the two Fe XIII lines
+
+# with open('obsstokes_sheetslos_hires_fullspectra.pkl','rb') as f:
+#    sobsa,waveA,waveB = pickle.load(f)  
+### reversing of the wavelength range. THIS IS NEEDED! CLE writes frequency-wise, so wavelengths are reversed in the original datacubes!!!!!!
+# sobsa=sobsa[:,:,::-1,:]
+
+# ## A fake minimal header for CLE
+# ## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun. The wavelength raferences (vacuum), ranges and spectral resolutions are unique. See CLE outfiles and grid.dat.
+# head_in =  TBD
+
+# waveA=waveA[::-1]         ##the wave arrays are not needed by the inversion. the information is reconstructed from keywords
+# waveB=waveB[::-1]
+
+## not yet included as test data. Coming soon!
+
+
+# #### 1.c MURAM data example loading
 
 # In[4]:
 
@@ -57,8 +99,26 @@ sobsa=sobsa[:,:,::-1,:]
 #     sobsa = pickle.load(f) 
 # sobsa=sobsa[0]    ##needed because sobsa was saved as a 1 element list instead of pure np.array;
 
+## A fake minimal header for MURAM
+## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun (from muram xvec and yvec arrays). The wavelength raferences (vacuum), ranges and spectral resolutions are unique (muram wvvec1 and wvvce2 arrays).
+# head_in =  [np.array((0, 0, 0,\
+#                      -0.071, 0.989, 1074.257137,\
+#                      0.0001379,  0.0000689, 0.0071641,"MUR-SIM" ),\
+#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray),\
+#             np.array((0, 0, 0,\
+#                     -0.071, 0.989, 1079.420513,\
+#                      0.0001379,  0.0000689, 0.0071985,"MUR-SIM" ),\
+#                     dtype = [('crpix1', np.float32), ('crpix2', np.float32), ('crpix3', np.float32),\
+#                               ('crval1', np.float32), ('crval2', np.float32),('crval3', np.float32),\
+#                               ('cdelt1', np.float32), ('cdelt2', np.float32),('cdelt3', np.float32), ('instrume','U7')]).view(np.recarray)  ]
+
+
 ## muram data too big to include as test data!!!!
 
+
+# #### 1.d ~~CoMP data example loading (IQUD required. No stokes V!)~~
 
 # ### 2. Test the CLEDB_PREPINV module with synthetic data. 
 
@@ -89,8 +149,8 @@ sobs_in = List()                              ## this is the List object impleme
 # In[7]:
 
 
-#importlib.reload(prepinv)       ## If module is modified, reload the contents
-sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,params)
+importlib.reload(prepinv)       ## If module is modified, reload the contents
+sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs=prepinv.sobs_preprocess(sobs_in,head_in,params)
 
 
 # ##### At this point all necesary data is loaded into memory; 
