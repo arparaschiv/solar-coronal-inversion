@@ -68,7 +68,7 @@ import time
 import glob
 import os
 import sys
-#import numexpr as ne ## Disabled as of update-iqud. No database compression going forward
+import numexpr as ne ## Disabled as of update-iqud. No database compression going forward
 
 import ctrlparams 
 params=ctrlparams.ctrlparams()    ## just a shorter label
@@ -423,7 +423,7 @@ def sdb_dcompress(i,verbose):
     if size(negv) > 0:f[negv]=-f[negv]
     del negv
 
-    return f
+    return np.float32(f)   ## the code expects real variables moving forward.
 ###########################################################################
 ###########################################################################
 
@@ -445,6 +445,11 @@ def obs_headstructproc(sobs_in,headkeys,params):
             if hasattr(headkeys[0],'WAVETYPE') and hasattr(headkeys[1],'WAVETYPE'):
                 tline=[[i for i in linestr if str(headkeys[0].wavetype[0],'UTF-8') in i][0],[i for i in linestr if str(headkeys[1].wavetype[0],'UTF-8') in i][0]] 
                 ## searches for the "wavetype" substring in the linestr list of available lines.
+                ## the headkey is a bytes type so conversion to UTF-8 is needed 
+                ## the [0] unpacks the one element lists where used. 
+            elif hasattr(headkeys[0],'FILTER') and hasattr(headkeys[1],'FILTER'):
+                tline=[[i for i in linestr if str(headkeys[0].filter[0],'UTF-8') in i][0],[i for i in linestr if str(headkeys[1].filter[0],'UTF-8') in i][0]] 
+                ## searches for the "FILTER" substring in the linestr list of available lines.
                 ## the headkey is a bytes type so conversion to UTF-8 is needed 
                 ## the [0] unpacks the one element lists where used. 
             else:
@@ -522,11 +527,25 @@ def obs_headstructproc(sobs_in,headkeys,params):
         cdelt1 = np.float32(headkeys[0].cdelt1[0]*720/695700.0)                               ## COMP Cdelt in R_sun
         cdelt2 = np.float32(headkeys[0].cdelt2[0]*720/695700.0) 
         cdelt3 = [0.0,0.0]                                                                    ## not used for integrated data such as CoMP
+    
+    elif (str(headkeys[0].instrume[0], "UTF-8") == "UCoMP"):                       #CASE 3: uCoMP OBSERVATIONS;; not definitive. based on Steve's processing output keywords
+
+        crpix1 = nx/2                                                                         ## Comp takes reference at center
+        crpix2 = ny/2
+        crpix3 = [0,0]                                                                        ## not used here ## two lines have different wavelength parameters
+
+        crval1 = 0                                                                            ## solar coordinates at crpixn in r_sun; from -310.5*4.46 ##arcsec to R_sun conversion via 720/695700
+        crval2 = 0
+        crval3 = [np.float32(headkeys[0].filter[0]), np.float32(headkeys[1].filter[0])]   ## not really used
+
+        cdelt1 = np.float32(headkeys[0].cdelt1[0]*720/695700.0)                               ## COMP Cdelt in R_sun
+        cdelt2 = np.float32(headkeys[0].cdelt1[0]*720/695700.0) 
+        cdelt3 = [0.0,0.0]     
     elif (str(headkeys[0].instrume[0], "UTF-8") == "Cryo-NIRSP"):                 #CASE 3: Cryo-NIRSP OBSERVATIONS
         ##To be updated
         if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL! Cryo-NIRSP header not yet implemented")
     else: 
-        if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL!Observation keywords not recognised.") ## only CoMP, MURAM, and CLE examples are currently implemented
+        if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL! Observation keywords not recognised.") ## only CoMP, MURAM, and CLE examples are currently implemented
 
 ## Additional keywords of importance that might or might not be included in observations.
 ## assign the database reference direction of linear polarization. See CLE routine db.f line 120.

@@ -14,7 +14,7 @@ class ctrlparams:
         self.verbose      = 1                                                                             ## verbosity parameter
         
         ## Used in CLEDB_PREPINV
-        self.integrated   = False                                                                         ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO 
+        self.integrated   = True                                                                          ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO 
         self.dblinpolref  = 0                                                                             ## Parameter for changing the database calculation linear reference. Should not need changing in normal situations. radian units.
         self.instwidth    = 0                                                                             ## Parameter for fine-correcting non-thermal widths if instrument widths are known or computed by user. nm units. 
         
@@ -22,9 +22,9 @@ class ctrlparams:
         self.nsearch      = 4                                                                             ## number of closest solutions to compute
         self.maxchisq     = 1000                                                                          ## Stop computing solutions above this chi^2 threshold
         self.gaussfit     = 2                                                                             ## Gaussian parametric fitting to use instead of the standard CDF fitting
-        self.bcalc        = 2                                                                             ## control parameter for computing the B magnitude for two line observations.
+        self.bcalc        = 3                                                                             ## control parameter for computing the B magnitude for two line observations.
         self.reduced      = True                                                                          ## Boolean; parameter for reduced database search using linear polarization azimuth
-        self.iqud         = False                                                                         ## Boolean; parameter for IQU + Doppled data matching when Stokes V is not measurable
+        self.iqud         = True                                                                          ## Boolean; parameter for IQU + Doppled data matching when Stokes V is not measurable
     
         ##numba jit flags
         self.jitparallel  = True                                                                          ## Boolean; Enable or disable numba jit parralel interpreter
