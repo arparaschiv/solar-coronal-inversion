@@ -1,0 +1,10 @@
+*  NY NED  NX  NBPHI NBTHETA  
+* default CLE 51 10 61 180 90
+* default PyCELP 99 121 21 180 90
+99 121 21 180 90
+* ELNMIN ELNMAX   YMIN   YMAX    XMIN   XMAX   BPMIN     BPMAX      BTMIN     BTMAX   
+* elmin and elmax are defined different between CLE or pycelp databases and have different constraints. See documentation
+* default CLE  -1.5   2.3   1.000   1.500   -1.50   1.50   0.000   6.28318548   0.000   3.14159274
+* default PyCELP   1e6   1e12   1.010   2.000   -0.50   0.50   0.000   6.28318548   0.000   3.14159274
+    6   12   1.010   2.000   -0.50   0.50   0.000   6.28318548   0.000   3.14159274
+*  above line is important to be kept with 3 spaces and same number of decimals for bash script to work
