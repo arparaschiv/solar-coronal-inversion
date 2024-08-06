@@ -160,3 +160,4 @@ codedoc-latex/*.bak
 codedoc-latex/*.bbl
 codedoc-latex/*.blg
 CLEDB_BUILD/rundb_1line_with_PyCELP.ipynb
+CLEDB_BUILD/config/pycelp/CHIANTI_10.1_database
