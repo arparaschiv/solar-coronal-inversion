@@ -4,8 +4,8 @@
 ### Parallel implementation of utilities for CLEDB_PREPINV                  ###
 ###############################################################################
 
-#Contact: Alin Paraschiv, High Altitude Observatory
-#         arparaschiv@ucar.edu
+#Contact: Alin Paraschiv, National Solar Observatory
+#         arparaschiv@nso.edu
 #         paraschiv.alinrazvan+cledb@gmail.com
 
 ### Tested Requirements  ################################################
@@ -243,18 +243,18 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 ## This prepares the database directory files outside of numba non-python..
     
 ##  Read the directory structure and see what lines are available.
-    line_str=["fe-xiii_1074/","fe-xiii_1079/","mg-viii_3028/","si-ix_3934/","si-x_1430/"]
+    linestr=["fe-xiii_1074/","fe-xiii_1079/","mg-viii_3028/","si-ix_3934/","si-x_1430/"]
     line_bin=[]
     dbsubdirs=[]
-    for i in line_str:
+    for i in linestr:
         line_bin.append(os.path.isdir(dbdir+i))
 
 ## two line db prepare
     if nline == 2:
         if sum(line_bin) >=2:
             for i in range(len(np.where(line_bin)[0])):
-                if line_str[i][:-1] == tline[0] or line_str[i][:-1] == tline[1]:      ## the [:-1] indexing just removes the / from the filename to compare with the header keyword
-                    dbsubdirs.append(line_str[np.where(line_bin)[0][i]])
+                if linestr[i][:-1] == tline[0] or linestr[i][:-1] == tline[1]:      ## the [:-1] indexing just removes the / from the filename to compare with the header keyword
+                    dbsubdirs.append(linestr[np.where(line_bin)[0][i]])
 
             namesA=glob.glob(dbdir+dbsubdirs[0]+"DB*.DAT")
             namesB=glob.glob(dbdir+dbsubdirs[1]+"DB*.DAT")
@@ -286,7 +286,7 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
         if sum(line_bin) >=1:
             for i in range(len(np.where(line_bin)[0])):
                 if line_bin[i] == tline:
-                    dbsubdirs.append(line_str[np.where(line_bin)[0][i]])
+                    dbsubdirs.append(linestr[np.where(line_bin)[0][i]])
 
             namesA=glob.glob(dbdir+dbsubdirs+"DB*.DAT")
             nn=str.find(namesA[0],'DB0')
@@ -321,25 +321,41 @@ def sdb_parseheader(dbheaderfile):
     g=np.fromfile(dbheaderfile,dtype=np.float32,sep=' ')
 ## two kinds of data are returned
 ## 1. the linear coefficents of the form min, max, nx,theta,phi
-## 2. logarithmically spaced parameters xed  (electron density array)
-## for these also the min and max and number are also returned.
-    ned=np.int32(g[0]) 
-    ngx=np.int32(g[1])
-    nbphi=np.int32(g[2])
-    nbtheta=np.int32(g[3])
-    emin=np.float32(g[4])
-    emax=np.float32(g[5])
-    xed=sdb_lcgrid(emin,emax,ned)    # Ne is log
-    gxmin=np.float32(g[6])
-    gxmax=np.float32(g[7])
-    bphimin=np.float32(g[8])
-    bphimax=np.float32(g[9])
-    bthetamin=np.float32(g[10])
-    bthetamax=np.float32(g[11])
-    nline=np.int32(g[12])
-    wavel=np.empty(nline,dtype=np.float32)
-    
-    for k in range(0,nline): wavel[k]=g[13+k]    
+## 2. logarithmically spaced parameters xed  (electron density array in CLE case); for these the min and max and number are not returned.
+    if g[-1] == 0:                       ## CLE database
+        ned=np.int32(g[0]) 
+        ngx=np.int32(g[1])
+        nbphi=np.int32(g[2])
+        nbtheta=np.int32(g[3])
+        emin=np.float32(g[4])
+        emax=np.float32(g[5])
+        xed=sdb_lcgrid(emin,emax,ned)    ## Ne is log
+        gxmin=np.float32(g[6])
+        gxmax=np.float32(g[7])
+        bphimin=np.float32(g[8])
+        bphimax=np.float32(g[9])
+        bthetamin=np.float32(g[10])
+        bthetamax=np.float32(g[11])
+        nline=np.int32(g[12])
+        wavel=np.empty(nline,dtype=np.float32)
+        
+        for k in range(0,nline): wavel[k]=g[13+k]
+            
+    elif g[-1] == 1:                    ## PyCELP database
+        ned=1                           ## to keep output consistent, the database density is preloaded so only 1 density is captured.
+        ngx=np.int32(g[0])
+        nbphi=np.int32(g[1])
+        nbtheta=np.int32(g[2])
+        xed= 0                          ## to keep output consistent, the database density is preloaded.
+        gxmin=np.float32(g[3])
+        gxmax=np.float32(g[4])
+        bphimin=np.float32(g[5])
+        bphimax=np.float32(g[6])
+        bthetamin=np.float32(g[7])
+        bthetamax=np.float32(g[8])
+        nline=np.int32(g[9])
+        wavel=np.empty(nline,dtype=np.float32)
+        for k in range(0,nline): wavel[k]=g[10+k]
 
     return g, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
         bthetamin, bthetamax, nline, wavel 

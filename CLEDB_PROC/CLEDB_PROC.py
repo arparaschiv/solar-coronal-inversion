@@ -4,8 +4,8 @@
 ### Parallel implementation of utilities for CLEDB_PROC                     ###
 ###############################################################################
 
-#Contact: Alin Paraschiv, High Altitude Observatory
-#         arparaschiv@ucar.edu
+#Contact: Alin Paraschiv, National Solar Observatory 
+#         arparaschiv@nso.edu
 #         paraschiv.alinrazvan+cledb@gmail.com
 
 ### Tested Requirements  ################################################
@@ -99,7 +99,7 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyv
     ## Database needs to match the observation
     if sobs_totrot.shape[-1] != 8 or database[0].shape[-1] != 8: 
         if verbose >=1:
-            print('CLEDB_INVPROC: FATAL! Must have a two-line observation and/or a corresponding two-line database; Aborting!')
+            print('CLEDB_INVPROC: FATAL! Must have a two-line observation and a corresponding two-line database; Aborting!')
             print("Shapes are: ", sobs_totrot.shape," and ",database[0].shape)
         invout[:,:,:,0]=np.full((nx,ny,nsearch),-1) ### index is -1 for failed runs!
         return invout,sfound
@@ -115,11 +115,11 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,rms,dbhdr,keyv
         if verbose >= 2: 
             print("CLEDB_INVPROC: WARNING! Using a reduced database!")
             print('Search over theta reduced by a factor: ', np.int32(dbhdr[4]/nsearch),". New db size: (",\
-                  dbhdr[1]*dbhdr[2]*dbhdr[3]*dbhdr[4],",8) --> (",dbhdr[1]*dbhdr[2]*dbhdr[3]*nsearch,",8)") ##not worth unpacking dbhrd.
+                  dbhdr[1]*dbhdr[2]*dbhdr[3]*dbhdr[4],",8) --> (",dbhdr[1]*dbhdr[2]*dbhdr[3]*nsearch,",8)") ##not worth unpacking dbhdr.
     else:
         if verbose >= 2:
             print("CLEDB_INVPROC: using a full database:",len(database[0])/8)
-            if (len(database[0]) > 1000000): print("CLEDB_INVPROC: WARNING! Full database match with large databases will be significantly slower")
+            if (len(database[0]) > 1000000): print("CLEDB_INVPROC: WARNING! Full database match with a large databases will be significantly slower")
     
     if nsearch > 16:    
         if verbose >= 2: 

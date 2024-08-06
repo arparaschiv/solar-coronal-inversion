@@ -5,11 +5,11 @@
 
 
 
-### Repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion distribution.
+### Repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion.
 
-**Authors:** Alin Paraschiv & Philip Judge.  High Altitude Observatory & National Solar Observatory 
+**Authors:** Alin Paraschiv, Thomas Schad, and Philip Judge. National Solar Observatory & High Altitude Observatory 
 
-**Contact:** arparaschiv "at" ucar.edu; paraschiv.alinrazvan+cledb "at" gmail.com
+**Contact:** arparaschiv "at" nso.edu
 
 #### **Main aim:** 
 Invert coronal vector magnetic field products from observations of polarized light. 
@@ -63,7 +63,7 @@ These offer the same functionality as the notebooks (from which they are directl
 Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/stable/) in a correct installation.
 
 
-### **Works that fundament and support the CLEDB inversion**
+### **Works that fundament and support the CLEDB methodology**
 
 1. [Paraschiv & Judge, SolPhys, 2022](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract) covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 2. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) discussed the importance of scattering geometry when solving for coronal magnetic fields.

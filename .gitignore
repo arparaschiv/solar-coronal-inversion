@@ -159,3 +159,4 @@ codedoc-latex/*.tex.bak
 codedoc-latex/*.bak
 codedoc-latex/*.bbl
 codedoc-latex/*.blg
+CLEDB_BUILD/rundb_1line_with_PyCELP.ipynb
