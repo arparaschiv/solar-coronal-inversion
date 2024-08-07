@@ -1,6 +1,6 @@
 *  NY NED  NX  NBPHI NBTHETA  
 * default CLE 51 10 61 180 90
-* default PyCELP 99 121 21 180 90
+* default PyCELP 99 120 21 180 90
 99 121 21 180 90
 * ELNMIN ELNMAX   YMIN   YMAX    XMIN   XMAX   BPMIN     BPMAX      BTMIN     BTMAX   
 * elmin and elmax are defined different between CLE or pycelp databases and have different constraints. See documentation

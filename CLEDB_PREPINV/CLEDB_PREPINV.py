@@ -138,7 +138,7 @@ def sobs_preprocess(sobs_in,headkeys,params):
 ###########################################################################
 ###########################################################################
 @jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)    
-def sdb_preprocess(yobs,keyvals,params):
+def sdb_preprocess(yobs,dobs,keyvals,params):
 ## Main script to find and preload all necessary databases. 
 ## Returns databases as a list along with an encoding corresponding to each voxel of the observation
 ## this is made compatible to Numba object mode with loop-lifting to read all the necessary database in a parallel fashion
@@ -170,7 +170,7 @@ def sdb_preprocess(yobs,keyvals,params):
     
     for xx in range(nx):
         for yy in prange(ny):                     
-            db_enc_flnm[xx,yy]=sdb_findelongation(yobs[xx,yy],dbynumbers)   
+            db_enc_flnm[xx,yy]=sdb_findelongationanddens(yobs[xx,yy],dobs[xx,yy],dbynumbers)   
 
     db_uniq=np.unique(db_enc_flnm) ## makes a list of unique databases to read; the full list might have repeated entries
     
@@ -182,7 +182,7 @@ def sdb_preprocess(yobs,keyvals,params):
     ## read the required databases and their header----------
 
     ## preprocess and return the database header information
-    ## when multiple databases we assume all are of the same size.
+    ## when ingesting multiple databases we assume all are of the same size.
     ##read the header and dimensions and just pass them as parameters to function calls
     if nline == 2:
         if dbsubdirs=="twolineDB":
@@ -243,7 +243,7 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 ## This prepares the database directory files outside of numba non-python..
     
 ##  Read the directory structure and see what lines are available.
-    linestr=["fe-xiii_1074/","fe-xiii_1079/","mg-viii_3028/","si-ix_3934/","si-x_1430/"]
+    linestr=["fe-xiii_1074/", "fe-xiii_1079/", "si-x_1430/", "si-ix_3934/", "mg-viii_3028/"]
     line_bin=[]
     dbsubdirs=[]
     for i in linestr:
@@ -256,22 +256,25 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
                 if linestr[i][:-1] == tline[0] or linestr[i][:-1] == tline[1]:      ## the [:-1] indexing just removes the / from the filename to compare with the header keyword
                     dbsubdirs.append(linestr[np.where(line_bin)[0][i]])
 
-            namesA=glob.glob(dbdir+dbsubdirs[0]+"DB*.DAT")
-            namesB=glob.glob(dbdir+dbsubdirs[1]+"DB*.DAT")
-            nn=str.find(namesA[0],'DB0')
-            dbynumbers=np.empty(len(namesA),dtype=np.int32)
+            namesA=glob.glob(dbdir+dbsubdirs[0]+"DB*")
+            namesB=glob.glob(dbdir+dbsubdirs[1]+"DB*")
+            nn=str.find(namesA[0],'DB_h')
+            dbynumbers=np.empty(len(namesA),3,dtype=np.float32)
             for i in range(0,len(namesA)):
-                dbynumbers[i]=np.int32(namesA[i][nn+2:nn+6])
+                dbynumbers[i,0] = i                                   ## database file index
+                dbynumbers[i,1] = np.float32(namesA[i][nn+4:nn+8])    ## database file projected height at index
+                dbynumbers[i,2] = np.float32(namesA[i][nn+10:nn-4])   ## database file density at index
             return [namesA,namesB],dbynumbers,dbsubdirs
 
-        ## legacy loop to read two line databases (for fe XIII). .hdr and .DAT database files need to be in dbdir without a specific ion subfolder.
-        elif os.path.isfile(dbdir+"db.hdr") and glob.glob(dbdir+"DB*.DAT") != []:
-            names=glob.glob(dbdir+"DB*.DAT")
-            nn=str.find(names[0],'DB0')
-            dbynumbers=np.empty(len(names),dtype=np.int32)
-            for i in range(0,len(names)):
-                dbynumbers[i]=np.int32(names[i][nn+2:nn+6])
-            return [names,None],dbynumbers,'twolineDB' ##double return of names +none is superfluous; reason is to keep returns consistent regardless in terms of datatype of the if case
+        ## legacy loop to read two line databases (for Fe XIII). .hdr and .DAT database files need to be in dbdir without a specific ion subfolder.
+        ## Disabled as this is not an offered database building option.
+        # elif os.path.isfile(dbdir+"db.hdr") and glob.glob(dbdir+"DB*.DAT") != []:
+        #     names=glob.glob(dbdir+"DB*.DAT")
+        #     nn=str.find(names[0],'DB0')
+        #     dbynumbers=np.empty(len(names),dtype=np.int32)
+        #     for i in range(0,len(names)):
+        #         dbynumbers[i]=np.int32(names[i][nn+2:nn+6])
+        #     return [names,None],dbynumbers,'twolineDB' ##double return of names +none is superfluous; reason is to keep returns consistent regardless in terms of datatype of the if case
 
         elif sum(line_bin) ==1:
             if verbose >=2: print("SDB_FILEINGEST: FATAL! Two line observation provided! Requires two individual ion databases in directory. Only one database is computed.")    
@@ -281,7 +284,8 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
             if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
             return [None,None],None,'Ingest Error' 
 
-## one line db prepare
+## one line db prepare????
+    ##  is there a need for a database solution for just one line?
     elif nline ==1:
         if sum(line_bin) >=1:
             for i in range(len(np.where(line_bin)[0])):
@@ -304,10 +308,13 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 ###########################################################################
 ###########################################################################
 @njit(parallel=False,cache=params.jitcache)               ## don't try to parallelize things that don't need as the overhead will slow everything down
-def sdb_findelongation(y,dbynumbers):
-# returns index of elongation y in database
+def sdb_findelongationanddens(y,d,dbynumbers):
+# returns index of elongation y and density d in database set
 # The calculation is faster ingested as a function rather than an inline calculation! 
-    return np.argmin(np.abs(1. + dbynumbers / 1000. - y))
+    h = np.argmin( np.abs( dbynumbers[:,1] / 1000. - y ))
+    dd = np.argmin( np.abs( dbynumbers[h[0]:h[-1],2] - d ))
+    hh = h[0]+dd
+    return dbynumbers[hh+dd,0]
 ###########################################################################
 ###########################################################################
 
