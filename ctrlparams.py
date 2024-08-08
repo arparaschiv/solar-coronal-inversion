@@ -10,7 +10,8 @@
 class ctrlparams:
     def __init__(self):
         ## general params
-        self.dbdir        = '/home/noxpara/Documents/physics_prog/cle/db204_R0500_UPDT/'                  ## directory for database
+        self.dbdir        = '/home/noxpara/Documents/physics_progs/solar-coronal-inversion/CLEDB_BUILD/'  ## directory for database
+        self.lookuptb     = self.dbdir + 'chianti_v10.1_pycelp_fe13_h99_d120_ratio.npz'                   ## CHIANTI look-up table 
         self.verbose      = 1                                                                             ## verbosity parameter
         
         ## Used in CLEDB_PREPINV

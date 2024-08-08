@@ -60,15 +60,14 @@
 import numpy as np
 
 from numba import jit,njit, prange
-from numba.typed import List  ## numba list is needed ad standard reflected python lists will be deprecated in numba
-
-from scipy.io import FortranFile
+from numba.typed import List  ## numba list is needed ad standard reflected python lists will be deprecated in numba      
 from pylab import *
+import scipy    
 import time
 import glob
 import os
 import sys
-import numexpr as ne ## Disabled as of update-iqud. No database compression going forward
+#import numexpr as ne ## Disabled as of update-iqud. No database compression going forward
 
 import ctrlparams 
 params=ctrlparams.ctrlparams()    ## just a shorter label
@@ -92,7 +91,7 @@ def sobs_preprocess(sobs_in,headkeys,params):
     if(keyvals == -1):
         if params.verbose >=1: 
             print('SOBS_PREPROCESS: FATAL! OBS KEYWORD PROCESSING FAIL. Aborting!')
-        return -1
+        return -1,0,0,0,0,0,0,0
     
 ##calculate an observation height and integrate the stokes profiles
     yobs=obs_calcheight(keyvals)
@@ -106,12 +105,22 @@ def sobs_preprocess(sobs_in,headkeys,params):
 
     if keyvals[3] == 2:
     ## for two-line inversions we require a rotation of the linear polarization Q and U components
-        ## both variables are now initialized inside obs_qurotate
+    ## both variables are now initialized inside obs_qurotate
         #sobs_totrot = np.copy(sobs_tot)
         #aobs        = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
         
-        sobs_totrot,aobs = obs_qurotate(sobs_tot,keyvals)        
+        sobs_totrot,aobs = obs_qurotate(sobs_tot,keyvals)  
         
+    ## to efficiently match pycelp databases, we require an estimate of the apparent density of the plasma.
+    ## A standalonve version of this function is available at: https://github.com/arparaschiv/FeXIII-coronal-density
+    ## This is available only for the Fe XIII pair (CLEDB always ratios 1074/1079) and requires a CHIANTI  look-up table that is linked in this repository.    
+        if tline == ["fe-xiii_1074","fe-xiii_1079"] or tline == ["fe-xiii_1079","fe-xiii_1074"]:
+            dobs = obs_dens(sobs_totrot,yobs,params.lookuptb)       
+        else:
+            if params.verbose >=1: 
+                print('SOBS_PREPROCESS: Can NOT properly account for abundance between ion species.\nIncompatible with the PyCELP implementation.\nOnly CLE databases can theoretically be used with extreme caution (not recommended).')
+            #return -1,0,0,0,0,0,0,0
+
         ## placeholder for [update issuemask]
 
 
@@ -120,7 +129,7 @@ def sobs_preprocess(sobs_in,headkeys,params):
                 print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL OBS PREPROCESS INTEGRATION AND ROTATION')
             print('------------------------------------\n--SOBS_PREPROCESS - READ FINALIZED--\n------------------------------------')
 
-        return sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs
+        return sobs_tot,yobs,rms,background,keyvals,sobs_totrot,aobs,dobs
 
     else:
 
@@ -131,7 +140,7 @@ def sobs_preprocess(sobs_in,headkeys,params):
                 print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL OBS PREPROCESS AND INTEGRATION')
             print('------------------------------------\n--SOBS_PREPROCESS - READ FINALIZED--\n-----------------------------------')
 
-        return sobs_tot,yobs,rms,background,keyvals,np.zeros((sobs_tot.shape)),np.zeros((yobs.shape)) ## return the 0 arrays to keep returns consistent between 1 and 2 line inputs (it helps numba/jit).
+        return sobs_tot,yobs,rms,background,keyvals,np.zeros((sobs_tot.shape)),np.zeros((yobs.shape)),np.zeros((yobs.shape)) ## return the 0 arrays to keep returns consistent between 1 and 2 line inputs (it helps numba/jit).
 ###########################################################################
 ###########################################################################
 
@@ -237,7 +246,7 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
+#@jit(parallel=params.jitparallel,forceobj=True,cache=params.jitcache)
 def sdb_fileingest(dbdir,nline,tline,verbose):  
 #returns filename and index of elongation y in database  
 ## This prepares the database directory files outside of numba non-python..
@@ -248,22 +257,24 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
     dbsubdirs=[]
     for i in linestr:
         line_bin.append(os.path.isdir(dbdir+i))
-
+    
 ## two line db prepare
     if nline == 2:
-        if sum(line_bin) >=2:
-            for i in range(len(np.where(line_bin)[0])):
+        if np.sum(line_bin) >= 2:
+            for i in range(np.sum(line_bin)):
                 if linestr[i][:-1] == tline[0] or linestr[i][:-1] == tline[1]:      ## the [:-1] indexing just removes the / from the filename to compare with the header keyword
                     dbsubdirs.append(linestr[np.where(line_bin)[0][i]])
 
-            namesA=glob.glob(dbdir+dbsubdirs[0]+"DB*")
-            namesB=glob.glob(dbdir+dbsubdirs[1]+"DB*")
-            nn=str.find(namesA[0],'DB_h')
-            dbynumbers=np.empty(len(namesA),3,dtype=np.float32)
+            namesA     = sorted(glob.glob(dbdir+dbsubdirs[0]+"DB_*"))
+            namesB     = sorted(glob.glob(dbdir+dbsubdirs[1]+"DB_*"))
+            nn         = str.find(namesA[0],'DB_h')
+            dbynumbers = np.empty((len(namesA),3),dtype=np.float32)
+            
             for i in range(0,len(namesA)):
                 dbynumbers[i,0] = i                                   ## database file index
-                dbynumbers[i,1] = np.float32(namesA[i][nn+4:nn+8])    ## database file projected height at index
-                dbynumbers[i,2] = np.float32(namesA[i][nn+10:nn-4])   ## database file density at index
+                dbynumbers[i,1] = np.float32(namesA[i][nn+4:nn+7])    ## database file projected height at index
+                dbynumbers[i,2] = np.float32(namesA[i][nn+9:-4])      ## database file density at index
+                
             return [namesA,namesB],dbynumbers,dbsubdirs
 
         ## legacy loop to read two line databases (for Fe XIII). .hdr and .DAT database files need to be in dbdir without a specific ion subfolder.
@@ -278,10 +289,12 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 
         elif sum(line_bin) ==1:
             if verbose >=2: print("SDB_FILEINGEST: FATAL! Two line observation provided! Requires two individual ion databases in directory. Only one database is computed.")    
+            print("balon")
             return [None,None],None,'Ingest Error'
 
         else: 
             if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
+            print("pogon")
             return [None,None],None,'Ingest Error' 
 
 ## one line db prepare????
@@ -311,10 +324,10 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 def sdb_findelongationanddens(y,d,dbynumbers):
 # returns index of elongation y and density d in database set
 # The calculation is faster ingested as a function rather than an inline calculation! 
-    h = np.argmin( np.abs( dbynumbers[:,1] / 1000. - y ))
-    dd = np.argmin( np.abs( dbynumbers[h[0]:h[-1],2] - d ))
-    hh = h[0]+dd
-    return dbynumbers[hh+dd,0]
+    yy = np.argwhere( np.abs( dbynumbers[:,1] / 100. - y ) == np.min(np.abs( dbynumbers[:,1] / 100. - y )) )  ## preselec for the observed height
+    dd = np.argmin( np.abs( dbynumbers[yy[0][0]:yy[-1][0],2] / 100 - d ))                                     ## Out of yy, select the closest matching density
+    ii = yy[0][0]+dd                                                                                          ## index is the sum of the starting height index and the density match.
+    return np.int32(dbynumbers[ii,0])
 ###########################################################################
 ###########################################################################
 
@@ -422,31 +435,31 @@ def sdb_lcgrid(mn,mx,n):
 ###########################################################################
 #@jit(parallel=False,forceobj=True,cache=params.jitcache) # don't try to parallelize things that don't need as the overhead will slow everything down
 ##The del command makes this incompatible with numba. The del command is needed.
-def sdb_dcompress(i,verbose):
-###~~~~~~~~~ DISABLED FOR CLE DATABASES NEWER THAN 2.0.4~~~~~~~~~~~~~~~~~~~~~
-## helper routine for sdb_read
-## CLEDB writes compressed databases to save storage space. We need this function to read the data
-## This is numba incompatible due to the requirement to del negv
+# def sdb_dcompress(i,verbose):
+# ###~~~~~~~~~ DISABLED FOR CLE DATABASES NEWER THAN 2.0.4~~~~~~~~~~~~~~~~~~~~~
+# ## helper routine for sdb_read
+# ## CLEDB writes compressed databases to save storage space. We need this function to read the data
+# ## This is numba incompatible due to the requirement to del negv
 
-    cnst=-2.302585092994046*15./32767.
-    ## Constants here must correspond to those in dbe.f in the CLE main directory
-    ## c=-2.302585092994046 is the constant for the exponential; e.g. e^c=0.1
-    ## 32767 is the limit of 4-byte ints
-    ## 15 is the number of orders of magnitude for the range of intensities
+#     cnst=-2.302585092994046*15./32767.
+#     ## Constants here must correspond to those in dbe.f in the CLE main directory
+#     ## c=-2.302585092994046 is the constant for the exponential; e.g. e^c=0.1
+#     ## 32767 is the limit of 4-byte ints
+#     ## 15 is the number of orders of magnitude for the range of intensities
 
-    if verbose >=2:
-        print(np.int64(sys.getsizeof(i)/1.e6)," MB in DB file")
-        if np.int64(sys.getsizeof(i)/1.e6) > 250 : print("WARNING: Very large DB, Processing will be slow!")
+#     if verbose >=2:
+#         print(np.int64(sys.getsizeof(i)/1.e6)," MB in DB file")
+#         if np.int64(sys.getsizeof(i)/1.e6) > 250 : print("WARNING: Very large DB, Processing will be slow!")
 
-    negv=np.flatnonzero(i < 0)
+#     negv=np.flatnonzero(i < 0)
 
-    f=np.abs(i)*cnst
-    f=ne.evaluate("exp(f)")
+#     f=np.abs(i)*cnst
+#     f=ne.evaluate("exp(f)")
 
-    if size(negv) > 0:f[negv]=-f[negv]
-    del negv
+#     if size(negv) > 0:f[negv]=-f[negv]
+#     del negv
 
-    return np.float32(f)   ## the code expects real variables moving forward.
+#     return np.float32(f)   ## the code expects real variables moving forward.
 ###########################################################################
 ###########################################################################
 
@@ -769,3 +782,107 @@ def obs_cdf(spectr):
     return cdf
 ###########################################################################
 ###########################################################################
+
+###########################################################################
+###########################################################################
+def obs_dens(sobs_totrot,yobs,chianti_link):
+## compute the density from two stokes I observations (serialized parallel runs for 1 pixel at a time) of Fe XIII assuming:
+
+    
+
+## Ingesting the inputs and shaping the return array. Sanity checks will return 0 in case something is incompatible.
+    if np.ndim(i1074) => 2: ## Function understands a set of two 1D maps containing Stokes I measurements.
+        density=np.zeros(i1074.shape[:-1],dtype=np.float32)   
+        if (i1074.shape != i1079.shape):           ## sanity check 
+            return density                         ## a zero array at this point
+    ## Input not compatible with this function
+    else:
+        print("Input arrays dimensions not understood. Aborting!")
+        return np.zeros((2,2))
+
+## theoretical chianti ratio calculations created via PyCELP or SSWIDL        
+    ## read the chianti table         
+    if (chianti_link[-4:]    == ".npz"):                     ## default
+        chianti_table        =  dict(np.load(chianti_link))  ## variables (h,den,rat) directly readable by work_1pix .files required for loading the data directly.
+    else:
+        print("Chianti look-up table not found. Is the path correct?")
+        return density                                ## a zero array at this point  
+    #print(chianti_table.keys())                      ## Debug - check the arrays
+    
+    ##  in the look-up table:
+    ## 'h' is an array of heights in solar radii ranged 1.01 - 2.00(pycelp)  
+    ## 'den' is an array of density (ranged 6.00 to 12.00 (pycelp) or 5.0 to 13.0 (sswidl); the broader interval is not really recommended here. 
+    ## 'rat' is a 2D array containing line ratios corresponding to the density range values at each distinct height.
+    
+    ##  To query the look-up table:
+    ##  print(chia['h'],chia['h'].shape,chia['rat'].shape,chia['den'].shape)
+
+    ## look-up table resolutions
+    ## pycelp: h is of shape [99]; den and rat are arrays of shape [99, 120] corresponding to the 99 h height values and 120 density values
+
+## set up the cpu worker and argument arrays
+    p         = multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
+    ## argument index keeper for splitting tasks to cpu cores
+    ## two branches to separate slingle slits vs rasters
+    arg_array = []
+                                                                                              ## Raster slit branch
+    for xx in range(sobs_totrot.shape[0]): 
+        for yy in range(sobs_totrot.shape[1]): 
+            arg_array.append((xx,yy,sobs_totrot[xx,yy,0],sobs_totrot[xx,yy,4],chianti_table,yobs[xx,yy])) ## Only one header instance goes in for oa set of maps. pointing should be the same in both.
+
+    rs        = p.starmap(obs_dens_work_1pix,arg_array)
+    p.close()
+
+    for i,res in enumerate(rs):
+        xx,yy,density[xx,yy] = res 
+
+    return density
+###########################################################################
+###########################################################################
+
+###########################################################################
+###########################################################################
+def obs_dens_work_1pix(xx,yy,a_obs,b_obs,chianti_table,y_obs):
+    ## compute the ratio of the observation ## 1074/1079 fraction, same as rat component of the chianti_table 
+    
+    ## Sanity checks at pixel level
+    if b_obs[0] == 0:                                   ## don't divide by 0
+        return xx,yy,0                                  ## return 0 value        
+
+
+    ## line ratio calculations for peak and integrated quantities
+    ## line ratio calculations of integrated line counts, requires amplitude, distribution center and sigma parameters.
+    ## There are two ways of doing this; setting a wavelength linearspace and then sum the gaussian over that inverval, OR take the analytical gaussian integral (seems faster).
+    ## to not have to load header extensions, we hardcode the central wavelngth sampling to 1074.7 and 1079.8 respectively.
+    ## Distribution center and sigma need to be changed from km/s units to nm units.
+
+    ## line ratio calculations for peak quantities only 
+    rat_obs       = a_obs/b_obs        ## requires only one input number for each line 
+    #rat_obs_noise = rat_obs*np.sqrt((np.sqrt(a_obs)/a_obs)**2+(np.sqrt(b_obs)/b_obs)**2)    ## error propagation
+    
+    ## another sanity check for numerical issues
+    if (np.isnan(rat_obs) or np.isinf(rat_obs)):        ## discard nans and infs ratios
+        return xx,yy,0                                  ## return 0 value
+    
+    else:                                               ## main loop for valid "rat_obs" value
+        ## find the corresponding height (in solar radii) for each pixel
+        subh = np.argwhere(chianti_table['h'] > y_obs)                                                                                 
+        
+        ## if height is greater than maximum h (2.0R_sun as in the currently implemented table) just use the 2.0R_sun corresponding ratios.
+        if len(subh) == 0: 
+            subh = [-1]       
+        
+        ## make the interpolation function; Quadratic as radial density drop is usually not linear
+        ifunc = scipy.interpolate.interp1d(chianti_table['rat'][subh[0],:].flatten(),chianti_table['den'], kind="quadratic",fill_value="extrapolate")  
+        
+        ## apply the interpolation to the data 
+        dens_1pix       = ifunc(rat_obs)                                                                                      
+        #dens_1pix_noise = ifunc(rat_obs+rat_obs_noise) - dens_1pix
+       
+        ## debug prints
+        #print("Radius from limb: ",rpos," at pixel positions (",xx,yy,")")         ## debug
+        #print(len(subh),rpos/rsun)                                                 ## debug          
+        return xx,yy,dens_1pix
+###########################################################################
+###########################################################################
+
