@@ -82,20 +82,20 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     heights    = np.round(np.linspace(f2[2],f2[3],np.int32(f1[0]),dtype=np.float32),2) ## solar radius units. This corresponds to offlimb heights of 1-2 solar radius, with intervals of 0.01
     densities  = np.round(10.**np.linspace(f2[0],f2[1],f1[1],dtype=np.float32),3)      ## array of densities to be probed. This gives roughly 10 density samples for each order of magnitude in the logarithmic density space spanning 10^6-10^12 electrons. 
     losdepth   = np.linspace(f2[4],f2[5], f1[2],dtype=np.float32)                      ## los depth to be sampled; 1 radius centered in the POS, with 0.05 intervals
-    phic       = np.linspace(f2[6],f2[7], f1[3],dtype=np.float32)*180/np.pi            ## Phi_b POS azimuthal angle; rad to deg; 2 deg resolution
-    thetac     = np.linspace(f2[8],f2[9], f1[4],dtype=np.float32)*180/np.pi            ## Theta_b LOS longitudinal angle;rad to deg; 2 deg resolution
+    phic       = np.linspace(f2[6],f2[7], f1[3],dtype=np.float32)                      ## Phi_b POS azimuthal angle; rad to deg; 2 deg resolution
+    thetac     = np.linspace(f2[8],f2[9], f1[4],dtype=np.float32)                      ## Theta_b LOS longitudinal angle;rad to deg; 2 deg resolution
 
     ## write a header file that stays with the generated database.
     with open( linestr[0][na-1] + 'db.hdr', 'w' ) as f:
         f.write( '  ' + str(len(heights)) + '  ' + str(len(densities)) + '  ' + str(len(losdepth)) + '  ' + str(len(phic)) + '  ' +str(len(thetac)) + '\n' )
         f.write( '  ' + str(np.round(np.log10(densities[0]),2)) + '  ' +  str(np.round(np.log10(densities[-1]),2))  + '\n' )
         f.write( '  ' + str(losdepth[0]) +'  '+ str(losdepth[-1]) + '\n' )
-        f.write( '  ' + str(np.round(phic[0]*np.pi/180,8))   + '  ' + str(np.round(phic[-1]*np.pi/180,8)) + '\n' )
-        f.write( '  ' + str(np.round(thetac[0]*np.pi/180,8)) + '  ' + str(np.round(thetac[-1]*np.pi/180,8)) + '\n' )
+        f.write( '  ' + str(np.round(phic[0],8))   + '  ' + str(np.round(phic[-1],8)) + '\n' )
+        f.write( '  ' + str(np.round(thetac[0],8)) + '  ' + str(np.round(thetac[-1],8)) + '\n' )
         f.write( '  ' + "1" + '\n' )
-        f.write( '  ' + str(np.round(sel_ion.get_emissionLine(np.int32(linestr[2][na-1])).wavelength_in_air,8)) + '\n' )
+        f.write( '  ' + str(np.round(sel_ion.get_emissionLine((np.int32(linestr[2][na-1]))).wavelength_in_air,8)) + '\n' )
         f.write( '  ' + "1")      ## this denotes a pycelp database
-
+    
     ## 5 level loop to compute the database entries
     ## loop has the order height --> density --> losdepth --> phi--> theta for PyCELP efficiency
 
@@ -124,8 +124,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
 
 def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,sel_ion,linestr,na):
 
-    #iquv_database = np.zeros((len(losdepth), len(phic), len(thetac), 4),dtype=np.float32) ## arrays to store 1 line of data; height x dens individual files will be written
-    iquv_database = np.zeros((10, 10, 10, 4),dtype=np.float32)
+    iquv_database = np.zeros((len(losdepth), len(phic), len(thetac), 4),dtype=np.float32) ## arrays to store 1 line of data; height x dens individual files will be written
     for l,elosdepth in enumerate(losdepth):                                               ## sampling for line of sight depth of main emitting structure
 
         ## database encoded parameters
@@ -135,37 +134,36 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
         beta  =   np.arctan2(eheight,evert)                                               ## In the z=0 case, this is always pi/2
         theta =   0.5 * np.pi + alpha                                                     ## Scattering angle corresponding to a vertical reference direction for linear polarization (r.d.l.p) when gamma=0
 
-        # for p,ephic in enumerate(phic):                                                   ## cartesian azimuth angle
-        #     for t,ethetac in enumerate(thetac):                                           ## cartesian LOS angle
+        for p,ephic in enumerate(phic):                                                   ## cartesian azimuth angle
+            for t,ethetac in enumerate(thetac):                                           ## cartesian LOS angle
 
-        #         ## Unit magnetic field components from angles spawned by database in the sun center cartezian frame Z vertical, Y along POS, X along LOS
-        #         xb = np.sin(ethetac) * np.cos(ephic)
-        #         yb = np.sin(ethetac) * np.sin(ephic)
-        #         zb = np.cos(ethetac)
+                ## Unit magnetic field components from angles spawned by database in the sun center cartezian frame Z vertical, Y along POS, X along LOS
+                xb = np.sin(ethetac) * np.cos(ephic)
+                yb = np.sin(ethetac) * np.sin(ephic)
+                zb = np.cos(ethetac)
 
-    #             ## rotations of projections around x-axis
-    #             yyb =   np.cos(beta)  * yb - np.sin(beta)  * zb
-    #             yzb =   np.sin(beta)  * yb + np.cos(beta)  * zb
+                ## rotations of projections around x-axis
+                yyb =   np.cos(beta)  * yb - np.sin(beta)  * zb
+                yzb =   np.sin(beta)  * yb + np.cos(beta)  * zb
 
-    #             xxb =   np.cos(alpha) * xb + np.sin(alpha) * yzb
-    #             zzb = - np.sin(alpha) * xb + np.cos(alpha) * yzb
+                xxb =   np.cos(alpha) * xb + np.sin(alpha) * yzb
+                zzb = - np.sin(alpha) * xb + np.cos(alpha) * yzb
 
-    #             ## Compute the magnetic angles along the LVS (labeled s-frame in some works)
-    #             ## These are varthetab and varphib in eq 42 44 of CJ99 and sketched in figure 5, (angles between LVS and B in the planes containing B LVS and k LVS
-    #             ethetab = np.arctan2(np.sqrt(xxb**2 + yyb**2),zzb)
-    #             ephib   = np.arctan2(yyb,xxb)
+                ## Compute the magnetic angles along the LVS (labeled s-frame in some works)
+                ## These are varthetab and varphib in eq 42 44 of CJ99 and sketched in figure 5, (angles between LVS and B in the planes containing B LVS and k LVS
+                ethetab = np.arctan2(np.sqrt(xxb**2 + yyb**2),zzb)
+                ephib   = np.arctan2(yyb,xxb)
 
-    #             ## LOS projected magnetic angles capital Theta_B and Gamma_B
-    #             ethetalosb = np.arccos(  np.cos(theta) * np.cos(ethetab) + np.sin(theta) * np.sin(ethetab) * np.cos(ephib) )                      ## CJ99 eq42
-    #             egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.                   
+                ## LOS projected magnetic angles capital Theta_B and Gamma_B
+                ethetalosb = np.arccos(  np.cos(theta) * np.cos(ethetab) + np.sin(theta) * np.sin(ethetab) * np.cos(ephib) )                      ## CJ99 eq42
+                egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.                   
 
                 ## Calculate the statistical equilibrium
-                #sel_ion.calc_rho_sym(edens, electron_temperature, eheighteff, ethetab, include_limbdark=True, include_protons=True)
+                sel_ion.calc_rho_sym(edens, electron_temperature, eheighteff, ethetab*180/np.pi, include_limbdark=True, include_protons=True)
 
                 ## Finally compute the emission coefficients corresponding to calc_rho_sym calculation of the selected line and write the Stokes profiles in the database
-                #iquv_database[l,p,t,:] = sel_ion.get_emissionLine(np.int32(linestr[2][na-1])).calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetalosb, azimuthBLOSdeg=egammalosb)
+                iquv_database[l,p,t,:] = sel_ion.get_emissionLine(np.int32(linestr[2][na-1])).calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetalosb*180/np.pi, azimuthBLOSdeg=egammalosb*180/np.pi)
     np.save('./'+linestr[0][na-1]+'DB_h'+"{:d}".format(np.int32(np.round(eheight*100)))+'_d'+"{:d}".format(np.int32(np.round(np.log10(edens)*100,2)))+'.npy',iquv_database)  ## save a losdepth x thetab x phib database file
-
     return 1
 
 
@@ -190,11 +188,11 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
 
 # In[ ]:
 
-print(len(sys.argv),sys.argv)
-if len(sys.argv) == 2:
+
+if len(sys.argv) == 2:             ## script is appended, so 1 parameter is length 2
     na  = np.int32(sys.argv[1])  
     gen_pycelp_db(na)
-elif len(sys.argv) == 3:  
+elif len(sys.argv) == 3:           ## script is appended, so 2 parameters is length 3
     na  = np.int32(sys.argv[1])  
     mpc = np.int32(sys.argv[2])
     gen_pycelp_db(na,mpc)
@@ -208,4 +206,82 @@ else:
 
 
 
+
+
+# In[ ]:
+
+
+### debug codes
+
+
+# In[ ]:
+
+
+# def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,sel_ion):
+
+#     for l,elosdepth in enumerate(losdepth):                                               ## sampling for line of sight depth of main emitting structure
+
+#         ## database encoded parameters
+#         eheighteff = np.sqrt(eheight**2 + elosdepth**2)                                   ## allignment is a function for local radial height computed here.
+#         evert = 0                                                                         ## restricted to the z=0 plane; IV are invariant in Z, QU can be rotated for any other z planes
+#         alpha = - np.arctan2(elosdepth,eheight)                                           ## Theoretically, this is np.arctan2(gx, np.sqrt(gy**2+gz**2)) in 3D space. -90--90; 0 in POS
+#         beta  =   np.arctan2(eheight,evert)                                               ## In the z=0 case, this is always pi/2
+#         theta =   0.5 * np.pi + alpha                                                     ## Scattering angle corresponding to a vertical reference direction for linear polarization (r.d.l.p) when gamma=0
+
+#         for p,ephic in enumerate(phic):                                                   ## cartesian azimuth angle
+#             for t,ethetac in enumerate(thetac):                                           ## cartesian LOS angle
+
+#                 ## Unit magnetic field components from angles spawned by database in the sun center cartezian frame Z vertical, Y along POS, X along LOS
+#                 xb = np.sin(ethetac) * np.cos(ephic)
+#                 yb = np.sin(ethetac) * np.sin(ephic)
+#                 zb = np.cos(ethetac)
+
+#                 ## rotations of projections around x-axis
+#                 yyb =   np.cos(beta)  * yb - np.sin(beta)  * zb
+#                 yzb =   np.sin(beta)  * yb + np.cos(beta)  * zb
+
+#                 xxb =   np.cos(alpha) * xb + np.sin(alpha) * yzb
+#                 zzb = - np.sin(alpha) * xb + np.cos(alpha) * yzb
+
+#                 ## Compute the magnetic angles along the LVS (labeled s-frame in some works)
+#                 ## These are varthetab and varphib in eq 42 44 of CJ99 and sketched in figure 5, (angles between LVS and B in the planes containing B LVS and k LVS
+#                 ethetab = np.arctan2(np.sqrt(xxb**2 + yyb**2),zzb)
+#                 ephib   = np.arctan2(yyb,xxb)
+
+#                 ## LOS projected magnetic angles capital Theta_B and Gamma_B
+#                 ethetalosb = np.arccos(  np.cos(theta) * np.cos(ethetab) + np.sin(theta) * np.sin(ethetab) * np.cos(ephib) )                      ## CJ99 eq42
+#                 egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.                   
+
+#                 #print (ethetalosb,egammalosb)
+#                 ## Calculate the statistical equilibrium
+#                 sel_ion.calc_rho_sym(edens, electron_temperature, eheighteff, ethetab*180/np.pi, include_limbdark=True, include_protons=True)
+
+#                 ## Finally compute the emission coefficients corresponding to calc_rho_sym calculation of the selected line and write the Stokes profiles in the database
+#                 aa= sel_ion.get_emissionLine(10747).calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetalosb*180/np.pi, azimuthBLOSdeg=egammalosb*180/np.pi) 
+#                 print(aa)
+
+#     return 1
+
+
+# In[ ]:
+
+
+# la                       = 50                    ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 300 levels should be enough.
+# sel_ion                  = pycelp.Ion("fe_13",nlevels = la)
+# electron_temperature     = sel_ion.get_maxtemp() ## kelvins; maximum formation temperature for selected ion. We will do all calculations under this assumption.This implies we are approximating density only corresponding to plasma around this temperature.
+# magnetic_field_amplitude = 1.0                   ## Calculate the database for 1G fields, then just scale linearly with Stokes V amplitude in CLEDB
+
+
+# f1 = np.loadtxt("./DB.INPUT",dtype=np.int32, comments='*',max_rows=1)
+# f2 = np.loadtxt("./DB.INPUT",dtype=np.float32, comments='*',skiprows=6)
+
+# heights    = np.round(np.linspace(f2[2],f2[3],np.int32(f1[0]),dtype=np.float32),2) ## solar radius units. This corresponds to offlimb heights of 1-2 solar radius, with intervals of 0.01
+# densities  = np.round(10.**np.linspace(f2[0],f2[1],f1[1],dtype=np.float32),3)      ## array of densities to be probed. This gives roughly 10 density samples for each order of magnitude in the logarithmic density space spanning 10^6-10^12 electrons. 
+# losdepth   = np.linspace(f2[4],f2[5], f1[2],dtype=np.float32)                      ## los depth to be sampled; 1 radius centered in the POS, with 0.05 intervals
+# phic       = np.linspace(f2[6],f2[7], f1[3],dtype=np.float32)#*180/np.pi            ## Phi_b POS azimuthal angle; rad to deg; 2 deg resolution
+# thetac     = np.linspace(f2[8],f2[9], f1[4],dtype=np.float32)#*180/np.pi            ## Theta_b LOS longitudinal angle;rad to deg; 2 deg resolution
+
+
+
+# work_heighttimesdens(1.1,1e8,losdepth[:1],phic,thetac,electron_temperature,magnetic_field_amplitude,sel_ion)
 
