@@ -570,7 +570,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
     ##returns an array-like 0 vector of the dimensions of the requested output.
     ## the index is set to -1 to warn about the missing entry
-    if np.isnan(sobs_1pix).all() or np.count_nonzero(sobs_1pix) == 0:
+    if np.isnan(sobs_1pix).any() or np.count_nonzero(sobs_1pix) == 0:
         nullout = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
         if verbose >= 3: print("CLEDB_MATCHIQUV: FATAL! No observation in voxel!")
@@ -580,9 +580,14 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     if reduced == True:
         ## outredindex is the corresponding index for reduced, this is different from the full index. they need to be matched later.
         ## cledb_getsubset will reshape database_in to database_sel of [index,nline*4] shape
-        database_sel,outredindex = cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch) 
+        database_sel,outredindex = cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch)
+        # for i in range(len(database_sel[:,0])):
+        #     if np.sum(database_in[i,:]) == 0:
+        #         print(i,database_in[i,:])
         ## keeps the argument for the reduced entry using the sign of Stokes V. outargs+outredindex will return the correct initial db index below.
         outargs = np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3]))[:,0]   
+        print( np.where(np.sign(database_sel[10:,3]) == 1))
+        print( np.sign(sobs_1pix[3]))
         ## check and presort the sign along the first line Stokes V. Do not reverse order with above line to keep index mapping consistent!  
         database_sel = database_sel[outargs]                                              
     else:
@@ -608,7 +613,13 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     ## If observation has Stokes V, we include it in the difference for the chi^2, although it will have low influence because of small v/i.
     diff = np.zeros((database_sel.shape[0],8),dtype=np.float32)
     diff = (((database_sel[:,:8] - sobs_1pix/norm_fact)/rms)*scale_fact)  ## Multiply by the linear polarization scale factor to improve matches. 
- 
+    # print(database_sel.shape)
+    # print(sobs_1pix)
+    # print(norm_fact)
+    # print(rms)
+    # print(scale_fact)
+    # print((database_sel[0,:8] - sobs_1pix/norm_fact/rms)*scale_fact)
+    # print((database_sel[134,:8] - sobs_1pix/norm_fact/rms)*scale_fact)    
     ndata = 4*2-1             ## Number of observables
     denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
     diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
@@ -618,7 +629,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     ## Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced. 
     ## if no rms and counts are present, the truncation is beyond a float32 without this decimal fix.    
     chisq = np.zeros((diff.shape[0]),dtype=np.float64)
-    np.round_( np.sum( diff, axis=1)/denom/norm_fact,15,chisq)     
+    np.round_( np.sum( diff, axis=1)/denom/norm_fact,15,chisq)
     ## Divide by norm_factor as the pure chi^2 is a number dependent metric. All variables are dependent on norm_fact => chisq = norm_fact*chi^2.
 
     ## Need to use a manual numba compatible fast sorting as np.argpartition is not numba implemented!
@@ -626,9 +637,10 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     ## it does a standard sorting, aranging only the first nsearch elements, making it much faster than np.argsort for few (<100) solutions.
 
     if nsearch <= 100:
-        asrt = cledb_partsort(chisq,nsearch) 
+        #asrt = cledb_partsort(chisq,nsearch)
+        asrt = np.argsort(chisq)[0:nsearch]
     else: ## for a lot of solutions, a full sort will perform better
-        asrt =np.argsort(chisq)[0:nsearch]
+        asrt = np.argsort(chisq)[0:nsearch]
 
     ## the following will compute the first nsearch solutions
     ## OR
@@ -1001,12 +1013,12 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
 ###########################################################################
 ###########################################################################
 @njit(parallel=False,cache=params.jitcache)      ## don't try to parallelize things that don't need as the overhead will slow everything down
-def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch): 
+def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
 ## returns a subset of the sdb array compatible with the height in yobs
 
     ## unpack dbcgrid parameters from the database accompanying db.hdr file
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
-    bthetamin, bthetamax, nline, wavel, dbtype = dbhdr 
+    bthetamin, bthetamax, nline, wavel, dbtype = dbhdr
 
     ##NOTE: the sorting done here only takes into account the linear polarization tangent of the observation. 
     ##      This sorting is not 1:1 equivalent with the main chi^2 sorting.
@@ -1028,13 +1040,13 @@ def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
 
     ## Find those indices compatible with phib observed
     ## Two branches for CLE vs pycelp based databases
-   
+
     ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
     outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float32)
-    
+
     if dbtype == 0:
         datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
-        
+
         for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
             ttp   = tt * np.sin(bphir[ir])
             diffa = np.abs(tphib_obs - ttp)                        ## this is an array over btheta at each bphi
@@ -1050,32 +1062,32 @@ def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
                     outredindex[ir,jj]             = srta[jj]
                     datasel[:,:,ir,jj+(nsearch),:] = np.copy(database_in[:,:,ir,srtb[jj],:])   ## Record those indices compatible with phib observed (deg. branch)
                     outredindex[ir,jj+(nsearch)]   = srtb[jj]
-        
+
         ## now work with reduced dataset with nbtheta replaced by nsearch. The full dimensions of the database are no longer needed. It is converted to a [index,8] shape
         return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
-        
+
     elif dbtype == 1:
         datasel     = np.zeros((ngx,nbphi,2*nsearch,8),dtype=np.float32)
-        
+
         for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
             ttp   = tt * np.sin(bphir[ir])
             diffa = np.abs(tphib_obs - ttp)                        ## this is an array over btheta at each bphi
             diffb = np.abs(tphib_obs_deg - ttp)                    ## this is an array over btheta at each bphi (degenerate branch)
-            srta  = cledb_partsort(diffa,nsearch)                  ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
-            srtb  = cledb_partsort(diffb,nsearch)
-            #srta=np.argsort(diffa)[0:nsearch]
-            #srtb=np.argsort(diffb)[0:nsearch]
+            #srta  = cledb_partsort(diffa,nsearch)                  ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
+            #srtb  = cledb_partsort(diffb,nsearch)
+            srta = np.argsort(diffa)[0:nsearch]
+            srtb = np.argsort(diffb)[0:nsearch]
             ## advanced slicing is not available, the for jj enumeration comes from numba requirements
             if ir + srta[0] > 0 or ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
                 for jj in range(nsearch):                                             ## NOTE: nsearch = srt.shape[0]
                     datasel[:,ir,jj,:]           = np.copy(database_in[:,ir,srta[jj],:])   ## Record those indices compatible with phib observed (main branch)
-                    outredindex[ir,jj]             = srta[jj]
+                    outredindex[ir,jj]           = srta[jj]
                     datasel[:,ir,jj+(nsearch),:] = np.copy(database_in[:,ir,srtb[jj],:])   ## Record those indices compatible with phib observed (deg. branch)
-                    outredindex[ir,jj+(nsearch)]   = srtb[jj]
-        
+                    outredindex[ir,jj+(nsearch)] = srtb[jj]
+
         ## now work with reduced dataset with nbtheta replaced by nsearch. The full dimensions of the database are no longer needed. It is converted to a [index,8] shape
-        return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
-        
+        return np.reshape(datasel,(ngx*nbphi*2*nsearch,8)),outredindex
+
     ## Note: the above block is both faster than concatenating the diff arrays + sorting only once + one subscription for datasel & outredindex.
 
 ###########################################################################

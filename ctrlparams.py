@@ -10,7 +10,7 @@
 class ctrlparams:
     def __init__(self):
         ## general params
-        self.dbdir        = '/home/noxpara/Documents/physics_progs/solar-coronal-inversion/CLEDB_BUILD/'  ## directory for database
+        self.dbdir        = '/data/arparaschiv/solar-coronal-inversion/CLEDB_BUILD/'  ## directory for database
         self.lookuptb     = self.dbdir + 'chianti_v10.1_pycelp_fe13_h99_d120_ratio.npz'                   ## CHIANTI look-up table 
         self.verbose      = 1                                                                             ## verbosity parameter
         
@@ -20,7 +20,7 @@ class ctrlparams:
         self.instwidth    = 0                                                                             ## Parameter for fine-correcting non-thermal widths if instrument widths are known or computed by user. nm units. 
         
         ## Used in CLEDB_PROC
-        self.nsearch      = 4                                                                             ## number of closest solutions to compute
+        self.nsearch      = 8                                                                             ## number of closest solutions to compute
         self.maxchisq     = 1000                                                                          ## Stop computing solutions above this chi^2 threshold
         self.gaussfit     = 2                                                                             ## Gaussian parametric fitting to use instead of the standard CDF fitting
         self.bcalc        = 1                                                                             ## control parameter for computing the B magnitude for two line observations.
