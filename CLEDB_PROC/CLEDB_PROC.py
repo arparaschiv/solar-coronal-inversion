@@ -565,7 +565,7 @@ def cledb_matchiquv(sobs_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,rms,nsearch,
     
     ## unpack dbcgrid parameters from the database accompanying db.hdr file 
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin,gxmax, bphimin, bphimax, \
-        bthetamin, bthetamax, nline, wavel  = dbhdr
+        bthetamin, bthetamax, nline, wavel, dbtype  = dbhdr
     ####NO OBSERVATION --> NO RUN! ###########    
     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
     ##returns an array-like 0 vector of the dimensions of the requested output.
@@ -718,7 +718,7 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
     
     ## unpack dbcgrid parameters from the database accompanying db.hdr file 
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin,gxmax, bphimin, bphimax, \
-        bthetamin, bthetamax, nline, wavel  = dbhdr
+        bthetamin, bthetamax, nline, wavel, dbtype  = dbhdr
     
     #### NO OBSERVATION --> NO RUN! ###########    
     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
@@ -869,7 +869,7 @@ def cledb_matchiqud(sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,database_in,dbhdr,r
 
 #     ## unpack dbcgrid parameters from the database accompanying db.hdr file 
 #     dbcgrid, ned, ngx, nbphi, nbtheta,  xed, gxmin,gxmax, bphimin, bphimax, \
-#         bthetamin, bthetamax, nline, wavel  = dbhdr
+#         bthetamin, bthetamax, nline, wavel, dbtype  = dbhdr
 #     ####NO OBSERVATION --> NO RUN! ###########    
 #     ## e.g. a pixel inside the solar disk, an invalid pixel, etc.
 #     ##returns an array-like 0 vector of the dimensions of the requested output.
@@ -1006,11 +1006,8 @@ def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
 
     ## unpack dbcgrid parameters from the database accompanying db.hdr file
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
-    bthetamin, bthetamax, nline, wavel = dbhdr 
+    bthetamin, bthetamax, nline, wavel, dbtype = dbhdr 
 
-    ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
-    datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
-    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float32)
     ##NOTE: the sorting done here only takes into account the linear polarization tangent of the observation. 
     ##      This sorting is not 1:1 equivalent with the main chi^2 sorting.
     ##      To be sure all compatible solutions are captured nsearch*2 solutions must be enforced here, and further refined in cledb_match
@@ -1029,28 +1026,58 @@ def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
     tphib_obs     = np.tan(phib_obs)                           ## here is tan Phi_B
     tphib_obs_deg = np.tan(phib_obs+np.pi/2.)                  ## and its degenerate branch
 
-    # Find those indices compatible with phib observed
-    for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
-        ttp   = tt * np.sin(bphir[ir])
-        diffa = np.abs(tphib_obs - ttp)                        ## this is an array over btheta at each bphi
-        diffb = np.abs(tphib_obs_deg - ttp)                    ## this is an array over btheta at each bphi (degenerate branch)
-        srta  = cledb_partsort(diffa,nsearch)                  ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
-        srtb  = cledb_partsort(diffb,nsearch)
-        #srta=np.argsort(diffa)[0:nsearch]
-        #srtb=np.argsort(diffb)[0:nsearch]
-        ## advanced slicing is not available, the for jj enumeration comes from numba requirements
-        if ir + srta[0] > 0 or ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
-            for jj in range(nsearch):                                             ## NOTE: nsearch = srt.shape[0]
-                datasel[:,:,ir,jj,:]           = np.copy(database_in[:,:,ir,srta[jj],:])   ## Record those indices compatible with phib observed (main branch)
-                outredindex[ir,jj]             = srta[jj]
-                datasel[:,:,ir,jj+(nsearch),:] = np.copy(database_in[:,:,ir,srtb[jj],:])   ## Record those indices compatible with phib observed (deg. branch)
-                outredindex[ir,jj+(nsearch)]   = srtb[jj]
-
+    ## Find those indices compatible with phib observed
+    ## Two branches for CLE vs pycelp based databases
+   
+    ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
+    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float32)
+    
+    if dbtype == 0:
+        datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
+        
+        for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
+            ttp   = tt * np.sin(bphir[ir])
+            diffa = np.abs(tphib_obs - ttp)                        ## this is an array over btheta at each bphi
+            diffb = np.abs(tphib_obs_deg - ttp)                    ## this is an array over btheta at each bphi (degenerate branch)
+            srta  = cledb_partsort(diffa,nsearch)                  ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
+            srtb  = cledb_partsort(diffb,nsearch)
+            #srta=np.argsort(diffa)[0:nsearch]
+            #srtb=np.argsort(diffb)[0:nsearch]
+            ## advanced slicing is not available, the for jj enumeration comes from numba requirements
+            if ir + srta[0] > 0 or ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
+                for jj in range(nsearch):                                             ## NOTE: nsearch = srt.shape[0]
+                    datasel[:,:,ir,jj,:]           = np.copy(database_in[:,:,ir,srta[jj],:])   ## Record those indices compatible with phib observed (main branch)
+                    outredindex[ir,jj]             = srta[jj]
+                    datasel[:,:,ir,jj+(nsearch),:] = np.copy(database_in[:,:,ir,srtb[jj],:])   ## Record those indices compatible with phib observed (deg. branch)
+                    outredindex[ir,jj+(nsearch)]   = srtb[jj]
+        
+        ## now work with reduced dataset with nbtheta replaced by nsearch. The full dimensions of the database are no longer needed. It is converted to a [index,8] shape
+        return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
+        
+    elif dbtype == 1:
+        datasel     = np.zeros((ngx,nbphi,2*nsearch,8),dtype=np.float32)
+        
+        for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
+            ttp   = tt * np.sin(bphir[ir])
+            diffa = np.abs(tphib_obs - ttp)                        ## this is an array over btheta at each bphi
+            diffb = np.abs(tphib_obs_deg - ttp)                    ## this is an array over btheta at each bphi (degenerate branch)
+            srta  = cledb_partsort(diffa,nsearch)                  ## NOTE: no SIGNIFICANT speed gain to use PARTSORT here as the arrays are small.
+            srtb  = cledb_partsort(diffb,nsearch)
+            #srta=np.argsort(diffa)[0:nsearch]
+            #srtb=np.argsort(diffb)[0:nsearch]
+            ## advanced slicing is not available, the for jj enumeration comes from numba requirements
+            if ir + srta[0] > 0 or ir + srtb[0] > 0:                                  ## important to avoid phi=0 AND theta = 0 case
+                for jj in range(nsearch):                                             ## NOTE: nsearch = srt.shape[0]
+                    datasel[:,ir,jj,:]           = np.copy(database_in[:,ir,srta[jj],:])   ## Record those indices compatible with phib observed (main branch)
+                    outredindex[ir,jj]             = srta[jj]
+                    datasel[:,ir,jj+(nsearch),:] = np.copy(database_in[:,ir,srtb[jj],:])   ## Record those indices compatible with phib observed (deg. branch)
+                    outredindex[ir,jj+(nsearch)]   = srtb[jj]
+        
+        ## now work with reduced dataset with nbtheta replaced by nsearch. The full dimensions of the database are no longer needed. It is converted to a [index,8] shape
+        return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
+        
     ## Note: the above block is both faster than concatenating the diff arrays + sorting only once + one subscription for datasel & outredindex.
 
-    ## now work with reduced dataset with nbtheta replaced by nsearch
-    ## the full dimensions of the database are no longer needed. It is converted to a [index,8] shape
-    return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
 ###########################################################################
 ###########################################################################
 
@@ -1062,7 +1089,7 @@ def cledb_getsubsetiqud(sobs_1pix,sobsd_1pix,dbhdr,database_in,nsearch):
 
     ## unpack dbcgrid parameters from the database accompanying db.hdr file
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
-    bthetamin, bthetamax, nline, wavel = dbhdr 
+    bthetamin, bthetamax, nline, wavel, dbtype = dbhdr 
 
     ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
     datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
@@ -1251,7 +1278,7 @@ def cledb_physcle(index,gy,dbhdr):
 ## this is the primary function that retrieves physics parameters from the database index.
 
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin,gxmax, bphimin, bphimax,\
-    bthetamin, bthetamax, nline, wavel  = dbhdr
+    bthetamin, bthetamax, nline, wavel, dbtype  = dbhdr
 
     i,j,k,l = cledb_params(index,dbcgrid)
 

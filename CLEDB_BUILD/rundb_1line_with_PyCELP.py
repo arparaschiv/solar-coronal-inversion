@@ -88,12 +88,12 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     ## write a header file that stays with the generated database.
     with open( linestr[0][na-1] + 'db.hdr', 'w' ) as f:
         f.write( '  ' + str(len(heights)) + '  ' + str(len(densities)) + '  ' + str(len(losdepth)) + '  ' + str(len(phic)) + '  ' +str(len(thetac)) + '\n' )
-        f.write( '  ' + str(np.round(np.log10(densities[0]),2) + np.round(np.log10(densities[-1]),2))  + '\n' )
+        f.write( '  ' + str(np.round(np.log10(densities[0]),2)) + '  ' +  str(np.round(np.log10(densities[-1]),2))  + '\n' )
         f.write( '  ' + str(losdepth[0]) +'  '+ str(losdepth[-1]) + '\n' )
         f.write( '  ' + str(np.round(phic[0]*np.pi/180,8))   + '  ' + str(np.round(phic[-1]*np.pi/180,8)) + '\n' )
         f.write( '  ' + str(np.round(thetac[0]*np.pi/180,8)) + '  ' + str(np.round(thetac[-1]*np.pi/180,8)) + '\n' )
         f.write( '  ' + "1" + '\n' )
-        f.write( '  ' + str(np.round(sel_ion.get_emissionLine(10747).wavelength_in_air,8)) + '\n' )
+        f.write( '  ' + str(np.round(sel_ion.get_emissionLine(np.int32(linestr[2][na-1])).wavelength_in_air,8)) + '\n' )
         f.write( '  ' + "1")      ## this denotes a pycelp database
 
     ## 5 level loop to compute the database entries
@@ -125,7 +125,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
 def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,sel_ion,linestr,na):
 
     #iquv_database = np.zeros((len(losdepth), len(phic), len(thetac), 4),dtype=np.float32) ## arrays to store 1 line of data; height x dens individual files will be written
-    iquv_database = np.zeros((10, 10, 10, 2),dtype=np.float32)
+    iquv_database = np.zeros((10, 10, 10, 4),dtype=np.float32)
     for l,elosdepth in enumerate(losdepth):                                               ## sampling for line of sight depth of main emitting structure
 
         ## database encoded parameters
