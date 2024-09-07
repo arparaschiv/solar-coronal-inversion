@@ -244,7 +244,7 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
         if params.verbose >= 2:
             print("{:4.6f}".format(time.time()-start0),' SECONDS FOR TOTAL DB SEARCH AND FIND')
         print('------------------------------------\n--SDB_PREPROCESS - READ FINALIZED---\n------------------------------------')
-    return db_enc,database,dbhdr
+    return db_enc,dbnames,db_enc_flnm,db_uniq,database,dbhdr
 ###########################################################################
 ###########################################################################
 
@@ -298,13 +298,11 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
         #     return [names,None],dbynumbers,'twolineDB' ##double return of names +none is superfluous; reason is to keep returns consistent regardless in terms of datatype of the if case
 
         elif sum(line_bin) ==1:
-            if verbose >=2: print("SDB_FILEINGEST: FATAL! Two line observation provided! Requires two individual ion databases in directory. Only one database is computed.")    
-            print("balon")
+            if verbose >=2: print("SDB_FILEINGEST: FATAL! Two line observation provided! Requires two individual ion databases in directory. Only one database is computed.")
             return [None,None],None,'Ingest Error'
 
         else: 
             if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
-            print("pogon")
             return [None,None],None,'Ingest Error' 
 
 ## one line db prepare????
@@ -863,7 +861,7 @@ def obs_dens_work_1pix(xx,yy,a_obs,b_obs,chianti_table,y_obs):
     
     ## Sanity checks at pixel level
     if b_obs == 0:                                      ## don't divide by 0
-        return xx,yy,0                                  ## return 0 value        
+        return xx,yy,1                                  ## return 1 value <--np.log10(1) will give 0 in obs_dens
 
 
     ## line ratio calculations for peak and integrated quantities

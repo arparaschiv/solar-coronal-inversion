@@ -51,16 +51,16 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     linestr = [["fe-xiii_1074/","fe-xiii_1079/","si-x_1430/","si-ix_3934/","mg-viii_3028/"],
               ["fe_13",         "fe_13",        "si_10",     "si_9",       "mg_8"       ],
               ["10746",         "10798",        "14300",     "39281",      "30276"]]
-    
+
     print("############# CLEDB BUILD ######################################")
-    print("The database inversion methodology ie ready for Fe XIII line pairs.") 
-    print("Other lines, even if available are not yet ready for production runs")   
+    print("The database inversion methodology is ready for Fe XIII line pairs.")
+    print("Other lines, even if available are not yet ready for production runs")
     print("################################################################")
     if (na < 1) or (na > 5):
        return "Line option incorrect, or no line given! Aborting"
     else:
-       print("We are building a database of" + linestr[0][na-1][:-6] + "at" + linestr[2][na-1][:-1] + "nm.") 
-    
+       print("We are building a database of " + linestr[0][na-1][:-6] + " at " + linestr[2][na-1][:-1] + " nm.")
+
     la                       = 50                    ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 300 levels should be enough.
     sel_ion                  = pycelp.Ion(linestr[1][na-1],nlevels = la)
     electron_temperature     = sel_ion.get_maxtemp() ## kelvins; maximum formation temperature for selected ion. We will do all calculations under this assumption.This implies we are approximating density only corresponding to plasma around this temperature.
@@ -74,16 +74,17 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     else:
         os.makedirs(linestr[0][na-1][:-1])
 
-    ## The grid space defined in DB.INPUT allows sampling 10 density values per order of density magnitude with line ratios sensible to significant measurements of two decimals.## Read the database dimensions in all 5 axes. 
+    ## The grid space defined in DB.INPUT allows sampling 10 density values per order of density magnitude with line ratios sensible to significant measurements of two decimals.## Read the database dimensions in all 5 axes.
     ## The density and height samplings and spacings are fixed to the values given by the chianti look-up table. DO NOT CHANGE WITHOUT ALSO REGENERATING THE LOOKUP TABLE.
     f1 = np.loadtxt("./DB.INPUT",dtype=np.int32, comments='*',max_rows=1)
     f2 = np.loadtxt("./DB.INPUT",dtype=np.float32, comments='*',skiprows=6)
 
     heights    = np.round(np.linspace(f2[2],f2[3],np.int32(f1[0]),dtype=np.float32),2) ## solar radius units. This corresponds to offlimb heights of 1-2 solar radius, with intervals of 0.01
-    densities  = np.round(10.**np.linspace(f2[0],f2[1],f1[1],dtype=np.float32),3)      ## array of densities to be probed. This gives roughly 10 density samples for each order of magnitude in the logarithmic density space spanning 10^6-10^12 electrons. 
+    densities  = np.round(10.**np.linspace(f2[0],f2[1],f1[1],dtype=np.float32),3)      ## array of densities to be probed. This gives roughly 10 density samples for each order of magnitude in the logarithmic density space spanning 10^6-10^12 electrons.
     losdepth   = np.linspace(f2[4],f2[5], f1[2],dtype=np.float32)                      ## los depth to be sampled; 1 radius centered in the POS, with 0.05 intervals
-    phic       = np.linspace(f2[6],f2[7], f1[3],dtype=np.float32)                      ## Phi_b POS azimuthal angle; rad to deg; 2 deg resolution
-    thetac     = np.linspace(f2[8],f2[9], f1[4],dtype=np.float32)                      ## Theta_b LOS longitudinal angle;rad to deg; 2 deg resolution
+    ## phic and thetac are defined to not double up the angles = 2pi and respectively angles = pi as they are the same Stokes coefficients as at angle=0. Create the intervals such that the number od discreet points and interval does not include the last point in the range. In the default settings this creates 180 phi ponts spread in the range 0-178deg with 2 degree res.
+    phic       = np.linspace(f2[6],f2[7], f1[3]+1,dtype=np.float32)[:-1]               ## Phi_b POS azimuthal angle; rad to deg; 2 deg resolution
+    thetac     = np.linspace(f2[8],f2[9], f1[4]+1,dtype=np.float32)[:-1]               ## Theta_b LOS longitudinal angle;rad to deg; 2 deg resolution
 
     ## write a header file that stays with the generated database.
     with open( linestr[0][na-1] + 'db.hdr', 'w' ) as f:
@@ -95,7 +96,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
         f.write( '  ' + "1" + '\n' )
         f.write( '  ' + str(np.round(sel_ion.get_emissionLine((np.int32(linestr[2][na-1]))).wavelength_in_air,8)) + '\n' )
         f.write( '  ' + "1")      ## this denotes a pycelp database
-    
+
     ## 5 level loop to compute the database entries
     ## loop has the order height --> density --> losdepth --> phi--> theta for PyCELP efficiency
 
@@ -103,7 +104,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     if mpc > multiprocessing.cpu_count()-1:
         mpc   = multiprocessing.cpu_count()-1
         print("More CPU threads than available are requested! Using system max - 1 threads.")
-    
+
     p         = multiprocessing.Pool(processes = mpc, maxtasksperchild = 10000) ## dynamically defined from system query as total CPU core number - 1
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
@@ -128,7 +129,7 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
     for l,elosdepth in enumerate(losdepth):                                               ## sampling for line of sight depth of main emitting structure
 
         ## database encoded parameters
-        eheighteff = np.sqrt(eheight**2 + elosdepth**2)                                   ## allignment is a function for local radial height computed here.
+        eheighteff = np.sqrt(eheight**2 + elosdepth**2)                              ## allignment is a function for local radial height computed here.
         evert = 0                                                                         ## restricted to the z=0 plane; IV are invariant in Z, QU can be rotated for any other z planes
         alpha = - np.arctan2(elosdepth,eheight)                                           ## Theoretically, this is np.arctan2(gx, np.sqrt(gy**2+gz**2)) in 3D space. -90--90; 0 in POS
         beta  =   np.arctan2(eheight,evert)                                               ## In the z=0 case, this is always pi/2
@@ -156,10 +157,10 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
 
                 ## LOS projected magnetic angles capital Theta_B and Gamma_B
                 ethetalosb = np.arccos(  np.cos(theta) * np.cos(ethetab) + np.sin(theta) * np.sin(ethetab) * np.cos(ephib) )                      ## CJ99 eq42
-                egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.                   
+                egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.
 
                 ## Calculate the statistical equilibrium
-                sel_ion.calc_rho_sym(edens, electron_temperature, eheighteff, ethetab*180/np.pi, include_limbdark=True, include_protons=True)
+                sel_ion.calc_rho_sym(edens, electron_temperature, np.round(eheighteff-1.00,2), ethetab*180/np.pi, include_limbdark=True, include_protons=True)
 
                 ## Finally compute the emission coefficients corresponding to calc_rho_sym calculation of the selected line and write the Stokes profiles in the database
                 iquv_database[l,p,t,:] = sel_ion.get_emissionLine(np.int32(linestr[2][na-1])).calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetalosb*180/np.pi, azimuthBLOSdeg=egammalosb*180/np.pi)
