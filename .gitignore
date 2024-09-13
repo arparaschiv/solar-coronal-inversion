@@ -138,6 +138,7 @@ outparams*.pkl
 Untitled.ipynb
 Untitled1.ipynb
 test_2line_IQUD.ipynb
+test_2line-worker.ipynb
 ## output plots
 specout*.pdf
 invout*.pdf
@@ -150,6 +151,7 @@ CLEDB_BUILD/fe-xiii_1074/
 CLEDB_BUILD/fe-xiii_1079/
 CLEDB_BUILD/si-ix_3934/
 CLEDB_BUILD/si-x_1430/
+CLEDB_BUILD/mg-viii_3028/
 ## latex stuff
 codedoc-latex/*.aux
 codedoc-latex/*.log
