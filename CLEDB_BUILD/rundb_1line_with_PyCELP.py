@@ -61,7 +61,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     else:
        print("We are building a database of " + linestr[0][na-1][:-6] + " at " + linestr[2][na-1][:-1] + " nm.")
 
-    la                       = 80                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 300 levels should be enough.
+    la                       = 25                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 80 levels should be enough. default 25 levels is underoptimal!
     sel_ion                  = pycelp.Ion(linestr[1][na-1],nlevels = la)
     electron_temperature     = sel_ion.get_maxtemp() ## kelvins; maximum formation temperature for selected ion. We will do all calculations under this assumption.This implies we are approximating density only corresponding to plasma around this temperature.
     magnetic_field_amplitude = 1.0                   ## Calculate the database for 1G fields, then just scale linearly with Stokes V amplitude in CLEDB
