@@ -7,15 +7,17 @@
 
 ### Repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion.
 
-**Authors:** Alin Paraschiv, Thomas Schad, and Philip Judge. National Solar Observatory & High Altitude Observatory 
+**Authors:** Alin Paraschiv, Thomas Schad, and Philip Judge. National Solar Observatory & High Altitude Observatory
 
 **Contact:** arparaschiv "at" nso.edu
 
-#### **Main aim:** 
-Invert coronal vector magnetic field products from observations of polarized light. 
+#### **Main aim:**
+Invert coronal vector magnetic field products from observations of polarized light.
 The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations to derive line of sight and/or full vector magnetic field products.
 
-#### **Applications:** 
+**WARNING: For the remainder of 2024 CLEDB is in active development in preparation for supporting DKIST Cryo-NIRSP data. Issues might appear in between updates. Please get in contact if noticing weird behavior.**
+
+#### **Applications:**
 Inverting magnetic field information from spectro-polarimetric solar coronal observations from instruments like DKIST Cryo-NIRSP; DL-NIRSP; MLSO COMP/UCOMP.
 
 ### **Documentation**
@@ -23,23 +25,26 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available on [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) A git distribution [PDF build](./docs/cledb-readthedocs-io-en-update-iqud.pdf) is also provided.
 2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README-SLURM.md](./README-SLURM.md).
-4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.  
+4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
 
 ### **System platform compatibility**
 
 1. Debian+derivatives Linux x64           -- all inversion modules are fully working.
-2. RC system CentOS linux x64             -- all inversion modules are fully working. Additional binary executable is provided. May require local compiling.
-3. OSX (Darwin x64) Catalina and Big Sur  -- all inversion modules are fully working; One additional homebrew package required. See [README-CODEDOC.pdf](./codedoc-latex/README-CODEDOC.pdf).
+2. RC system CentOS linux x64             -- all inversion modules are fully working. An additional binary executable is provided. May require local compiling.
+3. OSX (Darwin x64) Catalina and Big Sur  -- all inversion modules are fully working; One additional homebrew package required. See [README-RUNDB](./CLEDB_BUILD/README-RUNDB.md).
 4. Windows platform                       -- not tested.
 
 ### **Examples**
-Install the CLEDB distribution, generate databases, and update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [README-CODEDOC](./codedoc-latex/README-CODEDOC.pdf).
-Afterwards, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
+Install the CLEDB distribution, generate databases, and update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) .
+
+The new PyCELP database generation tool is recommended. It is more precise, but requires some computational resources for calculations. [A default PyCELP generated database can be found here to help get started (33Gb download)](https://drive.google.com/file/d/130rnM471FiVw9UQ8YfnaAbdh5_TTOQVO/view?usp=sharing). Just extract the two database folders in the CLEDB directory.
+
+Afterward, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
 1. [test_1line.ipynb](./test_1line.ipynb)
 2. [test_2line_IQUV.ipynb](./test_2line.ipynb)
 
-The test data are hosted separately. These are called by enabling the corresponding 1.a-1.e cells in the test notebooks and scripts. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html#example-test-data) for extended details regarding the included datafiles.
+The test data are hosted separately. These are called by enabling the corresponding 1.a-1.e cells in the test notebooks and scripts. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html) for details regarding the included datafiles.
 
 - [1.a synthetic CLE 3 dipole data](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing).
 - 1.b synthetic CLE current-sheet data will be available soon.
@@ -47,7 +52,7 @@ The test data are hosted separately. These are called by enabling the correspond
 - [1.d CoMP observation data](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing).
 - [1.e CoMP doppler analysis results for the 1.d datacube](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing).
 
-For terminal only compute systems the test data can be downloaded via the shell interface with the following method:
+For terminal only compute systems, the test data can be downloaded via the shell interface with the following method:
 
 i. Load the following gdrive wrapper script into your bash window directly, or introduce it in your .bash_alias setup.
 
@@ -67,7 +72,7 @@ Both test examples are expected to fully execute with parallel job spawning via 
 
 1. [Paraschiv & Judge, SolPhys, 2022](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract) covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 2. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) discussed the importance of scattering geometry when solving for coronal magnetic fields.
-3. [Ali, Paraschiv, Reardon, & Judge, ApJ, 2022](https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract) performed a spectroscopic exploration of the infrared regions of emission lines available for inversion with CLEDB.   
+3. [Ali, Paraschiv, Reardon, & Judge, ApJ, 2022](https://ui.adsabs.harvard.edu/abs/2022ApJ...932...22A/abstract) performed a spectroscopic exploration of the infrared regions of emission lines available for inversion with CLEDB.
 4. [Dima & Schad, ApJ, 2020](https://ui.adsabs.harvard.edu/abs/2020ApJ...889..109D/abstract) discussed potential degeneracies in using certain line combinations. The one-line CLEDB inversion utilizes the methods and results described in this work.
 5. [Schiffmann, Brage, Judge, Paraschiv & Wang, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...923..186S/abstract) performed large-scale Lande g factor calculations for ions of interest and discusses degeneracies in context of their results.
-6. [Casini & Judge, ApJ, 1999](https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract) and [Judge & Casini, ASP proc., 2001](https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract) described the theoretical line formation process implemented in CLE, the coronal forward-synthesis code that is currently utilized by CLEDB. 
+6. [Casini & Judge, ApJ, 1999](https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract) and [Judge & Casini, ASP proc., 2001](https://ui.adsabs.harvard.edu/abs/2001ASPC..236..503J/abstract) described the theoretical line formation process implemented in CLE, the coronal forward-synthesis code that is currently utilized by CLEDB.

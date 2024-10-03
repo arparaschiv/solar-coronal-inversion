@@ -31,7 +31,7 @@
 # In[3]:
 
 
-import pycelp 
+import pycelp
 import numpy as np
 #import matplotlib.pyplot as plt
 #plt.rcParams['figure.dpi'] = 150
@@ -61,7 +61,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     else:
        print("We are building a database of " + linestr[0][na-1][:-6] + " at " + linestr[2][na-1][:-1] + " nm.")
 
-    la                       = 50                    ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 300 levels should be enough.
+    la                       = 80                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 300 levels should be enough.
     sel_ion                  = pycelp.Ion(linestr[1][na-1],nlevels = la)
     electron_temperature     = sel_ion.get_maxtemp() ## kelvins; maximum formation temperature for selected ion. We will do all calculations under this assumption.This implies we are approximating density only corresponding to plasma around this temperature.
     magnetic_field_amplitude = 1.0                   ## Calculate the database for 1G fields, then just scale linearly with Stokes V amplitude in CLEDB
@@ -95,6 +95,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
         f.write( '  ' + str(np.round(thetac[0],8)) + '  ' + str(np.round(thetac[-1],8)) + '\n' )
         f.write( '  ' + "1" + '\n' )
         f.write( '  ' + str(np.round(sel_ion.get_emissionLine((np.int32(linestr[2][na-1]))).wavelength_in_air,8)) + '\n' )
+        #f.write( '  ' + linestr[2][na-1] + '\n' )
         f.write( '  ' + "1")      ## this denotes a pycelp database
 
     ## 5 level loop to compute the database entries
@@ -105,13 +106,13 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
         mpc   = multiprocessing.cpu_count()-1
         print("More CPU threads than available are requested! Using system max - 1 threads.")
 
-    p         = multiprocessing.Pool(processes = mpc, maxtasksperchild = 10000) ## dynamically defined from system query as total CPU core number - 1
+    p         = multiprocessing.Pool(processes = mpc, maxtasksperchild = 10) ## dynamically defined from system query as total CPU core number - 1
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
 
     for h,eheight in enumerate(heights):                              ## apparent (projected) height; same sampling as the CHIANTI density lookup table
         for d,edens in enumerate(densities):                          ## sampled densities; same sampling as the CHIANTI density lookup table
-            arg_array.append((eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,sel_ion,linestr,na)) ## Only one header instance goes in for oa set of maps. pointing should be the same in both.
+            arg_array.append((eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,la,linestr,na)) ## Only one header instance goes in for oa set of maps. pointing should be the same in both.
 
     rs        = p.starmap(work_heighttimesdens,arg_array)
     p.close()
@@ -123,16 +124,17 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     return "Database calculations completed."
 
 
-def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,sel_ion,linestr,na):
+def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,la,linestr,na):
 
     iquv_database = np.zeros((len(losdepth), len(phic), len(thetac), 4),dtype=np.float32) ## arrays to store 1 line of data; height x dens individual files will be written
+    sel_ion_a     = pycelp.Ion(linestr[1][na-1],nlevels = la)
     for l,elosdepth in enumerate(losdepth):                                               ## sampling for line of sight depth of main emitting structure
 
         ## database encoded parameters
         eheighteff = np.sqrt(eheight**2 + elosdepth**2)                              ## allignment is a function for local radial height computed here.
         evert = 0                                                                         ## restricted to the z=0 plane; IV are invariant in Z, QU can be rotated for any other z planes
         alpha = - np.arctan2(elosdepth,eheight)                                           ## Theoretically, this is np.arctan2(gx, np.sqrt(gy**2+gz**2)) in 3D space. -90--90; 0 in POS
-        beta  =   np.arctan2(eheight,evert)                                               ## In the z=0 case, this is always pi/2
+        beta  =   np.pi/2 #np.arctan2(eheight,evert)                                      ## In the z=0 case, this is always pi/2
         theta =   0.5 * np.pi + alpha                                                     ## Scattering angle corresponding to a vertical reference direction for linear polarization (r.d.l.p) when gamma=0
 
         for p,ephic in enumerate(phic):                                                   ## cartesian azimuth angle
@@ -160,12 +162,12 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
                 egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.
 
                 ## Calculate the statistical equilibrium
-                sel_ion.calc_rho_sym(edens, electron_temperature, np.round(eheighteff-1.00,2), ethetab*180/np.pi, include_limbdark=True, include_protons=True)
+                sel_ion_a.calc_rho_sym(edens, electron_temperature, np.round(eheighteff-1.00,2), ethetab*180/np.pi, include_limbdark=True, include_protons=True)
 
                 ## Finally compute the emission coefficients corresponding to calc_rho_sym calculation of the selected line and write the Stokes profiles in the database
-                iquv_database[l,p,t,:] = sel_ion.get_emissionLine(np.int32(linestr[2][na-1])).calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetalosb*180/np.pi, azimuthBLOSdeg=egammalosb*180/np.pi)
+                iquv_database[l,p,t,:] = sel_ion_a.get_emissionLine(np.int32(linestr[2][na-1])).calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetalosb*180/np.pi, azimuthBLOSdeg=egammalosb*180/np.pi)
     np.save('./'+linestr[0][na-1]+'DB_h'+"{:d}".format(np.int32(np.round(eheight*100)))+'_d'+"{:d}".format(np.int32(np.round(np.log10(edens)*100,2)))+'.npy',iquv_database)  ## save a losdepth x thetab x phib database file
-    return 1
+    #return 1
 
 
 ## a loop format that is more useful for a pycelp ingestion if calculating ThetaBLOS and PhiBLOS can be computed cin a clever way --- WIP

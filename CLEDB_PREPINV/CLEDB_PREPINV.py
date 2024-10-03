@@ -60,9 +60,9 @@
 import numpy as np
 
 from numba import jit,njit, prange
-from numba.typed import List  ## numba list is needed ad standard reflected python lists will be deprecated in numba      
+from numba.typed import List  ## numba list is needed ad standard reflected python lists will be deprecated in numba
 from pylab import *
-import scipy    
+import scipy
 import time
 import glob
 import os
@@ -70,7 +70,7 @@ import sys
 import multiprocessing
 #import numexpr as ne ## Disabled as of update-iqud. No database compression going forward
 
-import ctrlparams 
+import ctrlparams
 params=ctrlparams.ctrlparams()    ## just a shorter label
 
 #########################################################################
@@ -83,22 +83,27 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 def sobs_preprocess(sobs_in,headkeys,params):
 ## Main script to read data and header information to prepare it for analysis.
 
-    if params.verbose >= 1: 
+    if params.verbose >= 1:
         print('------------------------------------\n----SOBS_PREPROCESS - READ START----\n------------------------------------')
-        if params.verbose >= 2:start0=time.time()        
+        if params.verbose >= 2:start0=time.time()
 
 ## unpack the minimal number of header keywords
     keyvals = obs_headstructproc(sobs_in,headkeys,params)
     if(keyvals == -1):
-        if params.verbose >=1: 
+        if params.verbose >=1:
             print('SOBS_PREPROCESS: FATAL! OBS KEYWORD PROCESSING FAIL. Aborting!')
         return -1,0,0,0,0,0,0,0
-    
+
 ##calculate an observation height and integrate the stokes profiles
     yobs=obs_calcheight(keyvals)
-    if params.integrated != True:
-        sobs_tot,rms,background=obs_integrate(sobs_in,keyvals)
-        
+    if params.integrated == False:
+        if len(sobs_in.shape) == 4:
+            sobs_tot,rms,background=obs_integrate(sobs_in,keyvals)
+        else:
+            if params.verbose >=1:
+                print('SOBS_PREPROCESS: FATAL! INPUT DATA does NOT have a wavelength dimension. Integrated keyword incorrect? Aborting!')
+            return -1,0,0,0,0,0,0,0
+
     else:   ## set the arrays to -1 because they can't be computed
         sobs_tot   = np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
         rms        = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1
@@ -109,14 +114,14 @@ def sobs_preprocess(sobs_in,headkeys,params):
     ## both variables are now initialized inside obs_qurotate
         #sobs_totrot = np.copy(sobs_tot)
         #aobs        = np.zeros((keyvals[0],keyvals[1]),dtype=np.float32)
-        
-        sobs_totrot,aobs = obs_qurotate(sobs_tot,keyvals)  
-        
+
+        sobs_totrot,aobs = obs_qurotate(sobs_tot,keyvals)
+
     ## to efficiently match pycelp databases, we require an estimate of the apparent density of the plasma.
     ## A standalonve version of this function is available at: https://github.com/arparaschiv/FeXIII-coronal-density
-    ## This is available only for the Fe XIII pair (CLEDB always ratios 1074/1079) and requires a CHIANTI  look-up table that is linked in this repository.    
+    ## This is available only for the Fe XIII pair (CLEDB always ratios 1074/1079) and requires a CHIANTI  look-up table that is linked in this repository.
         if keyvals[4] == ["fe-xiii_1074","fe-xiii_1079"] or keyvals[4] == ["fe-xiii_1079","fe-xiii_1074"]:
-            dobs = obs_dens(sobs_totrot,yobs,keyvals,params)       
+            dobs = obs_dens(sobs_totrot,yobs,keyvals,params)
         else:
             if params.verbose >=1: 
                 print('SOBS_PREPROCESS: Can NOT properly account for abundance between ion species.\nIncompatible with the PyCELP implementation.\nOnly CLE databases can theoretically be used with extreme caution (not recommended).')
@@ -147,15 +152,15 @@ def sobs_preprocess(sobs_in,headkeys,params):
 
 ###########################################################################
 ###########################################################################
-@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)    
+@jit(parallel=params.jitparallel,forceobj=True,looplift=True,cache=params.jitcache)
 def sdb_preprocess(yobs,dobs,keyvals,params):
-## Main script to find and preload all necessary databases. 
+## Main script to find and preload all necessary databases.
 ## Returns databases as a list along with an encoding corresponding to each voxel of the observation
 ## this is made compatible to Numba object mode with loop-lifting to read all the necessary database in a parallel fashion
 
-    if params.verbose >=1: 
+    if params.verbose >=1:
         print('------------------------------------\n----SDB_PREPROCESS - READ START-----\n------------------------------------')
-        if params.verbose >= 2: start0=time.time()        
+        if params.verbose >= 2: start0=time.time()
     ######################################################################
     ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx = keyvals[0]
@@ -166,26 +171,26 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
     ######################################################################
     ## Preprocess the string information
     dbnames,dbynumbers,dbsubdirs=sdb_fileingest(params.dbdir,nline,tline,params.verbose)
-    
+
     ## No database could be read? NO RUN!!!
     if dbsubdirs == 'Ingest Error':
         if params.verbose >=1: print("SDB_PREPROCESS: FATAL! Could not read database")
         return None,None,None
-      
+
     ######################################################################
     ## Create a file encoding showing which database to read for which voxel
     ## the encoding labels at this stage do not have an order.
     db_enc=np.zeros((nx,ny),dtype=np.int32)         ## location in outputted database list; OUTPUT VARIABLE
     db_enc_flnm=np.zeros((nx,ny),dtype=np.int32)    ## location in file list when read from disk; used only internally in sdb_preprocess
-    
+
     for xx in range(nx):
-        for yy in prange(ny):                     
-            db_enc_flnm[xx,yy]=sdb_findelongationanddens(yobs[xx,yy],dobs[xx,yy],dbynumbers)   
+        for yy in prange(ny):
+            db_enc_flnm[xx,yy]=sdb_findelongationanddens(yobs[xx,yy],dobs[xx,yy],dbynumbers)
 
     db_uniq=np.unique(db_enc_flnm) ## makes a list of unique databases to read; the full list might have repeated entries
 
-    if params.verbose >= 1: 
-        print("CLEDB databases cover a span of",len(np.unique(dbynumbers[:,1])),"solar heights between",dbynumbers[0,1]/100,"-",dbynumbers[-1,1]/100," radius")    
+    if params.verbose >= 1:
+        print("CLEDB databases cover a span of",len(np.unique(dbynumbers[:,1])),"solar heights between",dbynumbers[0,1]/100,"-",dbynumbers[-1,1]/100," radius")
         print("Load ",db_uniq.shape[0]," heights x densities  DB datafiles in memory for each of ",nline,"line(s).\n------------------------------------")
 
     ######################################################################
@@ -196,7 +201,7 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
     ##read the header and dimensions and just pass them as parameters to function calls
     if nline == 2:
         if dbsubdirs=="twolineDB":
-            dbhdr=[sdb_parseheader(params.dbdir+'db.hdr')][0] ## dont understand why the 0 indexing is needed...    
+            dbhdr=[sdb_parseheader(params.dbdir+'db.hdr')][0] ## dont understand why the 0 indexing is needed...
             database0=[None]*db_uniq.shape[0]
             for ii in prange(db_uniq.shape[0]):
                 database0[ii]=sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose)
@@ -209,7 +214,7 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
             dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
             database0=[None]*db_uniq.shape[0]
             for ii in prange(db_uniq.shape[0]):
-                database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1) 
+                database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1)
                 for ij in prange(7,-1,-1):
                     if dbhdr[-1] == 0:
                         database0[ii][:,:,:,:,ij]=database0[ii][:,:,:,:,ij]/database0[ii][:,:,:,:,0]
@@ -219,7 +224,7 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
         dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
         database0=[None]*db_uniq.shape[0]
         for ii in prange(db_uniq.shape[0]):
-            database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1) 
+            database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1)
             for ij in prange(7,-1,-1):
                 if dbhdr[-1] == 0:
                     database0[ii][:,:,:,:,ij]=database0[ii][:,:,:,:,ij]/database0[ii][:,:,:,:,0]
@@ -229,13 +234,13 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
     ## numpy large array implementation does not parallelize properly leading to a 5x increase in runtime per 1024 calculations
     ## reverted to use a list to feed the database set to the calculation
 
-    ## Create a db_enc that is corresponding to the location in the outputted database list 
+    ## Create a db_enc that is corresponding to the location in the outputted database list
     for kk in prange(db_uniq.shape[0]):
         db_enc[np.where(db_enc_flnm == db_uniq[kk])] = kk
-    
+
     ## standard reflected lists will be deprecated in numba 0.54; currently running 0.53. this is a fix!
     database = List()                            ## this is the List object implemented by numba
-    [database.append(x) for x in database0]   
+    [database.append(x) for x in database0]
 
     ## [update issue mask] to implement
 
@@ -257,17 +262,17 @@ def sdb_preprocess(yobs,dobs,keyvals,params):
 ###########################################################################
 ###########################################################################
 #@jit(parallel=params.jitparallel,forceobj=True,cache=params.jitcache)
-def sdb_fileingest(dbdir,nline,tline,verbose):  
-#returns filename and index of elongation y in database  
-## This prepares the database directory files outside of numba non-python..
-    
+def sdb_fileingest(dbdir,nline,tline,verbose):
+#returns filename and index of elongation y in database
+## This prepares the database directory files outside of numba non-python.
+
 ##  Read the directory structure and see what lines are available.
     linestr=["fe-xiii_1074/", "fe-xiii_1079/", "si-x_1430/", "si-ix_3934/", "mg-viii_3028/"]
     line_bin=[]
     dbsubdirs=[]
     for i in linestr:
         line_bin.append(os.path.isdir(dbdir+i))
-    
+
 ## two line db prepare
     if nline == 2:
         if np.sum(line_bin) >= 2:
@@ -279,12 +284,12 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
             namesB     = sorted(glob.glob(dbdir+dbsubdirs[1]+"DB_*"))
             nn         = str.find(namesA[0],'DB_h')
             dbynumbers = np.empty((len(namesA),3),dtype=np.float32)
-            
+
             for i in range(0,len(namesA)):
                 dbynumbers[i,0] = i                                   ## database file index
                 dbynumbers[i,1] = np.float32(namesA[i][nn+4:nn+7])    ## database file projected height at index
                 dbynumbers[i,2] = np.float32(namesA[i][nn+9:-4])      ## database file density at index
-                
+
             return [namesA,namesB],dbynumbers,dbsubdirs
 
         ## legacy loop to read two line databases (for Fe XIII). .hdr and .DAT database files need to be in dbdir without a specific ion subfolder.
@@ -301,7 +306,7 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
             if verbose >=2: print("SDB_FILEINGEST: FATAL! Two line observation provided! Requires two individual ion databases in directory. Only one database is computed.")
             return [None,None],None,'Ingest Error'
 
-        else: 
+        else:
             if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
             return [None,None],None,'Ingest Error' 
 
@@ -322,7 +327,7 @@ def sdb_fileingest(dbdir,nline,tline,verbose):
 
         else:
             if verbose >=2: print("SDB_FILEINGEST: FATAL! No database or incomplete calculations found in directory ")
-            return [None,None],None,'Ingest Error' 
+            return [None,None],None,'Ingest Error'
 ###########################################################################
 ###########################################################################
 
@@ -343,7 +348,7 @@ def sdb_findelongationanddens(y,d,dbynumbers):
 ###########################################################################
 @jit(parallel=False,forceobj=True,cache=params.jitcache)  ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_parseheader(dbheaderfile):
-## reads and parses the header and returns the parameters contained in the db.hdr of a database directory           
+## reads and parses the header and returns the parameters contained in the db.hdr of a database directory
 ## db.hdr text file needs to have the specific version format described in the CLEDB 2.0.2 readme
 
     g=np.fromfile(dbheaderfile,dtype=np.float32,sep=' ')
@@ -368,7 +373,7 @@ def sdb_parseheader(dbheaderfile):
     nline     = np.int32(g[13])
     wavel     = np.empty(nline,dtype=np.float32)
     dbtype    = np.int32(g[-1])    # if g[-1] == 0: --> CLE database##   elif g[-1] == 1: --> PyCELP database
-    
+
     for k in range(0,nline): wavel[k]=g[14+k]
 
     return g, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
@@ -381,33 +386,33 @@ def sdb_parseheader(dbheaderfile):
 @jit(parallel=params.jitparallel,forceobj=True,cache=params.jitcache)   # don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_read(fildb,dbhdr,verbose):
 ## here reading data is done and stored in variable database of size (ncalc,line,4)
-## due to calling dcompress nad np.fromfile, this is incompatible with numba    
-    if verbose >=2: start=time.time()    
-    
+## due to calling dcompress nad np.fromfile, this is incompatible with numba
+    if verbose >=2: start=time.time()
+
     ######################################################################
-    ## unpack dbcgrid parameters from the database accompanying db.hdr file 
-    ##  
+    ## unpack dbcgrid parameters from the database accompanying db.hdr file
+    ##
     dbcgrid, ned, ngx, nbphi, nbtheta,  xed, gxmin,gxmax, bphimin, bphimax, \
-    bthetamin, bthetamax, nline, wavel,dbtype  = dbhdr 
+    bthetamin, bthetamax, nline, wavel,dbtype  = dbhdr
 
     ## here reading data is done and stored in variable database of size (n,2*nline)
 
     if verbose >=1:
-        print("INDIVIDUAL DB file location:", fildb)      
-    ##CLE database compresion introduced numerical instabilities at small values. 
+        print("INDIVIDUAL DB file location:", fildb)
+    ##CLE database compresion introduced numerical instabilities at small values.
     ## It has been DISABLED in the CLE >=2.0.4 database building and CLEDB commit>=update-iqud
     #db=sdb_dcompress(np.fromfile(fildb, dtype=np.int16),verbose)
-    
+
     if dbtype == 0:
         db = np.fromfile(fildb, dtype=np.float32)
     elif dbtype == 1:
-        db = np.load(fildb) 
+        db = np.load(fildb)
 
     if verbose >=2:
         print("SDB_READ: ",np.int64(sys.getsizeof(db)/1.e6)," MB in DB file")
         if np.int64(sys.getsizeof(db)/1.e6) > 250 : print("SDB_READ: WARNING! Very large DB. Lots of RAM are required. Processing will be slow!")
 
-    
+
     if verbose >= 2: print("{:4.6f}".format(time.time()-start),' SECONDS FOR INDIVIDUAL DB READ\n----------')
 
     if dbtype == 0:
@@ -475,27 +480,28 @@ def obs_headstructproc(sobs_in,headkeys,params):
 
 ## unpacks the header metadata information from the observation
 ## Not fully implemented due to data and header structure not existing for DKIST.
+
     linestr = ["fe-xiii_1074","fe-xiii_1079","si-x_1430","si-ix_3934"]
     if len(sobs_in) == 2:
         nline = 2
         if params.integrated == True:                   ## for CoMP/uCoMP/COSMO
-            if hasattr(headkeys[0],'WAVETYPE') and hasattr(headkeys[1],'WAVETYPE'):
-                tline=[[i for i in linestr if str(headkeys[0].wavetype[0],'UTF-8') in i][0],[i for i in linestr if str(headkeys[1].wavetype[0],'UTF-8') in i][0]] 
+            if ('WAVETYPE' in headkeys[0].keys()) and ('WAVETYPE' in headkeys[1].keys()):
+                tline=[[i for i in linestr if headkeys[0]['WAVETYPE'] in i][0],[i for i in linestr if headkeys[1]['WAVETYPE'] in i][0]]
                 ## searches for the "wavetype" substring in the linestr list of available lines.
-                ## the headkey is a bytes type so conversion to UTF-8 is needed 
-                ## the [0] unpacks the one element lists where used. 
-            elif hasattr(headkeys[0],'FILTER') and hasattr(headkeys[1],'FILTER'):
-                tline=[[i for i in linestr if str(headkeys[0].filter[0],'UTF-8') in i][0],[i for i in linestr if str(headkeys[1].filter[0],'UTF-8') in i][0]] 
+                ## the headkey is a bytes type so conversion to UTF-8 is needed
+                ## the [0] unpacks the one element lists where used.
+            elif ('FILTER' in headkeys[0].keys()) and ('FILTER' in headkeys[1].keys()):
+                tline=[[i for i in linestr if headkeys[0]['FILTER'] in i][0],[i for i in linestr if headkeys[1]['FILTER'] in i][0]]
                 ## searches for the "FILTER" substring in the linestr list of available lines.
-                ## the headkey is a bytes type so conversion to UTF-8 is needed 
-                ## the [0] unpacks the one element lists where used. 
+                ## the headkey is a bytes type so conversion to UTF-8 is needed
+                ## the [0] unpacks the one element lists where used.
             else:
                 if params.verbose >= 2: print("OBS_HEADSTRUCTPROC: FATAL! Can't read line information from keywords.")
                 return -1     #catastrophic exit
         else:
             tline=[linestr[0],linestr[1]]   ## for Cryo-NIRSP; static! no keywords yet implemented
     elif len(sobs_in) == 1:
-        nline=1                                
+        nline=1
         tline=["fe-xiii_1074"]   ## for Cryo-NIRSP; static! no keywords yet implemented
         ##Placeholder: one line setup for integrated or iuqd CoMP/uCoMP/COSMO data not yet implemented
 
@@ -505,7 +511,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
         # placeholder for [update issuemask]
         return -1        #catastrophic exit
 
-    if params.verbose >= 1: 
+    if params.verbose >= 1:
         print('We are inverting observations of',nline,'coronal line(s) ')
         if nline >= 1:
             if   tline[0] == linestr[0]:
@@ -526,62 +532,63 @@ def obs_headstructproc(sobs_in,headkeys,params):
                 elif tline[1] == linestr[3]:
                     print('Line 2: Si IX   3934.3nm')
 
-## array dimensions! 
-    nx,ny=sobs_in[0].shape[0:2] 
-    #nx,ny=sobs_in[0].shape[0:2] if sobs_in[0].shape[0] == headkeys[0].naxis1[0] and sobs_in[0].shape[1] == headkeys[0].naxis2[0] else print("Mismatch in array shapes; Fix before continuing") ## alternatively, these can be read from naxis[1-3]; Will be updfated when keywords are known for all sources
+## array dimensions!
+    nx,ny=sobs_in[0].shape[0:2]
+    #nx,ny=sobs_in[0].shape[0:2] if sobs_in[0].shape[0] == headkeys[0]['NAXIS1'] and sobs_in[0].shape[1] == headkeys[0]['NAXIS2'] else print("Mismatch in array shapes; Fix before continuing") ## alternatively, these can be read from naxis[1-3]; Will be updfated when keywords are known for all sources
     if params.integrated != True:
         nw=sobs_in[0].shape[2]
-        #nw=sobs_in[0].shape[2] if sobs_in[0].shape[2] == headkeys[0].naxis3[0] else print("Mismatch in array shapes; Fix before continuing")
+        #nw=sobs_in[0].shape[2] if sobs_in[0].shape[2] == headkeys[0]['NAXIS3'] else print("Mismatch in array shapes; Fix before continuing")
     else:
         nw=1                        ## For line-integrated data; dont set 0 or arrays cant initialize
 
 ## array coordinate keywords
 ## These needs to be changed based on observation. For CLE this is normally the information in GRID.DAT
-    if headkeys[0].instrume == "CLE-SIM" or headkeys[0].instrume  == "MUR-SIM":   #CASE 1: Simulated OBSERVATIONS  
-        crpix1 = headkeys[0].crpix1                                                           ## Rerefence pixels along all dimensions
-        crpix2 = headkeys[0].crpix2
-        crpix3 = [np.int32(headkeys[0].crpix3),np.int32(headkeys[1].crpix3)]              ## two lines have different wavelength parameters
+    if headkeys[0]['INSTRUME'] == "CLE-SIM" or headkeys[0]['INSTRUME']  == "MUR-SIM":            ## CASE 1: Simulated OBSERVATIONS  
+        crpix1 = headkeys[0]['CRPIX1']                                                           ## Rerefence pixels along all dimensions
+        crpix2 = headkeys[0]['CRPIX2']
+        crpix3 = [np.int32(headkeys[0]['CRPIX3']),np.int32(headkeys[1]['CRPIX1'])]               ## two lines have different wavelength parameters
 
 
-        crval1 = np.float32(headkeys[0].crval1)                                               ## solar/wavelength coordinates at crpixn in r_sun/angstrom; 
-        crval2 = np.float32(headkeys[0].crval2)
-        crval3 = [np.float32(headkeys[0].crval3), np.float32(headkeys[1].crval3)] 
+        crval1 = np.float32(headkeys[0]['CRVAL1'])                                               ## solar/wavelength coordinates at crpixn in r_sun/angstrom; 
+        crval2 = np.float32(headkeys[0]['CRVAL2'])
+        crval3 = [np.float32(headkeys[0]['CRVAL3']), np.float32(headkeys[1]['CRVAL3'])]
 
-        cdelt1 = np.float32(headkeys[0].cdelt1)                                               ## spatial/spectral resolution in R_sun/angstrom
-        cdelt2 = np.float32(headkeys[0].cdelt2)
-        cdelt3 = [np.float32(headkeys[0].cdelt3), np.float32(headkeys[1].cdelt3)]                                 
+        cdelt1 = np.float32(headkeys[0]['CDELT1'])                                               ## spatial/spectral resolution in R_sun/angstrom
+        cdelt2 = np.float32(headkeys[0]['CDELT2'])
+        cdelt3 = [np.float32(headkeys[0]['CDELT3']), np.float32(headkeys[1]['CDELT3'])]
 
-    elif (str(headkeys[0].instrume[0], "UTF-8") == "COMP"):                       #CASE 2: COMP OBSERVATIONS
+    elif (headkeys[0]['INSTRUME'] == "COMP"):                                                 ## CASE 2: COMP OBSERVATIONS
 
-        crpix1 = headkeys[0].crpix1[0]                                                        ## Comp takes reference at center
-        crpix2 = headkeys[0].crpix2[0]
+        crpix1 = headkeys[0]['CRPIX1']                                                        ## Comp takes reference at center
+        crpix2 = headkeys[0]['CRPIX2']
         crpix3 = [0,0]                                                                        ## not used here ## two lines have different wavelength parameters
 
-        crval1 = np.float32(headkeys[0].crval1[0]*720/695700.0)                               ## solar coordinates at crpixn in r_sun; from -310.5*4.46 ##arcsec to R_sun conversion via 720/695700
-        crval2 = np.float32(headkeys[0].crval2[0]*720/695700.0) 
-        crval3 = [np.float32(headkeys[0].wave_ref[0]), np.float32(headkeys[1].wave_ref[0])]   ## not really used
+        crval1 = np.float32(headkeys[0]['CRVAL1']*720/695700.0)                               ## solar coordinates at crpixn in r_sun; from -310.5*4.46 ##arcsec to R_sun conversion via 720/695700
+        crval2 = np.float32(headkeys[0]['CRVAL2']*720/695700.0)
+        crval3 = [np.float32(headkeys[0]['WAVE_REF']), np.float32(headkeys[1]['WAVE_REF'])]   ## not really used
 
-        cdelt1 = np.float32(headkeys[0].cdelt1[0]*720/695700.0)                               ## COMP Cdelt in R_sun
-        cdelt2 = np.float32(headkeys[0].cdelt2[0]*720/695700.0) 
+        cdelt1 = np.float32(headkeys[0]['CDELT1']*720/695700.0)                               ## COMP Cdelt in R_sun
+        cdelt2 = np.float32(headkeys[0]['CDELT2']*720/695700.0)
         cdelt3 = [0.0,0.0]                                                                    ## not used for integrated data such as CoMP
-    
-    elif (str(headkeys[0].instrume[0], "UTF-8") == "UCoMP"):                       #CASE 3: uCoMP OBSERVATIONS;; not definitive. based on Steve's processing output keywords
 
-        crpix1 = nx/2                                                                         ## Comp takes reference at center
-        crpix2 = ny/2
+    elif (headkeys[0]['INSTRUME'] == "UCoMP"):                                                ##CASE 3: uCoMP OBSERVATIONS;; 
+
+        crpix1 = headkeys[0]['CRPIX1']                                                        ## Comp takes reference at center
+        crpix2 = headkeys[0]['CRPIX2']
         crpix3 = [0,0]                                                                        ## not used here ## two lines have different wavelength parameters
 
-        crval1 = 0                                                                            ## solar coordinates at crpixn in r_sun; from -310.5*4.46 ##arcsec to R_sun conversion via 720/695700
-        crval2 = 0
-        crval3 = [np.float32(headkeys[0].filter[0]), np.float32(headkeys[1].filter[0])]   ## not really used
+        crval1 = np.float32(headkeys[0]['CRVAL1']*720/695700.0)                               ## solar coordinates at crpixn in r_sun; from -310.5*4.46 ##arcsec to R_sun conversion via 720/695700
+        crval2 = np.float32(headkeys[0]['CRVAL2']*720/695700.0)
+        crval3 = [np.float32(headkeys[0]['FILTER']), np.float32(headkeys[1]['FILTER'])]   ## not really used
 
-        cdelt1 = np.float32(headkeys[0].cdelt1[0]*720/695700.0)                               ## COMP Cdelt in R_sun
-        cdelt2 = np.float32(headkeys[0].cdelt1[0]*720/695700.0) 
-        cdelt3 = [0.0,0.0]     
-    elif (str(headkeys[0].instrume[0], "UTF-8") == "Cryo-NIRSP"):                 #CASE 3: Cryo-NIRSP OBSERVATIONS
+        cdelt1 = np.float32(headkeys[0]['CDELT1']*720/695700.0)                               ## COMP Cdelt in R_sun
+        cdelt2 = np.float32(headkeys[0]['CDELT1']*720/695700.0) 
+        cdelt3 = [0.0,0.0]
+
+    elif (headkeys[0]['INSTRUME'] == "Cryo-NIRSP"):                 #CASE 3: Cryo-NIRSP OBSERVATIONS
         ##To be updated
         if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL! Cryo-NIRSP header not yet implemented")
-    else: 
+    else:
         if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL! Observation keywords not recognised.") ## only CoMP, MURAM, and CLE examples are currently implemented
 
 ## Additional keywords of importance that might or might not be included in observations.
@@ -593,7 +600,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
 ## instrumental line broadening/width should be read and quantified here
 ## not clear at this point if this will be a constant or a varying keyword
 ## a 0 value will skip including asn instrumental contribution to computing non-thermal widths
-    instwidth = params.instwidth 
+    instwidth = params.instwidth
 
     ## pack the decoded keywords into a comfortable python list variable to feed to downstream functions/modules
     return nx,ny,nw,nline,tline,crpix1,crpix2,crpix3,crval1,crval2,crval3,cdelt1,cdelt2,cdelt3,linpolref,instwidth
@@ -614,7 +621,7 @@ def obs_calcheight(keyvals):
     crval1,crval2=keyvals[8:10]
     cdelt1,cdelt2=keyvals[11:13]
 
-    if crpix1 != 0: 
+    if crpix1 != 0:
         crval1 = crval1 - (crpix1 * cdelt1)
     if crpix2 != 0:
         crval2 = crval2 - (crpix2 * cdelt2)
@@ -641,6 +648,7 @@ def obs_integrate(sobs_in,keyvals):
 ## The lines are subscribed via ZZ. The last dimension is always 4 corresponding to Stokes IQUV 
 ## the output arrays are of last diimension 4 or 8 based on input. These are subscribed via iterating ZZ; 0:4 or 4:8 via (4*zz):(4*(zz+1))
 
+##
 ######################################################################
 ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
     nx,ny,nw = keyvals[0:3]
@@ -650,7 +658,7 @@ def obs_integrate(sobs_in,keyvals):
     background=np.zeros((nx,ny,nline*4),dtype=np.float32)     ## output array to record the background levels in stokes I,Q,U,V, in that order
     rms=np.ones((nx,ny,nline*4),dtype=np.float32)             ## output array to record RMS statistics of the profile
     #cdf=np.zeros((nx,ny,nw),dtype=np.float32)                 ## internal array to store CDF profiles
-    #issuemask=np.zeros((4),dtype=np.int32)                   ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
+    #issuemask=np.zeros((4),dtype=np.int32)                    ## mask to test the statistical significance of the data: mask[0]=1 -> no signal above background in stokes I; mask[1]=1 -> distribution is not normal (skewed); mask[2]=1 line center (observed) not found; mask[3]=1=2 one or two fwhm edges were not found
 
 ######################################################################
 ## integrate for total profiles.
@@ -660,10 +668,10 @@ def obs_integrate(sobs_in,keyvals):
     p         = multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
-    
+
     for zz in range(nline): ## to travel through the two lines
-        for xx in range(nx): 
-            for yy in range(ny): 
+        for xx in range(nx):
+            for yy in range(ny):
                 arg_array.append((xx,yy,zz,nw,sobs_in[zz][xx,yy,:,:]))
 
     rs        = p.starmap(obs_integrate_work_1pix,arg_array)
@@ -681,7 +689,7 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,sobs_in_1pix):
     if ((np.count_nonzero(sobs_in_1pix[:,0])) and (np.isfinite(sobs_in_1pix[:,:]).all())):  ## enter only for pixels that have counts recorded
         #compute the rough cdf distribution of the stokes I component to get a measure of the statistical noise.
         cdf = obs_cdf(sobs_in_1pix[:,0]) ## keep CDF as a full array to 
-    
+
         ## compute the 1%-99% distributions to measure the quiet noise.
         #l0=np.argwhere(np.abs(cdf[xx,yy,:]-0.01) == np.min(np.abs(cdf[xx,yy,:]-0.01)))[-1][0]
         #r0=np.argwhere(np.abs(cdf[xx,yy,:]-0.99) == np.min(np.abs(cdf[xx,yy,:]-0.99)))[-1][0]
@@ -690,29 +698,29 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,sobs_in_1pix):
         ## lr0 does a combined left-toright sort to not do repetitive argwhere calls. T
         ##he two ends of lr0 give the start and end of above noise signal.
         lr0 = np.argwhere((np.abs(cdf) > 0.01) & (np.abs(cdf) <=0.99))
-            
-        ## remove the background noise from the profile. 
+
+        ## remove the background noise from the profile.
         ## Take all the 4 positions denoting the IQUV measurements in one call.
         ## sobs_in subscripted by zz,xx,yy, thus the sum is over columns(axis=0) over the wavelength range.
-        ## the sums give 4 values (for each iquv spectral signal) of noise before and after the line emission in the wavelength range. 
+        ## the sums give 4 values (for each iquv spectral signal) of noise before and after the line emission in the wavelength range.
         ## Finaly it divides by the amount of points summed over for each components.
-        background_1pix = (np.sum(sobs_in_1pix[0:lr0[0,0]+1,:],axis=0)+np.sum(sobs_in_1pix[lr0[-1,0]:,:],axis=0))/(nw-lr0[-1,0]+lr0[0,0]+1)                  
+        background_1pix = (np.sum(sobs_in_1pix[0:lr0[0,0]+1,:],axis=0)+np.sum(sobs_in_1pix[lr0[-1,0]:,:],axis=0))/(nw-lr0[-1,0]+lr0[0,0]+1)
         ## Temporary array to store the background subtracted spectra. All four component done in one call.
         tmp2=sobs_in_1pix[:,:]-background_1pix
-        
+
         ##Now integrate/sum the four profiles
         ## tmp2 [:,0] --> Stokes I 
         sobs_tot_1pix=np.zeros((4),dtype=np.float32)
         sobs_tot_1pix[0]=np.sum(tmp2[tmp2[:,0]>0,0])           ## background subtraction can introduce negative values unphysical for I; Sum only positive counts;
-    
+
         ## tmp2 [:,3] --> Stokes V
         svmin=np.argwhere(tmp2[:,3] == np.min(tmp2[:,3]) )[-1,0]     ## position of minimum/negative Stokes V lobe
         svmax=np.argwhere(tmp2[:,3] == np.max(tmp2[:,3]) )[-1,0]     ## position of maximum/positive Stokes V lobe
         sobs_tot_1pix[3]=(np.sign(svmin-svmax))*np.sum(np.fabs(tmp2[:,3]))   ## Sum the absolute of Stokes V signal and assign sign based on svmin and svmax lobe positions
-    
+
         ## tmp2 [:,1:3] --> Stokes Q and U
         sobs_tot_1pix[1:3]=np.sum(tmp2[:,1:3],axis=0) ## sum both components in one call. These can take negative values, no need for precautions like for Stokes I.
-        
+
         ## Compute the rms for each quantity. Ideally the background should be the same in all 4 measurements corresponding to one line.
         ## Leave here commented lines for clarity of how RMS is computed.
         ## First, here is variance of each state with detector/physical counts
@@ -724,7 +732,7 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,sobs_in_1pix):
         # rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt(var)
         #rms[xx,yy,(4*zz):(4*(zz+1))]=np.sqrt((background[xx,yy,0]/sobs_tot[xx,yy,(4*zz):(4*(zz+1))]**2 + background[xx,yy,0]/sobs_tot[xx,yy,0]**2)*((sobs_tot[xx,yy,(4*zz):(4*(zz+1))]/sobs_tot[xx,yy,0])**2)) ## One line rms calculation; this is to save as much computation time possible. Due to parallelization, this calculation needs to be done separately. see below
         #rms[xx,yy,i+(4*zz)]=np.sqrt(((sobs_in[zz][xx,yy,0:l0+1,i]**2).mean()+(sobs_in[zz][xx,yy,r0:,i]**2).mean())/2.) ## canonical RMS estimation; not the same as implementation above
-        
+
         ## distribution standard deviation 
         # for kk in range(4):
         #     rms[xx,yy,(4*zz)+kk] = np.std(sobs_in[zz][xx,yy,:,kk]/np.max(np.abs(sobs_in[zz][xx,yy,:,kk]))) ##a standard deviation in normalized units as normalized data is matched in cledb_matchiquv
@@ -732,7 +740,7 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,sobs_in_1pix):
     # else:
     #     issuemask.....
 
-        rms_1pix = np.sqrt((background_1pix[0]/sobs_tot_1pix[:]**2 + background_1pix[0]/sobs_tot_1pix[0]**2)*((sobs_tot_1pix[:]/sobs_tot_1pix[0])**2)) ## One line rms calculation based on the above formulation    
+        rms_1pix = np.sqrt((background_1pix[0]/sobs_tot_1pix[:]**2 + background_1pix[0]/sobs_tot_1pix[0]**2)*((sobs_tot_1pix[:]/sobs_tot_1pix[0])**2)) ## One line rms calculation based on the above formulation
     else:
         return xx,yy,zz,np.zeros((4),dtype=np.float32),np.zeros((4),dtype=np.float32),np.zeros((4),dtype=np.float32)
 
@@ -755,7 +763,7 @@ def obs_qurotate(sobs_tot,keyvals):
     cdelt1,cdelt2=keyvals[11:13]
     linpolref=keyvals[14]
 
-    if crpix1 != 0: 
+    if crpix1 != 0:
         crval1 = crval1 - (crpix1 * cdelt1)
     if crpix2 != 0:
         crval2 = crval2 - (crpix2 * cdelt2)
@@ -768,7 +776,7 @@ def obs_qurotate(sobs_tot,keyvals):
             aobs[xx,yy]= - np.arctan2((crval1 +xx*cdelt1),(crval2 +yy*cdelt2)) ## assuming the standard convention for arcsecond coordinates <--> trigonometric circle
             if (aobs[xx,yy] <0):
                 aobs[xx,yy] =2*np.pi + aobs[xx,yy]
-            ## if reference direction is horizontal/trigonometric, angle will >360; 
+            ## if reference direction is horizontal/trigonometric, angle will >360;
             ## reduce the angle to 1 trigonometric cirle unit for easier reading.
             if aobs[xx,yy] < linpolref:
                 aobs[xx,yy] = 2*np.pi-aobs[xx,yy]
@@ -782,7 +790,7 @@ def obs_qurotate(sobs_tot,keyvals):
             sobs_totrot[xx,yy,2]=sobs_tot[xx,yy,1]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,2]*np.cos(2*aobs[xx,yy])
             sobs_totrot[xx,yy,5]=sobs_tot[xx,yy,5]*np.cos(2*aobs[xx,yy])-sobs_tot[xx,yy,6]*np.sin(2*aobs[xx,yy])
             sobs_totrot[xx,yy,6]=sobs_tot[xx,yy,5]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,6]*np.cos(2*aobs[xx,yy])
-            
+
             ## It would be more efficient to normalize sobs_totrot here, but then the normalization factor can not be easily transported to cledb_quderotate to bring back the profiles that can be compared to sobs_tot.
             ## The normalization is done inside cledb_matchiquv or cledb_matchiqud
             ## sobs_totrot[xx,yy,:]=sobs_totrot[xx,yy,:]/sobs_totrot[xx,yy,np.argwhere(sobs_totrot[xx,yy,:] == np.max(sobs_totrot[xx,yy,:]))[0,0]]
@@ -814,20 +822,20 @@ def obs_dens(sobs_totrot,yobs,keyvals,params):
 
     dobs=np.empty((nx,ny),dtype=np.float32)
 
-    ## theoretical chianti ratio calculations created via PyCELP or SSWIDL        
-    ## read the chianti table         
+    ## theoretical chianti ratio calculations created via PyCELP or SSWIDL
+    ## read the chianti table
     if (params.lookuptb[-4:] == ".npz"):                         ## default
         chianti_table        =   dict(np.load(params.lookuptb))  ## variables (h,den,rat) directly readable by work_1pix .files required for loading the data directly.
     else:
         if params.verbose >= 1: print("OBS_DENS: FATAL! CHIANTI look-up table not found. Is the path correct?")
-        return density                                ## a zero array at this point  
+        return density                                ## a zero array at this point
     #print(chianti_table.keys())                      ## Debug - check the arrays
-    
+
     ##  in the look-up table:
-    ## 'h' is an array of heights in solar radii ranged 1.01 - 2.00(pycelp)  
+    ## 'h' is an array of heights in solar radii ranged 1.01 - 2.00(pycelp)
     ## 'den' is an array of density (ranged 6.00 to 12.00 (pycelp) or 5.0 to 13.0 (sswidl); the broader interval is not really recommended here. 
     ## 'rat' is a 2D array containing line ratios corresponding to the density range values at each distinct height.
-    
+
     ##  To query the look-up table:
     ##  print(chia['h'],chia['h'].shape,chia['rat'].shape,chia['den'].shape)
 
@@ -840,15 +848,16 @@ def obs_dens(sobs_totrot,yobs,keyvals,params):
     ## two branches to separate slingle slits vs rasters
     arg_array = []
                                                                                               ## Raster slit branch
-    for xx in range(sobs_totrot.shape[0]): 
-        for yy in range(sobs_totrot.shape[1]): 
+    for xx in range(sobs_totrot.shape[0]):
+        for yy in range(sobs_totrot.shape[1]):
             arg_array.append((xx,yy,sobs_totrot[xx,yy,0],sobs_totrot[xx,yy,4],chianti_table,yobs[xx,yy])) # 1074/1079 ratio
 
     rs        = p.starmap(obs_dens_work_1pix,arg_array)
     p.close()
 
     for i,res in enumerate(rs):
-        xx,yy,dobs[xx,yy] = res 
+        xx,yy,dobs[xx,yy] = res
+    dobs[dobs <= 0] = 1
 
     return np.round(np.log10(dobs),3)
 ###########################################################################
@@ -858,7 +867,7 @@ def obs_dens(sobs_totrot,yobs,keyvals,params):
 ###########################################################################
 def obs_dens_work_1pix(xx,yy,a_obs,b_obs,chianti_table,y_obs):
     ## compute the ratio of the observation ## 1074/1079 fraction, same as rat component of the chianti_table 
-    
+
     ## Sanity checks at pixel level
     if b_obs == 0:                                      ## don't divide by 0
         return xx,yy,1                                  ## return 1 value <--np.log10(1) will give 0 in obs_dens
@@ -870,32 +879,32 @@ def obs_dens_work_1pix(xx,yy,a_obs,b_obs,chianti_table,y_obs):
     ## to not have to load header extensions, we hardcode the central wavelngth sampling to 1074.7 and 1079.8 respectively.
     ## Distribution center and sigma need to be changed from km/s units to nm units.
 
-    ## line ratio calculations for peak quantities only 
-    rat_obs       = a_obs/b_obs        ## requires only one input number for each line 
+    ## line ratio calculations for peak quantities only
+    rat_obs       = a_obs/b_obs        ## requires only one input number for each line
     #rat_obs_noise = rat_obs*np.sqrt((np.sqrt(a_obs)/a_obs)**2+(np.sqrt(b_obs)/b_obs)**2)    ## error propagation
-    
+
     ## another sanity check for numerical issues
     if (np.isnan(rat_obs) or np.isinf(rat_obs)):        ## discard nans and infs ratios
         return xx,yy,0                                  ## return 0 value
-    
+
     else:                                               ## main loop for valid "rat_obs" value
         ## find the corresponding height (in solar radii) for each pixel
-        subh = np.argwhere(chianti_table['h'] > y_obs)                                                                                 
-        
+        subh = np.argwhere(chianti_table['h'] > y_obs)
+
         ## if height is greater than maximum h (2.0R_sun as in the currently implemented table) just use the 2.0R_sun corresponding ratios.
-        if len(subh) == 0: 
-            subh = [-1]       
-        
+        if len(subh) == 0:
+            subh = [-1]
+
         ## make the interpolation function; Quadratic as radial density drop is usually not linear
-        ifunc = scipy.interpolate.interp1d(chianti_table['rat'][subh[0],:].flatten(),chianti_table['den'], kind="quadratic",fill_value="extrapolate")  
-        
-        ## apply the interpolation to the data 
-        dens_1pix       = ifunc(rat_obs)                                                                                      
+        ifunc = scipy.interpolate.interp1d(chianti_table['rat'][subh[0],:].flatten(),chianti_table['den'], kind="quadratic",fill_value="extrapolate")
+
+        ## apply the interpolation to the data
+        dens_1pix       = ifunc(rat_obs)
         #dens_1pix_noise = ifunc(rat_obs+rat_obs_noise) - dens_1pix
-       
+
         ## debug prints
         #print("Radius from limb: ",rpos," at pixel positions (",xx,yy,")")         ## debug
-        #print(len(subh),rpos/rsun)                                                 ## debug          
+        #print(len(subh),rpos/rsun)                                                 ## debug
         return xx,yy,dens_1pix
 ###########################################################################
 ###########################################################################

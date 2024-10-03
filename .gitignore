@@ -139,6 +139,7 @@ Untitled.ipynb
 Untitled1.ipynb
 test_2line_IQUD.ipynb
 test_2line-worker.ipynb
+test_things.ipynb
 ## output plots
 specout*.pdf
 invout*.pdf
@@ -163,3 +164,5 @@ codedoc-latex/*.bbl
 codedoc-latex/*.blg
 CLEDB_BUILD/rundb_1line_with_PyCELP.ipynb
 CLEDB_BUILD/config/pycelp/CHIANTI_10.1_database
+CLEDB_build/tmp2
+uCoMP-20240409-l2

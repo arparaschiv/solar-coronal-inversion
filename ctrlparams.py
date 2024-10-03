@@ -15,7 +15,7 @@ class ctrlparams:
         self.verbose      = 1                                                                             ## verbosity parameter
 
         ## Used in CLEDB_PREPINV
-        self.integrated   = False                                                                          ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO 
+        self.integrated   = True                                                                          ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO 
         self.dblinpolref  = 0                                                                             ## Parameter for changing the database calculation linear reference. Should not need changing in normal situations. radian units.
         self.instwidth    = 0                                                                             ## Parameter for fine-correcting non-thermal widths if instrument widths are known or computed by user. nm units.
 

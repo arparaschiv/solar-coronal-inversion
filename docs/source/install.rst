@@ -17,7 +17,8 @@ To create a local deployment use the git clone function:
 ``CLEDB_BUILD`` uses CLE precompiled GNU compatible Fortran binary executable files to generate databases. The module is run by utilizing a Bash script that enables parallel runs of serial computations. Binaries for both Darwin and Linux architectures are provided. More details are found in the :ref:`cledb_build-label` module.
 
 .. Note::
-	The CLE FORTRAN source code is not included in this package. It is hosted in a separate repository `https://github.com/arparaschiv/coronal-line-emission <https://github.com/arparaschiv/coronal-line-emission>`_.
+	The CLE FORTRAN and PyCELP source codes are not included in this package. These are hosted in a separate repositories `https://github.com/tschad/pycelp <https://github.com/tschad/pycelp>` and `https://github.com/arparaschiv/coronal-line-emission <https://github.com/arparaschiv/coronal-line-emission>`.
+
 
 
 A CLEDBenv Python Environment
@@ -61,6 +62,14 @@ If dependency problems arise for any reason, CLEDBenv can be deleted and recreat
 
 Basic Run Example
 ------------------
+
+Move in the CLEDB working directory
+	.. code-block:: bash
+       cd ./solar-coronal-inversion
+
+.. Alert::
+    PyCELP database building documentation not yet included. This section will be updated soon. The database build readme provides basic instructions. A precompiled database can be downloaded using the link in the distribution readme.
+
 
 1. Databases can be built with:
 
