@@ -67,7 +67,7 @@ Move in the CLEDB working directory
 
 .. code-block:: bash
 
-    cd ./solar-coronal-inversion
+        cd ./solar-coronal-inversion
 
 .. Danger::
     PyCELP database building documentation not yet included. This section will be updated soon. The database build readme provides basic instructions. A precompiled database can be downloaded using the link in the distribution readme.
