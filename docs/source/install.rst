@@ -66,6 +66,7 @@ Basic Run Example
 Move in the CLEDB working directory
 
 .. code-block:: bash
+
     cd ./solar-coronal-inversion
 
 .. Danger::
