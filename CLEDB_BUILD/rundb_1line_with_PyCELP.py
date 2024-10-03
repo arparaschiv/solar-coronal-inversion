@@ -12,7 +12,7 @@
 # 
 # - More information on using the PyCELP Ion class can be found in a [dedicated example notebook](https://github.com/tschad/pycelp/blob/main/examples/A_tour_of_the_Ion_class.ipynb).
 # 
-# - Last updated: 2024 June 28 -- Calculations currently use the [CHIANTI 10.1](https://www.chiantidatabase.org/chianti_download.html) database and [PyCELP](https://github.com/tschad/pycelp) commit 7f72443.
+# - Last updated: 2024 Oct. 03 -- Calculations currently use the [CHIANTI 10.1](https://www.chiantidatabase.org/chianti_download.html) database and [PyCELP](https://github.com/tschad/pycelp) commit 7f72443.
 # 
 # 
 # Contact: Alin Paraschiv, NSO ---- arparaschiv at nso edu
@@ -23,7 +23,7 @@
 #             <i class="fa fa-exclamation-triangle fa-2x"></i>
 #         </div>
 #         <div class="col-xs-11">
-#                 <strong>Attention:</strong> these calculations are intensive. Database generation is generally only needed once.
+#                 <strong>Attention:</strong> these calculations are intensive. Database generation is generally only needed once per CLEDB installation.
 #         </div>   
 #     </div> 
 # </div>
@@ -33,9 +33,6 @@
 
 import pycelp
 import numpy as np
-#import matplotlib.pyplot as plt
-#plt.rcParams['figure.dpi'] = 150
-#%matplotlib widget
 import os,sys,shutil
 import pickle
 import multiprocessing
@@ -46,22 +43,27 @@ os.environ["XUVTOP"] = './config/pycelp/CHIANTI_10.1_database/' ## If you havent
 # In[ ]:
 
 
-def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
+def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-4, la = 25):
     ## Constants and useful variables with respect to this specific calculation
     linestr = [["fe-xiii_1074/","fe-xiii_1079/","si-x_1430/","si-ix_3934/","mg-viii_3028/"],
               ["fe_13",         "fe_13",        "si_10",     "si_9",       "mg_8"       ],
               ["10746",         "10798",        "14300",     "39281",      "30276"]]
 
-    print("############# CLEDB BUILD ######################################")
-    print("The database inversion methodology is ready for Fe XIII line pairs.")
-    print("Other lines, even if available are not yet ready for production runs")
-    print("################################################################")
+    print("#################################################################")
+    print("############## CLEDB BUILD ######################################")
+    print("The inversion methodology is ready for the IR Fe XIII line pairs.")
+    print("Other lines, even if available, are not ready for production runs")
+    print("#################################################################")
+    print("#################################################################")
     if (na < 1) or (na > 5):
-       return "Line option incorrect, or no line given! Aborting"
+       return "CLEDB_BUILD Error: Line option incorrect, or no line given! Aborting"
     else:
-       print("We are building a database of " + linestr[0][na-1][:-6] + " at " + linestr[2][na-1][:-1] + " nm.")
+       print("~~~~ We are building a database of " + linestr[0][na-1][:-6] + " at " + linestr[2][na-1][:-1] + " nm. ~~~~~")
 
-    la                       = 25                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 80 levels should be enough. default 25 levels is underoptimal!
+    if (la > 100):
+        print("CLEDB_BUILD Warning: The number of levels will extremely increase execution time to unfeasible amounts on personal computers when using the default DB.INPUT configuration.")
+        #la                   = 25                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 80 levels should be enough. default 25 levels is underoptimal!
+        print()
     sel_ion                  = pycelp.Ion(linestr[1][na-1],nlevels = la)
     electron_temperature     = sel_ion.get_maxtemp() ## kelvins; maximum formation temperature for selected ion. We will do all calculations under this assumption.This implies we are approximating density only corresponding to plasma around this temperature.
     magnetic_field_amplitude = 1.0                   ## Calculate the database for 1G fields, then just scale linearly with Stokes V amplitude in CLEDB
@@ -120,7 +122,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
     #     pbar.update()
     # pbar.close()
 
-    return "Database calculations completed."
+    return "CLEDB_BUILD: Database calculations completed."
 
 
 def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature,magnetic_field_amplitude,la,linestr,na):
@@ -192,16 +194,21 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
 
 
 if len(sys.argv) == 2:             ## script is appended, so 1 parameter is length 2
-    na  = np.int32(sys.argv[1])  
+    na  = np.int32(sys.argv[1])
     gen_pycelp_db(na)
 elif len(sys.argv) == 3:           ## script is appended, so 2 parameters is length 3
-    na  = np.int32(sys.argv[1])  
+    na  = np.int32(sys.argv[1])
     mpc = np.int32(sys.argv[2])
     gen_pycelp_db(na,mpc)
-elif len(sys.argv) > 2:
-    print("Too many input arguments")
-else:    
-    print("No arguments given. Database needs a line selection!")
+elif len(sys.argv) == 3:           ## script is appended, so 3 parameters is length 4
+    na  = np.int32(sys.argv[1])
+    mpc = np.int32(sys.argv[2])
+    la  = np.int32(sys.argv[3])
+    gen_pycelp_db(na,mpc,la)
+elif len(sys.argv) > 4:
+    print("CLEDB_BUILD error: Input not understood. Too many arguments given.")
+else:
+    print("CLEDB_BUILD error: No arguments given. Database needs a line selection!")
 
 
 # In[ ]:
@@ -215,6 +222,9 @@ else:
 
 ### debug codes
 
+#import matplotlib.pyplot as plt
+#plt.rcParams['figure.dpi'] = 150
+#%matplotlib widget
 
 # In[ ]:
 

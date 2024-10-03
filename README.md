@@ -37,7 +37,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 ### **Examples**
 Install the CLEDB distribution, generate databases, and update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) .
 
-The new PyCELP database generation tool is recommended. It is more precise, but requires some computational resources for calculations. [A default PyCELP generated database can be found here to help get started (33Gb download)](https://drive.google.com/file/d/130rnM471FiVw9UQ8YfnaAbdh5_TTOQVO/view?usp=sharing). Just extract the two database folders in the CLEDB directory.
+The new PyCELP database generation tool is recommended. It is more precise, but requires some computational resources for calculations. [A default PyCELP generated database can be found here to help get started (33Gb download)](https://drive.google.com/file/d/130rnM471FiVw9UQ8YfnaAbdh5_TTOQVO/view?usp=sharing). Just extract the two database folders in the CLEDB_BUILD directory and you should be set to running the examples.
 
 Afterward, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
