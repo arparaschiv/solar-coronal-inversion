@@ -63,9 +63,9 @@ If dependency problems arise for any reason, CLEDBenv can be deleted and recreat
 Basic Run Example
 ------------------
 
-Move in the CLEDB working directory
+Move to the CLEDB working directory
 
-.. code-block:: bash
+    .. code-block:: bash
 
         cd ./solar-coronal-inversion
 
