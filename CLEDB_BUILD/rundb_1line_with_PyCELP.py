@@ -95,15 +95,14 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-1):
         f.write( '  ' + str(np.round(thetac[0],8)) + '  ' + str(np.round(thetac[-1],8)) + '\n' )
         f.write( '  ' + "1" + '\n' )
         f.write( '  ' + str(np.round(sel_ion.get_emissionLine((np.int32(linestr[2][na-1]))).wavelength_in_air,8)) + '\n' )
-        #f.write( '  ' + linestr[2][na-1] + '\n' )
         f.write( '  ' + "1")      ## this denotes a pycelp database
 
     ## 5 level loop to compute the database entries
     ## loop has the order height --> density --> losdepth --> phi--> theta for PyCELP efficiency
 
     ## set up the cpu worker and argument arrays
-    if mpc > multiprocessing.cpu_count()-1:
-        mpc   = multiprocessing.cpu_count()-1
+    if mpc > multiprocessing.cpu_count()-4:
+        mpc   = multiprocessing.cpu_count()-4
         print("More CPU threads than available are requested! Using system max - 1 threads.")
 
     p         = multiprocessing.Pool(processes = mpc, maxtasksperchild = 10) ## dynamically defined from system query as total CPU core number - 1
