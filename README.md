@@ -1,6 +1,7 @@
 # **CLEDB Coronal Magnetic Field Database Inversion**
 [![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 [![Documentation Status](https://readthedocs.org/projects/cledb/badge/?version=latest)](https://cledb.readthedocs.io/en/latest/?badge=latest)
+![Run Tests](https://github.com/arparaschiv/solar-coronal-inversion/actions/workflows/test.yml/badge.svg)
 [![ADS](https://img.shields.io/badge/NASA%20ADS-SoPhys%2C%20V297%2C%20%2063-red)](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract)
 
 
@@ -14,8 +15,6 @@
 #### **Main aim:**
 Invert coronal vector magnetic field products from observations of polarized light.
 The algorithm takes arrays of one or two sets of spectro-polarimetric Stokes IQUV observations to derive line of sight and/or full vector magnetic field products.
-
-**WARNING: For the remainder of 2024 CLEDB is in active development in preparation for supporting DKIST Cryo-NIRSP data. Issues might appear in between updates. Please get in contact if noticing weird behavior.**
 
 #### **Applications:**
 Inverting magnetic field information from spectro-polarimetric solar coronal observations from instruments like DKIST Cryo-NIRSP; DL-NIRSP; MLSO COMP/UCOMP.
@@ -62,13 +61,17 @@ ii. Download the file using its gdrive FILE_ID from the download link (*1.a test
 
     gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
 
-Note: The script versions of all tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs. 
+Note: The script versions of all tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs.
 These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated [README-SLURM](./README-SLURM.md) for additional information.
 
 Both test examples are expected to fully execute with parallel job spawning via [Numba/JIT](https://numba.readthedocs.io/en/stable/) in a correct installation.
 
+### **Contributions**
 
-### **Works that fundament and support the CLEDB methodology**
+We welcome contribution ideas and even implementations of new functionalities and optimizations to be included in CLEDB. This can be done through a pull-merge request or by contacting the developers directly to discuss your plans and ideas.
+The developers will strive to accept and implement contributions as long as they fit within the scope of the software and are adhering to the code of conduct.
+
+### **Acknowledgement: Works that fundament and support the CLEDB methodology**
 
 1. [Paraschiv & Judge, SolPhys, 2022](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract) covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 2. [Judge, Casini, & Paraschiv, ApJ, 2021](https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract) discussed the importance of scattering geometry when solving for coronal magnetic fields.

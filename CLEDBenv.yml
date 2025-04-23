@@ -4,16 +4,19 @@ channels:
  - numba
  - conda-forge
 dependencies:
- - python=3.10
- - numpy=1.23
- - numba=0.56
- - pyyaml         ## used only in ctrlparams for NUMBA global options
- - scipy=1.9
- - ipython=8.6
- - ipympl
- - jupyter
- - jupyterlab
- - matplotlib
-# - sphinx=5.0.2           ## Not required by CLEDB; used only to build the documentation; see more in docs/requirements.txt
-# - myst-parser=0.18.1     ## Not required by CLEDB; used to add markdown parsing to documentation building.
-# - sphinx-rtd-theme=1.1.1 ## Not required by CLEDB; theme for the documentation
+ - python  = 3.13
+ - numpy   = 2.1
+ - numba   = 0.61
+ - scipy   = 1.15
+ - astropy = 7.0
+ - pyyaml           ## 6.0.2 used only in ctrlparams for NUMBA global options
+ - ipython          ## 8.34
+ - ipympl           ## 0.96
+-  tqdm             ## 4.67
+ - jupyter          ## 1.1.1
+ - jupyterlab       ## 4.3.5
+ - matplotlib       ## 3.10.0
+# - pytest           ## 8.3.5  ## necesary only for unit testing.
+# - sphinx=5.0.2           ## 8.23  Not required by CLEDB; used only to build the documentation locally; see more in docs/requirements.txt
+# - myst-parser=0.18.1     ## 4.0.1 Not required by CLEDB; used to add markdown parsing to documentation building.
+# - sphinx-rtd-theme=1.1.1 ## 3.0.2 Not required by CLEDB; theme for the documentation

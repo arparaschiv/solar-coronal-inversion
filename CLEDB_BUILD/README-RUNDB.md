@@ -38,7 +38,7 @@ Three versions are provisioned:
 - With PyCELP: run any type of job via (see notes below about options):
 
         conda activate CLEDBenv
-        python rundb_1line_with_PyCELP.py in1 in2 in3
+        python rundb_1line_with_PyCELP.py in1 in2(Optional) in3(optional)
         or
         nohup python rundb_1line_with_PyCELP.py in1 in2 in3 & (This frees the terminal and appends all output to a text file called nohup in the directory from which the script is run.)
 
@@ -75,15 +75,15 @@ Production Databases generated via PyCELp calculation:
 
     - in1 is a mandatory input, while in2 and in3 are optional.
 
-    - in1 -- The desired line to calculate. Options 1-4 correspond to:
+    - **in1** -- The desired line to calculate. Options 1-4 correspond to:
         1:    FE XIII 1074.7nm
         2:    FE XIII 1079.8nm
         3:    Si X    1430.1nm
         4:    Si IX   3934.3nm
 
-    - in2 -- (optional) The number of CPU threads to use. Valid options are 1 to n - 4 threads, where n represents the available system threads. If the number is bigger than available threads, the script will use n-4 threads to leave room for cpu task overhead.  By default, the script will scale n-4 parallel threads to run calculations.
+    - **in2** -- (optional) The number of CPU threads to use. Valid options are 1 to n - 4 threads, where n represents the available system threads. If the number is bigger than available threads, the script will use n-4 threads to leave room for cpu task overhead.  By default, the script will scale n-4 parallel threads to run calculations.
 
-    - in3 -- (optional) The number of atomic levels to include in calculations. The script is internally configured to run with 25 atomic levels. Although this ensures a fast execution for the default DB.INPUT configuration, the computed databases will not be as accurate for precision inversion calculations. About 80 levels minimum are required for a quantitative analysis level database, although this is rather computationally demanding. A precompiled 80 level database can be downloaded from the link provided in the main CLEDB readme.
+    - **in3** -- (optional) The number of atomic levels to include in calculations. The script is internally configured to run with 25 atomic levels. Although this ensures a fast execution for the default DB.INPUT configuration, the computed databases will not be as accurate for precision inversion calculations. About 80 levels minimum are required for a quantitative analysis level database, although this is rather computationally demanding. A precompiled 80 level database can be downloaded from the link provided in the main CLEDB readme.
 
 Alternative databases  generated via CLE calculations --**Deprecated**--
 - The *[rundb_1line_with_CLE.sh](./rundb_1line_with_CLE.sh)* script requires two manual keyboard user inputs.

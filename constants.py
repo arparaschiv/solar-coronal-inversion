@@ -1,17 +1,32 @@
 ## -*- coding: utf-8 -*-
 ## """
-## @author: Alin Paraschiv paraschiv.alinrazvan+cledb@gmail.com
+## @author: Alin Paraschiv
 ##
 ## """
-## TODO: update final form of constants and units
-
-## To load the class: 
-#consts=Constants()
-#print(vars(consts))
-#print(consts.__dict__)
 
 class Constants:
+    """
+    A class that defined and transports constants to inversion modules
+
+    Two sets of constants are loaded. General physical constants and ion specific constants based on the specific line requiested.
+
+    To load the class:
+    $consts=Constants()
+    $print(vars(consts))
+    $print(consts.__dict__)
+
+    Attributes:
+    -----------
+    ion (string): The specific spectroscopic line to load. The individual accepted strings are:
+                fe-xiii_1074
+                fe-xiii_1079
+                si-x_1430
+                si-ix_3934
+    """
     def __init__(self,ion):
+        """
+        Main constants initialization function.
+        """
         ## Solar units in different projections
         #self.solar_diam_arc = 1919
         #self.solar_diam_deg = self.solar_diam_arc/3600.
@@ -28,11 +43,11 @@ class Constants:
 
         # ion/line specific constants
         if (ion == "fe-xiii_1074"):
-            self.ion_temp = 6.25                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg] 
-            self.line_ref = 1074.62686                ## CLE Ion referential wavelength [nm]
+            self.ion_temp = 6.22                      ## Ion temperature SI [K]; li+2017<--Chianti
+            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg]
+            self.line_ref = 1074.6153                 ## CLE/pycelp Ion referential wavelength [nm]
             #self.line_ref = 1074.68                   ## Ion referential wavelength [nm]
-            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5   ## Line thermal width 
+            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5   ## Line thermal width
             self.F_factor= 0.0                             ## Dima & Schad 2020 Eq. 9
             self.gu = 1.5                                  ## upper level g factor
             self.gl = 1                                    ## lower level g factor
@@ -41,11 +56,11 @@ class Constants:
             self.g_eff=0.5*(self.gu+self.gl)+0.25*(self.gu-self.gl)*(self.ju*(self.ju+1)-self.jl*(self.jl+1))    ## LS coupling effective Lande factor; e.g. Landi& Landofi 2004 eg 3.44; Casini & judge 99 eq 34
 
         elif (ion == "fe-xiii_1079"):
-            self.ion_temp = 6.25                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg] 
-            self.line_ref = 1079.78047                ## CLE Ion referential wavelength [nm]
+            self.ion_temp = 6.22                      ## Ion temperature SI [K]; li+2017<--Chianti
+            self.ion_mass = 55.847*1.672621E-27       ## Ion mass SI [Kg]
+            self.line_ref = 1079.7803                 ## CLE/pycelp Ion referential wavelength [nm]
             #self.line_ref = 1079.79                   ## Ion referential wavelength [nm]
-            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width 
+            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width
             self.F_factor= 0.0                        ## Dima & Schad 2020 Eq. 9
             self.gu = 1.5                             ## upper level g factor
             self.gl = 1.5                             ## lower level g factor
@@ -55,10 +70,10 @@ class Constants:
 
         elif (ion == "si-x_1430"):
             self.ion_temp = 6.15                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg] 
+            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg]
             self.line_ref = 1430.2231                 ## CLE Ion referential wavelength [nm] ;;needs to be double-checked with most current ATOM
             #self.line_ref = 1430.10                   ## Ion referential wavelength [nm]
-            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width 
+            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width
             self.F_factor= 0.5                        ## Dima & Schad 2020 Eq. 9
             self.gu = 1.334                           ## upper level g factor
             self.gl = 0.665                           ## lower level g factor
@@ -68,10 +83,10 @@ class Constants:
 
         elif (ion == "si-ix_3934"):
             self.ion_temp = 6.05                      ## Ion temperature SI [K]; li+2017<--Chianti
-            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg] 
+            self.ion_mass = 28.0855*1.672621E-27      ## Ion mass SI [Kg]
             self.line_ref = 3926.6551                 ## CLE Ion referential wavelength [nm] ;;needs to be double-checked with most current ATOM
             #self.line_ref = 3934.34                   ## Ion referential wavelength [nm]
-            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width 
+            self.width_th = self.line_ref/self.l_speed*(4.*0.69314718*self.kb*(10.**self.ion_temp)/self.ion_mass)**0.5  ## Line thermal width
             self.F_factor= 0.0                        ## Dima & Schad 2020 Eq. 9
             self.gu = 1.5                             ## upper level g factor
             self.gl = 1                               ## lower level g factor

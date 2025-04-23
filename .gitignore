@@ -131,7 +131,7 @@ dmypy.json
 .pyre/
 
 ## test datacubes; available via google drive.
-obsstokes*.pkl
+obsstokes*
 obsdopp*.pkl
 outparams*.pkl
 ## other test scripts
@@ -139,7 +139,8 @@ Untitled.ipynb
 Untitled1.ipynb
 test_2line_IQUD.ipynb
 test_2line-worker.ipynb
-test_things.ipynb
+test_dbgen.ipynb
+test_unittests.ipynb
 ## output plots
 specout*.pdf
 invout*.pdf

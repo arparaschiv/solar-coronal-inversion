@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../docs/source'))
 
 # -- Project information -----------------------------------------------------
 project = 'CLEDB solar-coronal-inversion'
-copyright = '2023, Alin Paraschiv'
+copyright = '2025, Alin Paraschiv'
 author = 'Alin Paraschiv'
 
 # The full version, including alpha/beta/rc tags

@@ -2,21 +2,21 @@
 # coding: utf-8
 
 # # **CLEDB PyCELP database generator**
-# 
+#
 # This function helps create a forward-modelled database of Fe XIII 1074.7nm and 1079.8nm lines at various heights in the offlimb corona. Si IX, Si X, and Mg VIII atoms can be computed, but currently we do not recommend using databases of these ions. More work is needed to understand them.
-# 
+#
 # **Notes**
-# 
+#
 # - If using these scripts, please consider referencing the [CLEDB](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract), [PyCELP](https://ui.adsabs.harvard.edu/abs/2020SoPh..295...98S/abstract), and [CHIANTI](https://www.chiantidatabase.org/referencing.html) publications.
-# 
-# 
+#
+#
 # - More information on using the PyCELP Ion class can be found in a [dedicated example notebook](https://github.com/tschad/pycelp/blob/main/examples/A_tour_of_the_Ion_class.ipynb).
-# 
+#
 # - Last updated: 2024 Oct. 03 -- Calculations currently use the [CHIANTI 10.1](https://www.chiantidatabase.org/chianti_download.html) database and [PyCELP](https://github.com/tschad/pycelp) commit 7f72443.
-# 
-# 
+#
+#
 # Contact: Alin Paraschiv, NSO ---- arparaschiv at nso edu
-# 
+#
 # <div class="alert alert-warning" role="alert">
 #     <div class="row vertical-align">
 #         <div class="col-xs-1 text-center">
@@ -24,8 +24,8 @@
 #         </div>
 #         <div class="col-xs-11">
 #                 <strong>Attention:</strong> these calculations are intensive. Database generation is generally only needed once per CLEDB installation.
-#         </div>   
-#     </div> 
+#         </div>
+#     </div>
 # </div>
 
 # In[3]:
@@ -62,8 +62,7 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-4, la = 25):
 
     if (la > 100):
         print("CLEDB_BUILD Warning: The number of levels will extremely increase execution time to unfeasible amounts on personal computers when using the default DB.INPUT configuration.")
-        #la                   = 25                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 80 levels should be enough. default 25 levels is underoptimal!
-        print()
+        #la                   = 25                   ## Number of levels to include when doing the statistical equiblibrium and radiative transfer equations. The database has ~750 levels. Anything above 80 levels should be enough. default 25 levels is under optimal!
     sel_ion                  = pycelp.Ion(linestr[1][na-1],nlevels = la)
     electron_temperature     = sel_ion.get_maxtemp() ## kelvins; maximum formation temperature for selected ion. We will do all calculations under this assumption.This implies we are approximating density only corresponding to plasma around this temperature.
     magnetic_field_amplitude = 1.0                   ## Calculate the database for 1G fields, then just scale linearly with Stokes V amplitude in CLEDB
@@ -90,14 +89,14 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-4, la = 25):
 
     ## write a header file that stays with the generated database.
     with open( linestr[0][na-1] + 'db.hdr', 'w' ) as f:
-        f.write( '  ' + str(len(heights)) + '  ' + str(len(densities)) + '  ' + str(len(losdepth)) + '  ' + str(len(phic)) + '  ' +str(len(thetac)) + '\n' )
-        f.write( '  ' + str(np.round(np.log10(densities[0]),2)) + '  ' +  str(np.round(np.log10(densities[-1]),2))  + '\n' )
-        f.write( '  ' + str(losdepth[0]) +'  '+ str(losdepth[-1]) + '\n' )
-        f.write( '  ' + str(np.round(phic[0],8))   + '  ' + str(np.round(phic[-1],8)) + '\n' )
-        f.write( '  ' + str(np.round(thetac[0],8)) + '  ' + str(np.round(thetac[-1],8)) + '\n' )
-        f.write( '  ' + "1" + '\n' )
-        f.write( '  ' + str(np.round(sel_ion.get_emissionLine((np.int32(linestr[2][na-1]))).wavelength_in_air,8)) + '\n' )
-        f.write( '  ' + "1")      ## this denotes a pycelp database
+        f.write( '  ' + str(len(heights)) + '  ' + str(len(densities)) + '  ' + str(len(losdepth)) + '  ' + str(len(phic)) + '  ' +str(len(thetac)) + '\n' )  ##number of parameters for all parameters
+        f.write( '  ' + str(np.round(np.log10(densities[0]),2)) + '  ' +  str(np.round(np.log10(densities[-1]),2))  + '\n' )      ## range from densities
+        f.write( '  ' + str(losdepth[0]) +'  '+ str(losdepth[-1]) + '\n' )                                                        ## range for sampled depths
+        f.write( '  ' + str(np.round(phic[0],8))   + '  ' + str(np.round(phic[-1],8)) + '\n' )                                    ## range for phi
+        f.write( '  ' + str(np.round(thetac[0],8)) + '  ' + str(np.round(thetac[-1],8)) + '\n' )                                  ## range for theta
+        f.write( '  ' + "1" + '\n' )                                                                                              ## A one line database
+        f.write( '  ' + str(np.round(sel_ion.get_emissionLine((np.int32(linestr[2][na-1]))).wavelength_in_air,8)) + '\n' )        ## wavelength of the line in database
+        f.write( '  ' + "1")                                                                                                      ## this (1) denotes a pycelp database. (0) would be a CLE database
 
     ## 5 level loop to compute the database entries
     ## loop has the order height --> density --> losdepth --> phi--> theta for PyCELP efficiency
@@ -132,7 +131,7 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
     for l,elosdepth in enumerate(losdepth):                                               ## sampling for line of sight depth of main emitting structure
 
         ## database encoded parameters
-        eheighteff = np.sqrt(eheight**2 + elosdepth**2)                              ## allignment is a function for local radial height computed here.
+        eheighteff = np.sqrt(eheight**2 + elosdepth**2)                                   ## allignment is a function for local radial height computed here.
         evert = 0                                                                         ## restricted to the z=0 plane; IV are invariant in Z, QU can be rotated for any other z planes
         alpha = - np.arctan2(elosdepth,eheight)                                           ## Theoretically, this is np.arctan2(gx, np.sqrt(gy**2+gz**2)) in 3D space. -90--90; 0 in POS
         beta  =   np.pi/2 #np.arctan2(eheight,evert)                                      ## In the z=0 case, this is always pi/2
@@ -171,36 +170,36 @@ def work_heighttimesdens(eheight,edens,losdepth,phic,thetac,electron_temperature
     #return 1
 
 
-## a loop format that is more useful for a pycelp ingestion if calculating ThetaBLOS and PhiBLOS can be computed cin a clever way --- WIP
+## a loop format that is more useful for a pycelp ingestion if calculating ThetaBLOS and PhiBLOS can be computed in a clever way --- WIP
 ## 5 level loop to compute the database entries
-## loop has the order height --> density --> losdepth --> thetab --> phib for PyCELP eff()iciency
-## The database array switchex thetab with phib, to preserve the same format as the older CLE database 
+## loop has the order height --> density --> losdepth --> thetab --> phib for PyCELP efficiency
+## The database array switchex thetab with phib, to preserve the same format as the older CLE database
 
 # for h,eheight in enumerate(tqdm(height)):                                    ## apparent (projected) height; same sampling as the CHIANTI density lookup table
-#     for d,edens in enumerate(densities):                                     ## sampled densities; same sampling as the CHIANTI density lookup table     
+#     for d,edens in enumerate(densities):                                     ## sampled densities; same sampling as the CHIANTI density lookup table
 #         iquv_database = np.zeros((len(losdepth), len(phib), len(thetab), 4)) ## arrays to store 1 line of data; height x dens individual files will be written
 #         for l,elosdepth in enumerate(losdepth):                              ## sampling for line of sight depth of main emitting structure
 #             eheighteff = np.sqrt(eheight**2 + elosdepth**2)                  ## allignment is a function for local radial height computed here.
 #             for t,ethetab in enumerate(thetab):                              ## magnetic LOS angle
 #                 sel_ion.calc_rho_sym(edens, electron_temperature, eheighteff, ethetab, include_limbdark=True, include_protons=True)
 #                 ln = sel_ion.get_emissionLine(linestr[2][na-1])                ## generate the emission line parameters corresponding to calc_rho_sym calculation
-#                 ethetablos=?????                                             ## Convert thetab angle from LVS to LOS 
-#                 for p,ephib in enumerate(phib):                              ## magnetic azimuth angle 
+#                 ethetablos=?????                                             ## Convert thetab angle from LVS to LOS
+#                 for p,ephib in enumerate(phib):                              ## magnetic azimuth angle
 #                     iquv_database[l,p,t,:] = ln.calc_PolEmissCoeff( magnetic_field_amplitude, thetaBLOSdeg=ethetablos, azimuthBLOSdeg=ephib)
-#         np.save('./'+linestr[0][na-1]+'DB_h'+str(eheight)+'_d'+str(edens)+'.npy',iquv_database)  ## save a losdepth x thetab x phib database file       
+#         np.save('./'+linestr[0][na-1]+'DB_h'+str(eheight)+'_d'+str(edens)+'.npy',iquv_database)  ## save a losdepth x thetab x phib database file
 
 
 # In[ ]:
 
 
-if len(sys.argv) == 2:             ## script is appended, so 1 parameter is length 2
+if len(sys.argv) == 2:             ## script is appended to function call, so 1 parameter is length 2
     na  = np.int32(sys.argv[1])
     gen_pycelp_db(na)
-elif len(sys.argv) == 3:           ## script is appended, so 2 parameters is length 3
+elif len(sys.argv) == 3:           ## script is appended to function call, so 2 parameters is length 3
     na  = np.int32(sys.argv[1])
     mpc = np.int32(sys.argv[2])
     gen_pycelp_db(na,mpc)
-elif len(sys.argv) == 3:           ## script is appended, so 3 parameters is length 4
+elif len(sys.argv) == 4:           ## script is appended to function call, so 3 parameters is length 4
     na  = np.int32(sys.argv[1])
     mpc = np.int32(sys.argv[2])
     la  = np.int32(sys.argv[3])
