@@ -1,12 +1,12 @@
-name: Conda Environment Setup and Tests
+name: Unit Tests
 
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   setup-conda-environment:
