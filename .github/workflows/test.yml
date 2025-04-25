@@ -28,7 +28,7 @@ jobs:
         conda create --name CLEDBenv python=3.13
         conda init
         conda activate CLEDBenv
-        conda install numpy=2.1 numba=0.61 scipy=1.15 astropy=7.0 ipython tqdm
+        conda install numpy=2.1 numba=0.61 scipy=1.15 astropy=7.0 pytest ipython tqdm
 
     - name: Run tests
       shell: bash -l {0}  # Important: login shell to load conda
