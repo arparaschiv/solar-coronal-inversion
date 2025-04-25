@@ -249,8 +249,8 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     ######################################################################
     ## Preprocess the string information
     dbnames,dbynumbers,dbsubdirs=sdb_fileingest(params.dbdir,nline,tline,params.verbose)
-    if params.verbose == 4:
-        dbnames,dbynumbers,dbsubdirs=sdb_fileingest("/tests/dbfiles/",nline,tline,params.verbose)
+    if params.verbose == 4: ## a mircodatabase used only for unit testing
+        dbnames,dbynumbers,dbsubdirs=sdb_fileingest("./tests/dbfiles/",nline,tline,params.verbose)
 
     ## No database could be read? NO RUN!!!
     if dbsubdirs == 'Ingest Error':
