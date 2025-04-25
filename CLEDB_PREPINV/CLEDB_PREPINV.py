@@ -294,10 +294,12 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     ######################################################################
     ## read the required databases and their header
     ## The header and dimensions are passed as parameters to function calls to load the databases into memory.
+    dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
+    if params.verbose == 4: ## a mircodatabase used only for unit testing
+        dbhdr=[sdb_parseheader("./tests/dbfiles/"+dbsubdirs[0]+'db.hdr')][0]
     ## When ingesting multiple databases we assume all are of the same size.
     if nline == 2:                                            ## TWO-LINE BRANCH
         if dbsubdirs != "twolineDB":                          ## Main two-line branch
-            dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
             database0=[None]*db_uniq.shape[0]
             for ii in range(db_uniq.shape[0]):
                 database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1)
@@ -327,7 +329,6 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
         #             elif dbhdr[-1] == 1:
         #                 database0[ii][:,:,:,ij]=database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
     elif nline == 1:                                          ## ONE-LINE BRANCH ## Prepare for future, not really used downstream
-        dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
         database0=[None]*db_uniq.shape[0]
         for ii in range(db_uniq.shape[0]):
             database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1)
