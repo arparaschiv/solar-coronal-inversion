@@ -16,7 +16,7 @@
 | "update-Cryo-uCoMP-parralel" | 20240805 |  Major update.<br>- A new PyCELP database generation tool has been implemented and tested. <br> - Multithreading approaches are implemented. New builds will move away from numba parallelization and will be using the multithreading library. <br> - CoMP/uCoMP header information can start to be ingested directly from reading the fits files.
 | "update-pycelpbuild" | ongoing |  Major sets of Updates <br> - Fully implemented code changes to enable using the new PyCELP databases. Both CLE and PyCELP databases can now be used. <br> - Density information has been extracted from the database  and is now used as an input variable in the database selection. <br> - Major code changes that now fully enable IQUD runs in the absence of reliable Stokes V measurements. <br> - MURAM, DKIST Cryo-NIRSP and CoMP data ingestion and examples are implemented. <br> - Complete overhaul of parallelization and numba code optimization. Code run is overwhelmingly sped-up, even without numba optimization. Numba is temporarily disabled by default.  <br> - Updated the package bases with python 3.13, numpy 2.2, and compatible numba, scipy, astropy, etc. Retested and fixed compatibility with distribution. <br> - Implementation of issue tracking and masking along all inversion modules. <br> - Partial implementation of parameter and analysis mode to reduce solar and telluric effects on spectra. <br> - A stack of unit tests along with workflow deployment when pushing changes have been implemented.  <br> - Major documentation updated with the new updates. Docstrings using the numpydoc convention are added to all functions. A small review of the entire documentation will be pursued.<br> - OSI License, contribution, collaboration and code of conduct information added. <br> - Code is prepared for beta release. <br> - Codebase if now Compatible with PyHC standards. A review request with the PyHC team is initiated.
 
-**TODO list last update:** 20250310
+**TODO list last update:** 20250420
 
 1.  ~~Add the ISSUEMASK setup as outlined in the documentation.~~ *update-pycelpbuild*
 
@@ -27,7 +27,7 @@
 4.  ~~Implement additional numba compiler flags and options. Make numba active/disabled with a ctrlparam. Implement numba caching.~~*update-iqud*
 
 5.  ~~After more information on input data is obtained, implement the 
-    LEV2CALIB_WAVE and LEV2CALIB_ABSINT functions as outlined in the documentation.~~*update-iqud*: DKIST lev-1 data will contain the needed corrections.
+    LEV2CALIB_WAVE and LEV2CALIB_ABSINT functions as outlined in the documentation.~~*update-iqud*: DKIST Lev-1 data will contain the needed corrections.
 
 6.  Implement ML_LOSDISENTANGLE to separate multiple LOS contributions in observations, as outlined in the documentation.
 
