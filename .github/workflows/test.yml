@@ -31,6 +31,8 @@ jobs:
         conda install numpy=2.1 numba=0.61 scipy=1.15 astropy=7.0 ipython tqdm
 
     - name: Run tests
+      shell: bash -l {0}  # Important: login shell to load conda
       run: |
+        conda init
         conda activate CLEDBenv
         pytest  # Runs your tests with pytest
