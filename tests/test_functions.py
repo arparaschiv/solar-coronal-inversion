@@ -87,8 +87,9 @@ def test_sdb_preprocess(fix_sobs_preprocess,fix_sdb_preprocess):
     db_enc,database,dbhdr,dbnames,db_enc_fln,db_u                              = fix_sdb_preprocess
 
     ## tests whether you load the correct database to match the observation
+    ## To work with the github actions, we make a small mini database direc tory with 3 entries, out of which, one is the correct entry based on metadata.
     np.testing.assert_equal(db_enc, 0)     ## only one database is loaded here. Encoding is database[0].
-    np.testing.assert_equal(db_u, 1048)    ## unique database entry in list of available databases
+    np.testing.assert_equal(db_u, 1)       ## unique database entry in list of available databases ## 1048 index in the full example database
     np.testing.assert_equal([dbnames[0][db_u[0]][-30:],dbnames[1][db_u[0]][-30:]],['/fe-xiii_1074/DB_h109_d795.npy', '/fe-xiii_1079/DB_h109_d795.npy']) ## this matches yobs and dobs from above in both lines
 
 
