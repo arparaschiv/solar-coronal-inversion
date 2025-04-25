@@ -8,7 +8,7 @@
 
 ### Repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion.
 
-**Authors:** Alin Paraschiv, Thomas Schad, and Philip Judge. National Solar Observatory & High Altitude Observatory
+**Authors:** Alin Paraschiv, Philip Judge, and Thomas Schad. National Solar Observatory & High Altitude Observatory
 
 **Contact:** arparaschiv "at" nso.edu
 

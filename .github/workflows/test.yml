@@ -25,8 +25,9 @@ jobs:
     - name: Install Conda dependencies
       run: |
         conda create --name CLEDBenv python=3.13
+        conda init
         conda activate CLEDBenv
-        conda install python=3.13 numpy=2.1 numba=0.61 scipy=1.15 astropy=7.0 ipython tqdm            
+        conda install numpy=2.1 numba=0.61 scipy=1.15 astropy=7.0 ipython tqdm            
 
     - name: Run tests
       run: |
