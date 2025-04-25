@@ -45,11 +45,11 @@ Afterward, both 1-line and 2-line implementations of CLEDB can be tested with sy
 
 The test data are hosted separately. These are called by enabling the corresponding 1.a-1.e cells in the test notebooks and scripts. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html) for details regarding the included datafiles.
 
-- [1.a synthetic CLE 3 dipole data](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing).
-- 1.b synthetic CLE current-sheet data will be available soon.
-- 1.c Only for internal testing.
-- [1.d CoMP observation data](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing).
-- [1.e CoMP doppler analysis results for the 1.d datacube](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing).
+- [1.a synthetic CLE 3 dipole "observation"](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing).
+- 1.b Synthetic PyCELP observation from MURAM cube.
+- [1.c CoMP line-integrated observation](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing).
+- [1.c CoMP doppler analysis results for the 1.c datacube](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing).
+- 1.d DKIST Cryo-NIRSP line-integrated observation
 
 For terminal only compute systems, the test data can be downloaded via the shell interface with the following method:
 

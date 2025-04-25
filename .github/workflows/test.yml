@@ -35,4 +35,4 @@ jobs:
       run: |
         conda init
         conda activate CLEDBenv
-        pytest  # Runs your tests with pytest
+        pytest ./tests/  # Runs your tests with pytest
