@@ -19,8 +19,8 @@
 
 import pytest
 import numpy as np
-import sys
-sys.path.append("../")      ## append root folder so we cna import the modules
+#import sys
+#sys.path.append("../")      ## append root folder so we can import the modules
 ## package functions import
 import CLEDB_PROC.CLEDB_PROC as procinv
 import CLEDB_PREPINV.CLEDB_PREPINV as prepinv
