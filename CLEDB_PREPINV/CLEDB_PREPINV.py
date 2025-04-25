@@ -248,8 +248,9 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
 
     ######################################################################
     ## Preprocess the string information
-    dbnames,dbynumbers,dbsubdirs=sdb_fileingest(params.dbdir,nline,tline,params.verbose)
-    if params.verbose == 4: ## a mircodatabase used only for unit testing
+    if params.verbose != 4:
+        dbnames,dbynumbers,dbsubdirs=sdb_fileingest(params.dbdir,nline,tline,params.verbose)
+    else: ## a mircodatabase used only for unit testing
         dbnames,dbynumbers,dbsubdirs=sdb_fileingest("./tests/dbfiles/",nline,tline,params.verbose)
 
     ## No database could be read? NO RUN!!!
@@ -294,8 +295,9 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     ######################################################################
     ## read the required databases and their header
     ## The header and dimensions are passed as parameters to function calls to load the databases into memory.
-    dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
-    if params.verbose == 4: ## a mircodatabase used only for unit testing
+    if params.verbose != 4: ## normal run
+        dbhdr=[sdb_parseheader(params.dbdir+dbsubdirs[0]+'db.hdr')][0]    ## assuming the same header info; reading the first DB header
+    else:                         ## a mircodatabase used only for unit testing
         dbhdr=[sdb_parseheader("./tests/dbfiles/"+dbsubdirs[0]+'db.hdr')][0]
     ## When ingesting multiple databases we assume all are of the same size.
     if nline == 2:                                            ## TWO-LINE BRANCH
