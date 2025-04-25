@@ -31,7 +31,11 @@ params=ctrlparams.ctrlparams() ##Initialize and use a shorter label
 params.verbose = 0 ## set the verbosity to none for the purpose of testing
 
 ## Load the test data
-data = np.load("sample_test_stokesspectra.npz")
+try:
+    data = np.load("sample_test_stokesspectra.npz")
+except FileNotFoundError:
+    data = np.load("./tests/sample_test_stokesspectra.npz")
+
 sobs_in = [data["aas"].reshape(1,1,134,4),data["bbs"].reshape(1,1,134,4)]
 head_in =[{'CRPIX1':0, 'CRPIX2':0, 'CRPIX3':0, 'CRVAL1': -0.30, 'CRVAL2': 1.05, 'CRVAL3': 1074.2571372, 'CDELT1': 0.0001, 'CDELT2':  0.0001, 'CDELT3': 0.00538654, 'LINEWAV': 1074.6153, 'INSTRUME': "PyCELP"},\
           {'CRPIX1':0, 'CRPIX2':0, 'CRPIX3':0, 'CRVAL1': -0.30, 'CRVAL2': 1.05, 'CRVAL3': 1079.4203968, 'CDELT1': 0.0001, 'CDELT2':  0.0001, 'CDELT3': 0.00541243, 'LINEWAV': 1079.7803, 'INSTRUME': "PyCELP"}]
