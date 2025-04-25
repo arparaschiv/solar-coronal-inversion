@@ -35,4 +35,5 @@ jobs:
       run: |
         conda init
         conda activate CLEDBenv
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
         pytest ./tests/  # Runs your tests with pytest
