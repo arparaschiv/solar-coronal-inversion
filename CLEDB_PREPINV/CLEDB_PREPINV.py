@@ -61,7 +61,6 @@
 # Needed libraries
 #
 import numpy as np
-from pylab import *
 import scipy
 
 import multiprocessing
