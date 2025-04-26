@@ -38,7 +38,7 @@ extensions = ["myst_parser", "sphinx_rtd_theme", "sphinx.ext.autodoc", "sphinx.e
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
-autodoc_mock_imports = ["multiprocessing","tqdm","astropy.wcs","astropy.units","time","numba","numba.typed","scipy.optimize"]
+autodoc_mock_imports = ["multiprocessing","tqdm","astropy","time","numba"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
