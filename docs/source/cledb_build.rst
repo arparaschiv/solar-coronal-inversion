@@ -5,7 +5,7 @@ CLEDB_BUILD - Database Generation
 
 **Purpose:**
 
-The ``CLEDB_BUILD`` module is used to generate a database of synthetic IQUV profiles for the four provisioned ions, with a range of density estimations, range of possible :term:`LOS` positions, and all possible magnetic angle configurations, for one magnetic field strength B = 1.  In normal circumstances this module is only run once per system where the inversion is installed. A module diagram is provided in this section.
+The ``CLEDB_BUILD`` module is used to generate a database of synthetic IQUV profiles for the four provisioned ions, with a range of density estimations, range of possible :term:`LOS` positions, and all possible magnetic angle configurations, for one magnetic field strength B = 1.  In normal circumstances, this module is only run once per system where the inversion is installed. A module diagram is provided in this section.
 
 .. _db_input-label:
 
@@ -17,7 +17,7 @@ Here we describe the scripts included in the config directory.
 ``DB.INPUT``
 	Main configuration file for the database generation. It contains the :term:`physical parameters` configurations for the databases to be generated.
 
-	.. literalinclude:: ../../CLEDB_BUILD/config/DB.INPUT
+	.. literalinclude:: ../../CLEDB_BUILD/DB.INPUT
 		:language: c
 
 .. Danger::
@@ -26,11 +26,11 @@ Here we describe the scripts included in the config directory.
 .. _atom-label:
 
 ``ATOM.ion``
-    This set of files contain the atomic configuration data to be used for calculations. Full level atoms would have a too high computational requirement to use. To avoid this, we use reduced calculations. For example take the Fe XIII lines. The atom configurations are set up as reduced 4-level and 6-transition calculations including the M1 and E1/E2 transitions from upper levels to M1 upper levels. See Fig. 3 of `Casini & Judge, ApJ, 1999 <https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract>`_ This level/transition setup mimics the IQUV fluxes from a full level calculation for each of the the selected infrared coronal lines. 
+    This set of files contain the atomic configuration data to be used for calculations. Full level atoms would have a too high computational requirement to use. To avoid this, we use reduced calculations. For example take the Fe XIII lines. The atom configurations are set up as reduced 4-level and 6-transition calculations including the M1 and E1/E2 transitions from upper levels to M1 upper levels. See Fig. 3 of `Casini & Judge, ApJ, 1999 <https://ui.adsabs.harvard.edu/abs/1999ApJ...522..524C/abstract>`_ This level/transition setup mimics the IQUV fluxes from a full level calculation for each of the selected infrared coronal lines.
 
 .. Caution::
 	Advanced understanding required. In general, users should not modify the ATOM files.
-	
+
 .. _hint_ion-label:
 
 ``INPUT.ion(a/b)``
@@ -41,12 +41,12 @@ Here we describe the scripts included in the config directory.
 
 ``IONEQ``
 	Ionization equilibrium data from CHIANTI.
-	
+
 ``GRID.DAT``
-	Defines the range and resolution of a CLE simulation. In the case of database building it has no significant functionality and is only required due to CLE's implicit dependency on it's import.
+	Defines the range and resolution of a CLE simulation. In the case of database building, it has no significant functionality and is only required due to CLE's implicit dependency on its import.
 
 ``db"xxxx"\_"arch"``
-	Executable CLE binaries for generating databases. *xxxx* is the used version of the CLE Fortran code. arch can be *linux*, *rclinux* or *darwin*. The three different versions are provided in the distribution for cross-platform compatibility.	
+	Executable CLE binaries for generating databases. *xxxx* is the used version of the CLE Fortran code. arch can be *linux*, *rclinux* or *darwin*. The three different versions are provided in the distribution for cross-platform compatibility.
 
 	* linux -- Debian compiled
 
@@ -61,7 +61,7 @@ DB.INPUT Parameters
 ^^^^^^^^^^^^^^^^^^^
 
 ``ny, ymin, ymax``
-	Number of y (horizontal) heights in R\ :math:`_\odot` units for which to compute database entries. The ``ny`` heights are spanned between ``ymin`` and ``ymax`` values. Regardless of user input, polarization signal can not computed at this time for R\ :math:`_\odot` < 1 due to the assumptions and interpretation focused on off-limb coronal emission. 
+	Number of y (horizontal) heights in R\ :math:`_\odot` units for which to compute database entries. The ``ny`` heights are spanned between ``ymin`` and ``ymax`` values. Regardless of user input, polarization signal can not be computed at this time for R\ :math:`_\odot` < 1 due to the assumptions and interpretation focused on off-limb coronal emission. 
 
 	.. attention::
 		Observations show that the amount of polarization in Fe XIII drastically decreases with height. One should not normally expect to reasonably recover full Stokes polarization signal at y > 1.5\ :math:`_\odot`.  

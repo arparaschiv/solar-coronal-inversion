@@ -29,7 +29,7 @@ CLEDB_PREPINV Module Functions
         Estimates background counts using a cumulative distribution function (:term:`CDF`\ ) statistical method, then integrates along the wavelength dimension, in all IQUV components of all input lines. Profile integration is required because the database dimensionality and inversion computational times would not be feasible when processing full-spectra observations. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ for additional information.
 
         .. Note::
-            The Stokes V coefficient is not integrated with respect to wavelength (units with Armstrong^-1, see pycelp calc_PolEmissCoeff documentation).
+            The Stokes V coefficient is not integrated with respect to wavelength (units with Armstrong^-1, see PyCELP calc_PolEmissCoeff documentation).
             The PyCELP database has the same restriction. Thus, the SV data presented in any wavelength units, needs to be converted in Angstrom^-1 counts for matching and field scaling.
             e.g. if the input dispersion axis is in nm, then the integrated SV signal needs a factor *10  to account for this.
 
