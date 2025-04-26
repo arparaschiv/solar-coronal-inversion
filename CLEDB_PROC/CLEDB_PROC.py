@@ -97,8 +97,8 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,dobs,snr,issue
     Generally, this function iterates over the observation maps, does a few sanity checks and exists if problems are encountered, then sends each pixel to the internal functions.
     It returns a processed observation array (IQUV or IQUD input dependent) and a matching set of input Stokes pprofiles for double checking the matching being done.
 
-    Parameters
-    ----------
+    Parameters:
+    -----------
     sobs_totrot : fltarr
                 Observation array rotated to the CLEDB polarization frame reference.
     sobs_dopp   : fltarr
@@ -124,8 +124,8 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,dobs,snr,issue
     nsearch,maxchisq,bcalc,iqud,reduced,verbose: boolean, ints, floats
                 Passes a subset of inversion controling parameters. The entire class can not be passed to the function due to numba requirements.
 
-    Returns
-    -------
+    Returns:
+    --------
     invout   : fltarr
               Main 2-line inversion output product.
               Contains the matched database index, the fitting residuals, and 9 inverted physical parameters, for all nsearch closest matching solutions with respect to the input observation.
@@ -392,12 +392,12 @@ def blos_proc(sobs_tot,snr,issuemask,keyvals,consts,params):
     This uses the "improved" magnetograph formulation discussed in eq 40 Casini &Judge 99, eq 14 of Plowman 2014, and eq 17 and 18 of Dima & Schad 2020
     Follows the discussion in the three papers and adopts different analythical implementations based on the line combination used.
     As shown in the papers the magnetograph formulation is not precise in terms of recovering the LOS magnetic field.
-    Differences of the order of $\pm$ 2 times actual values  based on the atomic alignment, F factor, and LOS angle $\theta$ can manifest.
+    Differences of the order of plus-minus 2 times actual values based on the atomic alignment, F factor, and LOS angle theta can manifest.
 
     The function will produce a set of 2 times degenerate magnetograph along with a classic magnetograph and a field azimuth for each ingested line/observation.
 
-    Parameters
-    ----------
+    Parameters:
+    -----------
     sobs_tot  : fltarr
               Observation array. For this purpose this does not need a rotation to the CLEDB polarization frame reference.
     snr       : fltarr
@@ -411,8 +411,8 @@ def blos_proc(sobs_tot,snr,issuemask,keyvals,consts,params):
     params
               Class containing inversion control parameters that is imported.
 
-    Returns
-    -------
+    Returns:
+    --------
     blosout   : fltarr
               Array containint the LOS magnetic field calculation for each pixel. 4 output products for erach line are generated:
               [0] First degenerate constrained magnetograph solution for each respective line.
@@ -501,8 +501,8 @@ def spectro_proc(sobs_in,sobs_tot,snr,issuemask,background,wlarr,keyvals,consts,
 
     Spectro_proc will not run for line integrated data inputs.
 
-    Parameters
-    ----------
+    Parameters:
+    -----------
     sobs_in     : fltarr
                 Input stokes array that contains the spectral data to be fitted.
     sobs_tot    : fltarr
@@ -522,8 +522,8 @@ def spectro_proc(sobs_in,sobs_tot,snr,issuemask,background,wlarr,keyvals,consts,
     params
                 Class containing inversion control parameters that is imported.
 
-    Returns
-    -------
+    Returns:
+    --------
     specout     : fltarr
                 Array containint the spectroscopic calculations for each pixel. The dimension outputs are:
                 [0]   Wavelength position of the line core.
@@ -716,8 +716,8 @@ def cdf_statistics(zz,xx,yy,sobs_cal,sobs_tot_1pix,background,wlarr_1pix,keyvals
 
     This is run for each ion/line. Outside loop controls which ion is fed.
 
-    Returns
-    -------
+    Returns:
+    --------
     Line core wavelength.
     Line shift from reference position.
     Shift converted to velocities.
@@ -922,8 +922,8 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     """
     The main solver for the geometry and magnetic field strength in each pixel --- version for full Stokes vector.
 
-    Returns
-    -------
+    Returns:
+    --------
     matched database index
     chi^2 fitting residual
     The matched observation physics:
@@ -1095,8 +1095,8 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     """
     The main solver for the geometry and magnetic field strength in each pixel --- version for partial Stokes vector.
 
-    Returns
-    -------
+    Returns:
+    --------
     matched database index
     chi^2 fitting residual
     The matched observation physics:
