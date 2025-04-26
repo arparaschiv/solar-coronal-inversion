@@ -138,4 +138,4 @@ def test_cledb_invproc(fix_sobs_preprocess,fix_sdb_preprocess):
     np.testing.assert_(np.isin(invout[0,0,:2,0],invout2[0,0,:4,0]).all())    ## Check that both solutions of the full inversion are in the set of 4 solutions of the IQUD inversion.
     np.testing.assert_allclose(invout2[0,0,0,5],6,atol=3)                    ## Are we getting a similar field strength scaling? This is on papermore accurate than scaling minuscule Stokes V signals, but will depend on measuring waves propagation.
     np.testing.assert_allclose(np.sqrt(invout2[0,0,0,8]**2+invout2[0,0,0,9]**2+invout2[0,0,0,10]**2), invout2[0,0,0,5],atol=3)## check that the index matching anf the B calculation through indexes returns expected values in the IQUD case. Indexes ARE handled differently
-    ##TBI Acheck of reduced vs full searcch
+    ##TBI A check of reduced vs full searcch

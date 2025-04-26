@@ -56,7 +56,7 @@ from astropy.io import fits       ## To properly load DKISt Cryo-NIRSP data
 #     sobs_dopp = np.empty((sobs_in[0].shape[0],sobs_in[0].shape[1],4),dtype=np.float32)
 
 
-# #### 1.b MURAM data example loading
+# #### 2.a MURAM data example loading
 
 # In[11]:
 
@@ -87,7 +87,7 @@ if params.iqud == False:
 # ## muram data too big to include as test data!!!!
 
 
-# #### 1.c DKIST Cryo-NIRSP Provisional example data (Integrated required).
+# #### 3.a DKIST Cryo-NIRSP Provisional example data (Integrated required).
 
 # In[10]:
 
@@ -117,7 +117,7 @@ if params.iqud == False:
 #     sobs_dopp = np.empty((sobs_in[0].shape[0],sobs_in[0].shape[1],4),dtype=np.float32)
 
 
-# #### 1.d CoMP line integrated data example loading (IQUD required. No stokes V!)
+# #### 4.a - 4.b CoMP line integrated data example loading (IQUD required. No stokes V!)
 
 # In[7]:
 

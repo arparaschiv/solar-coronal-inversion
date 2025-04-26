@@ -1,7 +1,4 @@
-.. solar-coronal-inversion documentation master file, created by
-   sphinx-quickstart on Thu Jan 26 18:38:24 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. solar-coronal-inversion documentation master file, created by sphinx-quickstart.
 
 Documentation for the **CLEDB** Distribution
 ============================================
@@ -21,7 +18,7 @@ This document describes the main concepts, functions, and variables, comprising 
 
 **Authors and Contact:**
 
-| Alin Paraschiv and Philip Judge
+| Alin Paraschiv, Philip Judge, and Thomas Schad
 | -- National Solar Observatory, AURA
 | -- High Altitude Observatory, NCAR|UCAR
 
@@ -60,6 +57,7 @@ This document describes the main concepts, functions, and variables, comprising 
    cledb_build
    cledb_prepinv
    cledb_proc
+   api_reference
    outputs
    readmes
    changelog

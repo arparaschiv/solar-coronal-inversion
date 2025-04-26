@@ -22,7 +22,7 @@ copyright = '2025, Alin Paraschiv'
 author = 'Alin Paraschiv'
 
 # The full version, including alpha/beta/rc tags
-release = 'update-readthedocs'
+release = 'update-pycelpbuild'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,8 +31,12 @@ release = 'update-readthedocs'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["myst_parser", "sphinx_rtd_theme"]
+extensions = ["myst_parser", "sphinx_rtd_theme", "sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.viewcode"]
 #extensions =[]
+
+# Optional: fine-tune napoleon
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

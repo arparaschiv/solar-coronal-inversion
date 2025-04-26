@@ -121,17 +121,17 @@ Namely:
 
 A dedicated readme covering this topic can be :ref:`consulted here <readme-slurm-label>` or as standalone in the main CLEDB directory. The instructions are provided following the templates set by the `Colorado University Research Computing User Guide <https://curc.readthedocs.io/en/latest/index.html>`_.
 
-Example Test Data
+Example Datacubes
 -----------------
 
-A number of examples are included to help a user get started with inverting magnetic fields. The test jupyter or python scripts will load different datafiles corresponding to one selected test case.
+A number of examples are included to help a user get started with inverting coronal fields with CLEDB. The test jupyter or python scripts will load different datafiles corresponding to one selected test case.
 Some cases are not yet fully implemented or available. The available datafiles can be donwloaded from the links below, or by following the :ref:`Readme.md instructions <readme-main-label>`. The Readme.md file also contains a method for downloading the data using only the terminal for headless systems.
 
 
-* CLE IQUV test example
-	Full Stokes IQUV data and plane of the sky projected magnetic fields.
+* 1.a CLE IQUV test example
+	Full Stokes synthetic IQUV data to test CLE generated databases.
 	A `CLE <https://github.com/arparaschiv/coronal-line-emission>` computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a dipole generator program (See CLE dipolv.f).
-	Three independent magnetic dipoles are generated at different positions along the :term:`LOS`. These outputs are combined into a single LOS projected observation.
+	Three independent magnetic dipoles are generated at different positions along the :term:`LOS`. These outputs are combined into a single :term:`LOS` projected observation.
 
 	.. image:: figs/STOKES_out.png
 		:width: 800
@@ -139,7 +139,7 @@ Some cases are not yet fully implemented or available. The available datafiles c
 	`The data can be downloaded from gdrive <https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing>`_.
 
 .. * IQUV test example 1.b
-    Full Stokes IQUV data.
+    Full Stokes synthetic IQUV data.
     A `CLE <https://github.com/arparaschiv/coronal-line-emission>`_ computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a current sheet generator program (See CLE sheet.f).
     Five simple independent magnetic structures are generated along the LOS to test the algorithm's matching for :term:`LOS` positions.
     image:: figs/los23.png
@@ -149,56 +149,60 @@ Some cases are not yet fully implemented or available. The available datafiles c
 		The structures are confounded with respect to the LOS leading the inversion to give erroneous results for these locations. This is expected. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_.
 
     .. Warning::
-        This example is created using CLE and is kept for testing CLE databases. The spectral synthesis assumptions vary between CLE and PyCELP, especially in regions of high density, will lead to significant changes. One of the dipolar structures will not invert accurately invert when using PyCELP databases.With PyCELP databases, setting the control parameter to 1e6 will force a result output, but care needs to be used when interpreting.
+        This example is created using CLE and is available for testing CLE databases. The spectral synthesis assumptions vary between CLE and PyCELP. In regions of high density, the inversion will lead to significant changes. One of the dipolar structures will not invert accurately invert when using PyCELP databases. With PyCELP databases, setting the control parameter to 1e6 will force a result output, but care needs to be used when interpreting.
 
 
-* PyCELP and MURAM IQUV test example
-	Full Stokes IQUV data.
-	A MURAM simulation of a dipolar structure at the POS. Fe XIII forward-synthesis via `PyCELP <https://github.com/tschad/pycelp>`_.
-	This is a large datafile that is used only for internal testing.
+* 2.a PyCELP and MURAM IQUV test example
+	Full Stokes IQUV data to test PyCELP generated databases.
+	A MURAM simulation of a dipolar structure at the :term`POS`. Fe XIII forward-synthesis via `PyCELP <https://github.com/tschad/pycelp>`_. This synthetic observation was analyzed and described by `Schad & Dima, SolPhys, 2021 <https://ui.adsabs.harvard.edu/abs/2021SoPh..296..166S/abstract>`_.
+	This is a large datafile.
 
 	.. image:: figs/muram_iquv.png
 		:width: 800
 
-*DKIST Cryo-NIRSP integrated data test example.
-    Full Stokes IQUV data.
-    A preliminary processed observation of integrated Stokes measurements.
+    `The data can be downloaded from gdrive <https://drive.google.com/file/d/12UVwVlQN8jz-smHCmqBdarf3OjdZ8QQ1/view?usp=drive_link>`_.
+
+
+* 3.a DKIST Cryo-NIRSP integrated data test example.
+    Full Stokes line-integrated IQUV data.
+    This example utilizes a real observation from DKIST Cryo-NIRSP from on March 23 2024. A preliminary processed observation of spectro-polarimetric Stokes IQUV measurements.
 
 	.. image:: figs/cryonirsp_iquv.png
 		:width: 800
 
-	`The data can be downloaded from gdrive <>`_
+	`The data can be downloaded from gdrive <https://drive.google.com/file/d/1o65wMbcmobTVHOSnEPOQhJmG4hGk3Hyt/view?usp=drive_link>`_
 
 .. Caution::
-    These datafiles are IQUV datasets resulting from the analysis tutorial processing provided by the DKIST Science team. `The data and analysis code can be found here <https://bitbucket.org/dkist-community-code/cryonirsp-notebooks/src/main/first_release_specFitting/>`_ This processing is just a conceptual example of analysis steps and not a careful science ready processing. Neither the input data nor the output CLEDB products, are scientifically validated and science ready.
+    The 3.a datafiles are line-integrated IQUV datasets resulting from the analysis tutorial processing provided by the DKIST Science team. `The data and analysis code can be found here <https://bitbucket.org/dkist-community-code/cryonirsp-notebooks/src/main/first_release_specFitting/>`_ This processing is just a conceptual example of analysis steps and not a careful science-ready processing. Neither the input data nor the output CLEDB products are scientifically validated and science ready.
 
 .. Important::
-    Processing of full spectro-polarimetric DKIST data is not yet included in CLEDB due to the complexities of manually tuning the processing of each dataset. It is recommended that you follow an analysis following the steps described in the public DKIST Cryo-NIRSP tutorial linked above and then feed this data as an integrated observation.
+    Processing of full spectro-polarimetric DKIST data is not yet included in CLEDB due to the complexities of manually tuning the processing of each dataset. It is recommended that you pursue an analysis following the steps described in the public DKIST Cryo-NIRSP tutorial linked above, and then feed the resulting integrated Stokes IQUV profiles after accounting for the photosphere, tellurics, crosstalk, and interference fringes.
 
-.. Note::
-	For all IQUV examples, a user should expect solutions that are degenerate in pairs of **two** with respect to the LOS position. These need to be properly disambiguated for each observation. An extended analysis and decision is required. For these examples, the plane-of Sky magnetic component can be calculated and then introduces as seen in the below examples to recreate a full inversion in  the absence of Stokes V.
 
-* CoMP IQUD only test example
+* 4.a CoMP IQUD only test example
 	Stokes IQU data. No Stokes V.
-	This example utilizes a real observation from CoMP from on March 27 2012. CoMP is not capable of routinely measuring Stokes V.
-	Multiple real-life coronal structures are observed. Because Stokes V is not measured, we do not get access to a analytical solution via the :ref:`BLOS_PROC <blos-label>` module.
+	This example utilizes a real observation from CoMP from on March 27 2012. CoMP is not capable of routinely measuring Stokes V. uCoMP ingestion is also implemented in CLEDB.
+	Multiple real-life coronal structures are observed. Because Stokes V is not measured, we do not get access to an analytical solution via the :ref:`BLOS_PROC <blos-label>` module.
 
 	.. image:: figs/comp_iqu.png
 		:width: 800
 
-	`The data can be downloaded from gdrive <https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing>`_.
+	`The IQU data can be downloaded from gdrive <https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing>`_.
+	`This doppler data can be downloaded from gdrive <https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing>`_.
 
-* Test data 1.e - Doppler oscillation analysis results for data in 1.d
-	This is the additional data that needs to be brought in for obtaining a vector magnetic solution for the CoMP observation offered as part of the 1.d example.
-	The two utilized dimensions are ``sobs_dopp[:,:,0]`` and ``sobs_dopp[:,:,1]`` representing respectively the magnetic field strength and the wave angle derived from the Doppler oscillation analysis. The two other dimensions represent :term:`POS` projections of the magnetic field, but are not currently utilized.
-	The *test_2line* scripts will just create an empty array when a full Stokes IQUV inversion is requested as in the 1.a - 1.c examples.
 
-	`This data can be downloaded from gdrive <https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing>`_.
+* 4.b Doppler oscillation analysis results for data in 4.a
+	This is the additional data that needs to be brought in for obtaining a vector magnetic solution for the CoMP/uCoMP observation offered as part of the 4.a example. This data and methods of inferring POS magnetic maps from Doppler oscillations are described in `Morton et. al, NatComm 2015 <https://ui.adsabs.harvard.edu/abs/2015NatCo...6.7813M/abstract>`_ and `Yang et. al, Sci. 2020 <https://ui.adsabs.harvard.edu/abs/2020Sci...369..694Y/abstract>`_.
+	We utilize ``sobs_dopp[:,:,0]`` that encodes the magnetic field strength and the wave angle derived from the Doppler oscillation analysis. The three other dimensions represent :term:`POS` projections of the magnetic field. These are not currently utilized.
+	The *test_2line* scripts will just create an empty array when a full Stokes IQUV inversion is requested, as in the 1. - 3. examples.
 
 .. Note::
-	For the two datafiles corresponding to the IQUD example, a user should expect solutions that are degenerate in pairs of **four** with respect to the LOS position and the magnetic polarity. Currently, a more degenerate solution is retrieved when compared with the full Stokes IQUV inversions. Solutions to further disambiguate IQUD results are currently being trialed. Noteworthy is the fact that the two degeneracies (LOS position and magnetic polarity) are independent with respect to how the problem is posed. Thus, a selection of solutions should not be made as x in set [0,1,2,3] but as x in [1,4] or [2,3] solution subsets for an observed pixel. As mentioned above, these solutions need to be properly disambiguated for each observation. A human analysis and decision is required.
+	For all IQUV examples, a user should expect solutions that are degenerate in pairs of **two** with respect to the LOS position. These need to be properly disambiguated for each observation. An additional analysis of the inversion outputs and decision is required.
+
+.. Note::
+	In the case of the IQUD example, a user should expect solutions that are degenerate in pairs of **four** with respect to the LOS position and the magnetic polarity. Currently, a more degenerate solution is retrieved when compared with the full Stokes IQUV inversions. Solutions to further disambiguate IQUD results are currently being trialed. Noteworthy is the fact that the two degeneracies (LOS position and magnetic polarity) are independent with respect to how the problem is posed. Thus, a selection of solutions should not be made as x in set [0,1,2,3] but as x in [1,4] or [2,3] solution subsets for an observed pixel. As mentioned above, these solutions need to be properly disambiguated for each observation. A manual analysis and decision is required.
 
 .. Hint::
-	A mapping of the magnetic field strength can be obtained from any of the IQUV test 1.a - 1.c cases. These alongside a calculation of the linear polarization azimuth can be fed as a ``sobs_dopp`` observation in a IQUD inversion scheme applied to the same test data. (CLEDB will ignore the Stokes V information in this case). A set of **four** degenerate solutions will be obtained. One subset of **two** solutions will be geometrically identical to the full IQUV inversion output.
+	A mapping of the magnetic field strength can be obtained from any of the IQUV test 1. - 3. cases. These alongside a calculation of the linear polarization azimuth can be fed as a ``sobs_dopp`` observation in a IQUD inversion scheme applied to the same test data or particular observations. (CLEDB will ignore the Stokes V information in this case). A set of **four** degenerate solutions will be obtained. One subset of **two** solutions will be geometrically identical to the full IQUV inversion output.
 
 

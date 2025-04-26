@@ -34,22 +34,22 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 4. Windows platform                       -- not tested.
 
 ### **Examples**
-Install the CLEDB distribution, generate databases, and update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) .
+Install the CLEDB distribution, generate databases, and, if needed, update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) .
 
 The new PyCELP database generation tool is recommended. It is more precise, but requires some computational resources for calculations. [A default PyCELP generated database can be found here to help get started (33Gb download)](https://drive.google.com/file/d/130rnM471FiVw9UQ8YfnaAbdh5_TTOQVO/view?usp=sharing). Just extract the two database folders in the CLEDB_BUILD directory and you should be set to running the examples.
 
 Afterward, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
 1. [test_1line.ipynb](./test_1line.ipynb)
-2. [test_2line_IQUV.ipynb](./test_2line.ipynb)
+2. [test_2line.ipynb](./test_2line.ipynb)
 
-The test data are hosted separately. These are called by enabling the corresponding 1.a-1.e cells in the test notebooks and scripts. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html) for details regarding the included datafiles.
+The test data are hosted separately. These are called by enabling the corresponding 1.- 4. cells in the test notebooks and scripts. See the [documentation](https://cledb.readthedocs.io/en/latest/install.html) for details regarding the included datafiles.
 
 - [1.a synthetic CLE 3 dipole "observation"](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing).
-- 1.b Synthetic PyCELP observation from MURAM cube.
-- [1.c CoMP line-integrated observation](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing).
-- [1.c CoMP doppler analysis results for the 1.c datacube](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing).
-- 1.d DKIST Cryo-NIRSP line-integrated observation
+- [2.a Synthetic PyCELP "observation" from MURAM cube](https://drive.google.com/file/d/12UVwVlQN8jz-smHCmqBdarf3OjdZ8QQ1/view?usp=sharing)
+- [3.a DKIST Cryo-NIRSP line-integrated observation](https://drive.google.com/file/d/1o65wMbcmobTVHOSnEPOQhJmG4hGk3Hyt/view?usp=sharing)
+- [4.a CoMP line-integrated observation](https://drive.google.com/file/d/1AdAqIvsiXEV6RK5UiGWcu-1bovs0oOGr/view?usp=sharing).
+- [4.b CoMP doppler analysis results for the 1.c datacube](https://drive.google.com/file/d/1-hPiRRYRS6de_0zWz1k2UU1rIKOEbPOu/view?usp=sharing).
 
 For terminal only compute systems, the test data can be downloaded via the shell interface with the following method:
 

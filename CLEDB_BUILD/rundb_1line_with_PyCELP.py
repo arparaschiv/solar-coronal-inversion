@@ -37,7 +37,7 @@ import os,sys,shutil
 import pickle
 import multiprocessing
 from tqdm import tqdm
-os.environ["XUVTOP"] = './config/pycelp/CHIANTI_10.1_database/' ## If you havent already set the environment variable XUVTOP for the location of the database, set it here
+os.environ["XUVTOP"] = './config/pycelp/CHIANTI_11.0_database/' ## If you havent already set the environment variable XUVTOP for the location of the database, set it here
 
 
 # In[ ]:
@@ -261,7 +261,7 @@ else:
 
 #                 ## LOS projected magnetic angles capital Theta_B and Gamma_B
 #                 ethetalosb = np.arccos(  np.cos(theta) * np.cos(ethetab) + np.sin(theta) * np.sin(ethetab) * np.cos(ephib) )                      ## CJ99 eq42
-#                 egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.                   
+#                 egammalosb = np.arccos(( np.sin(theta) * np.cos(ethetab) - np.cos(theta) * np.sin(ethetab) * np.cos(ephib)) / np.sin(ethetalosb)) ## CJ99 eq44; gammalosb=pi-phiblos; this is going into the geometric tensors.
 
 #                 #print (ethetalosb,egammalosb)
 #                 ## Calculate the statistical equilibrium
@@ -287,7 +287,7 @@ else:
 # f2 = np.loadtxt("./DB.INPUT",dtype=np.float32, comments='*',skiprows=6)
 
 # heights    = np.round(np.linspace(f2[2],f2[3],np.int32(f1[0]),dtype=np.float32),2) ## solar radius units. This corresponds to offlimb heights of 1-2 solar radius, with intervals of 0.01
-# densities  = np.round(10.**np.linspace(f2[0],f2[1],f1[1],dtype=np.float32),3)      ## array of densities to be probed. This gives roughly 10 density samples for each order of magnitude in the logarithmic density space spanning 10^6-10^12 electrons. 
+# densities  = np.round(10.**np.linspace(f2[0],f2[1],f1[1],dtype=np.float32),3)      ## array of densities to be probed. This gives roughly 10 density samples for each order of magnitude in the logarithmic density space spanning 10^6-10^12 electrons.
 # losdepth   = np.linspace(f2[4],f2[5], f1[2],dtype=np.float32)                      ## los depth to be sampled; 1 radius centered in the POS, with 0.05 intervals
 # phic       = np.linspace(f2[6],f2[7], f1[3],dtype=np.float32)#*180/np.pi            ## Phi_b POS azimuthal angle; rad to deg; 2 deg resolution
 # thetac     = np.linspace(f2[8],f2[9], f1[4],dtype=np.float32)#*180/np.pi            ## Theta_b LOS longitudinal angle;rad to deg; 2 deg resolution

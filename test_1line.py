@@ -50,7 +50,7 @@ from astropy.io import fits       ## To properly load DKISt Cryo-NIRSP data
 # sobsa = 0
 
 
-# #### 1.b MURAM data example loading
+# #### 2.a MURAM data example loading
 
 # In[2]:
 
@@ -73,7 +73,7 @@ head_in =[{'CRPIX1':0, 'CRPIX2':0, 'CRPIX3':0, 'CRVAL1': -0.071, 'CRVAL2': 0.989
 sobsa = 0
 
 
-# #### 1.c DKIST Cryo-NIRSP Provisional example data (Integrated required).
+# #### 3.a DKIST Cryo-NIRSP Provisional example data (Integrated required).
 
 # In[3]:
 
