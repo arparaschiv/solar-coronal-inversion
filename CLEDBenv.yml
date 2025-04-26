@@ -17,6 +17,6 @@ dependencies:
  - jupyterlab       ## 4.3.5
  - matplotlib       ## 3.10.0
 # - pytest           ## 8.3.5  ## necesary only for unit testing.
-# - sphinx=5.0.2           ## 8.23  Not required by CLEDB; used only to build the documentation locally; see more in docs/requirements.txt
-# - myst-parser=0.18.1     ## 4.0.1 Not required by CLEDB; used to add markdown parsing to documentation building.
-# - sphinx-rtd-theme=1.1.1 ## 3.0.2 Not required by CLEDB; theme for the documentation
+# - sphinx=8.2.3           ## 5.0.2  Not required by CLEDB; used only to build the documentation locally; see more in docs/requirements.txt
+# - myst-parser=4.0.1      ## 0.18.1 Not required by CLEDB; used to add markdown parsing to documentation building.
+# - sphinx-rtd-theme=3.0.2 ## 1.1.1 Not required by CLEDB; theme for the documentation

@@ -57,11 +57,11 @@ This document describes the main concepts, functions, and variables, comprising 
    cledb_build
    cledb_prepinv
    cledb_proc
-   api_reference
    outputs
    readmes
    changelog
    glossary
+   api_reference
 
 
 ..
