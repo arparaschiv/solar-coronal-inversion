@@ -95,7 +95,7 @@ def sobs_preprocess(sobs_in,headkeys,params):
     Main function to process an input observation and ingest the relevant header keywords. Generally, this function iterates over the observation maps and sends each pixel to the internal functions. It returns a processed observation array (input dependent) that is ready for analysis. Additional products are calculated via its subfunctions. e.g. a height map (used to match databases), signal statistics, etc.
 
     Parameters:
-    ----------
+    -----------
     sobs_in  : fltarr
                Input data array
     Headkeys : Input List of header keys, or record array, or structure
@@ -103,8 +103,8 @@ def sobs_preprocess(sobs_in,headkeys,params):
     params   : class
                Passes a set of inversion controling parameters
 
-    Returns
-    -------
+    Returns:
+    --------
     sobs_tot    : fltarr
                   Contains the background subtracted, integrated, and normalized Stokes IQUV spectra for 1-line ([xs,ys,4]) or 2-line ([xs,ys,8]) observations.
     yobs        : fltarr
@@ -206,7 +206,7 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     This is compatible to NUMBA object mode.
 
     Parameters:
-    ----------
+    -----------
     yobs     : fltarr
              Array of observation heights of the shape of the input data array.
     dobs     : fltarr
@@ -219,7 +219,7 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
              Passes a set of inversion controling parameters.
 
     Returns:
-    -------
+    --------
     dbnames     : strarr
                 Array of entire database set file names to match to the observation.
     database    : fltarr
@@ -518,8 +518,8 @@ def sdb_read(fildb,dbhdr,verbose):
     """
     Reading database files in memory and store in convenient variables.
 
-    Returns
-    -------
+    Returns:
+    --------
     db : fltarr [ncalc,nline,4]
        Output database file -1.590196830801
     """
@@ -1088,8 +1088,8 @@ def obs_integrate_atmred_1pix(para):
     Calculates a forward model of spectral line observation assuming single Gaussian profile for coronal line.
     This function and its helpers are derivatives of the Cryo-NIRSP community data redcution and analysis tutorial: https://bitbucket.org/dkist-community-code/cryonirsp-notebooks/src/main/first_release_specFitting/
 
-    Parameters
-    ----------
+    Parameters:
+    -----------
     LSF_RPOW  : Resolving power of line spread function
     opac      : An opacity factor to modify total telluric line absorpance
     velS      : Velocity shift of solar atlas relative to observed spectrum
@@ -1097,8 +1097,8 @@ def obs_integrate_atmred_1pix(para):
     strayfrac : Additional scalar fraction of straylight within spectrograph (i.e. the "veil" component)
     icont     : Amplitude of the background continuum intensity (dominated by scattered light)
 
-    Returns
-    -------
+    Returns:
+    --------
     ifit      : A model fit of the observation
     """
 
@@ -1320,8 +1320,6 @@ def obs_qurotate(sobs_tot,keyvals,hpxygrid):
                 sobs_totrot[xx,yy,5]=sobs_tot[xx,yy,5]*np.cos(2*aobs[xx,yy])-sobs_tot[xx,yy,6]*np.sin(2*aobs[xx,yy])
                 sobs_totrot[xx,yy,6]=sobs_tot[xx,yy,5]*np.sin(2*aobs[xx,yy])+sobs_tot[xx,yy,6]*np.cos(2*aobs[xx,yy])
 
-                
-
                 ## It would be more efficient to normalize sobs_totrot here, but then the normalization factor can not be easily transported to cledb_quderotate to bring back the profiles that can be compared to sobs_tot.
                 ## The normalization is done inside cledb_matchiquv or cledb_matchiqud
                 ## sobs_totrot[xx,yy,:]=sobs_totrot[xx,yy,:]/sobs_totrot[xx,yy,np.argwhere(sobs_totrot[xx,yy,:] == np.max(sobs_totrot[xx,yy,:]))[0,0]]
@@ -1495,7 +1493,7 @@ def iss_print(issuemask,tline=['fe-xiii_1074', 'fe-xiii_1079'],xx=0,yy=0,iss=0,m
     a. Plot  all issues encountered in a specific pixel (default output).
 
     Parameters:
-    ----------
+    -----------
     issuemask : intarr
               The encoded issue mask array.
     tline     : strarr
@@ -1503,15 +1501,15 @@ def iss_print(issuemask,tline=['fe-xiii_1074', 'fe-xiii_1079'],xx=0,yy=0,iss=0,m
     xx and yy : ints
               Pixel coordinates to be checked.
 
-    Returns
-    -------
+    Returns:
+    --------
     iss_text  : string
               All codes that got flagged for location xx and yy.
 
     b. Plot where a specific issue occurs in the entire observation map for either line.
 
     Parameters:
-    ----------
+    -----------
     issuemask : intarr
               The encoded issue mask array.
     iss       : int
@@ -1519,8 +1517,8 @@ def iss_print(issuemask,tline=['fe-xiii_1074', 'fe-xiii_1079'],xx=0,yy=0,iss=0,m
     map1      : boolean
               Flag to switch to map output. This needs to be set to false for one-pixel version of this function.
 
-    Returns
-    -------
+    Returns:
+    --------
     iss_inst  : intarr
               A map of the physical shape of issuemask that shows where the requested iss issues manifests.
     """
