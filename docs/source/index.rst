@@ -43,8 +43,6 @@ This document describes the main concepts, functions, and variables, comprising 
    Bugs or unintentional bad outcomes will still exist at this point in time.
    Please get in touch with us about any "feature" you discover.
 
-.. note::
-   Last updated at the :ref:`*update-readthedocs*<todo-label>` commit tag.
 
 .. toctree::
    :maxdepth: 3
