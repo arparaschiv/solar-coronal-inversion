@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CLEDB"
+version = "0.7.0-beta"
+description = "CLEDB is utilized to infer vector magnetic fields in the solar corona. "
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+  { name="Alin Paraschiv", email="arparaschiv at nso edu" }
+]
+requires-python = ">=3.13"
+
+## These are copied from CLEDBenv and should be updated if that config file changes.
+dependencies = ["python = 3.13", "numpy = 2.1", "numba = 0.61", "scipy = 1.15", "astropy = 7.0", 
+"pyyaml","ipython","ipymp", "tqdm", "jupyter","jupyterlab","matplotlib"
+ ]
+
+[project.urls]
+Homepage = "https://github.com/arparaschiv/solar-coronal-inversion"
+Documentation = "https://cledb.readthedocs.io"
+Source = "https://github.com/arparaschiv/solar-coronal-inversion"
+Tracker = "https://github.com/arparaschiv/solar-coronal-inversion/issues"
