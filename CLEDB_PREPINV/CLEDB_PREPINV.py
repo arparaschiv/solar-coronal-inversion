@@ -214,7 +214,7 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     keyvals : list
              Processed observation header keys.
     wlarr    : list of fltarr
-             List containing a set of wavelength dispersion axie for each observed line.
+             List containing a set of wavelength dispersion axis for each observed line.
     params   : class
              Passes a set of inversion controling parameters.
 
@@ -234,13 +234,13 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
                 Array for each pixel that stores the index of the entry in db_uniq of respective db_enc_flnm entries to be uniquely loaded in the database variable.
     """
 
-    if params.verbose >=1 and params.verbose <4:
+    if params.verbose >= 1 and params.verbose < 4:
         print('------------------------------------\n----SDB_PREPROCESS - READ START-----\n------------------------------------')
         if params.verbose >= 2 and params.verbose <4: start0=time.time()
     ######################################################################
     ## load what is needed from keyvals (these are unpacked so its clear what variables are being used. One can just use keyvals[x] inline.)
-    nx = keyvals[0]
-    ny = keyvals[1]
+    nx    = keyvals[0]
+    ny    = keyvals[1]
     nline = keyvals[3]
     tline = keyvals[4]
 
@@ -311,12 +311,10 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
                         ## Pycelp databases have Stokes V in units of signal per Angstrom. We divide the Stokes components if the input data is in signal per nm
                         ## Multiply by the conversion factor to scale the matched B field properly.
                         wvl_scl= 10 ** np.rint(np.log10((wlarr[0,0])/10000)) ## conversion factor between nm and angstrom measurements
-                        if (ij ==7):
-                            database0[ii][:,:,:,ij]=wvl_scl*database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
-                        elif (ij ==3):
-                            database0[ii][:,:,:,ij]=wvl_scl*database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
+                        if (ij == 7) or (ij == 3):
+                            database0[ii][:,:,:,ij] = wvl_scl*database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
                         else:
-                            database0[ii][:,:,:,ij]=database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
+                            database0[ii][:,:,:,ij] = database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
         # else:                                                ## Deprecated loop for older CLE databases that should not be used anymore. lines kept in case of need but commented/disabled.
         #     if params.verbose >= 1:
         #         print("A not common database generation scheme. Are you sure this is what you want to load?")
@@ -329,7 +327,7 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
         #                 database0[ii][:,:,:,:,ij]=database0[ii][:,:,:,:,ij]/database0[ii][:,:,:,:,0]
         #             elif dbhdr[-1] == 1:
         #                 database0[ii][:,:,:,ij]=database0[ii][:,:,:,ij]/database0[ii][:,:,:,0]
-    elif nline == 1:                                          ## ONE-LINE BRANCH ## Prepare for future, not really used downstream
+    elif nline == 1:                                          ## ONE-LINE BRANCH ## contingency branch that might be used in the future, not really used downstream
         database0=[None]*db_uniq.shape[0]
         for ii in range(db_uniq.shape[0]):
             database0[ii]=np.append(sdb_read(dbnames[0][db_uniq[ii]],dbhdr,params.verbose),sdb_read(dbnames[1][db_uniq[ii]],dbhdr,params.verbose),axis=-1)
