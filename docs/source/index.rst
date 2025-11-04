@@ -18,7 +18,7 @@ This document describes the main concepts, functions, and variables, comprising 
 
 **Authors and Contact:**
 
-| Alin Paraschiv, Philip Judge, and Thomas Schad
+| Alin Paraschiv and Philip Judge
 | -- National Solar Observatory, AURA
 | -- High Altitude Observatory, NCAR|UCAR
 
