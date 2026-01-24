@@ -23,7 +23,7 @@ class ctrlparams:
         self.ncpu         = 100                                                                ## Number of cpu cores to use. If more than the available cores are requested, n-2 available cores are used.
 
         ## Used in CLEDB_PREPINV
-        self.integrated   = True                                                              ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO
+        self.integrated   = False                                                              ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO
         self.dblinpolref  = 0                                                                  ## Parameter for changing the database calculation linear reference. Should not need changing in normal situations. radian units.
         self.instwidth    = 0                                                                  ## Parameter for fine-correcting non-thermal widths if instrument widths are known or computed by user. nm units.
         self.atmred       = False                                                              ## Parameter that controls whether to reduce photospheric and atmospheric contributions using spectral atlases. Useful for Cryo-NIRSP L1 data.
