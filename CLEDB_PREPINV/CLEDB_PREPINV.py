@@ -65,8 +65,10 @@ import scipy
 
 import multiprocessing
 from tqdm import tqdm
-from astropy.wcs import WCS
 import astropy.units as u
+from astropy.wcs import WCS
+from astropy.wcs.wcs import FITSFixedWarning
+import warnings
 import time
 import glob
 import os
@@ -592,7 +594,6 @@ def obs_headstructproc(sobs_in,headkeys,params):
     nx,ny=sobs_in[0].shape[0:2]
     #nx,ny=sobs_in[0].shape[0:2] if sobs_in[0].shape[0] == headkeys[0]['NAXIS1'] and sobs_in[0].shape[1] == headkeys[0]['NAXIS2'] else print("Mismatch in array shapes; Fix before continuing") ## alternatively, these can be read from naxis[1-3]; Will be updated when keywords are known for all sources
 
-    
     ######################################################################
     ## Unpacks the header metadata information from the observation
     linestr = ["fe-xiii_1074","fe-xiii_1079","si-x_1430","si-ix_3934", "mg-viii_3028/"]
@@ -721,19 +722,23 @@ def obs_headstructproc(sobs_in,headkeys,params):
 
 ## array coordinate keywords
 ## These needs to be changed based on observation. For CLE this is normally the information in GRID.DAT
-    if headkeys[0]['INSTRUME'] == "CLE-SIM" or headkeys[0]['INSTRUME']  == "MUR-SIM"\
-    or headkeys[0]['INSTRUME'] == "PyCELP":                                                   ## CASE 1: Simulated OBSERVATIONS
+    instr = headkeys[0]['INSTRUME']
+    # if it's an array-like, force scalar
+    if isinstance(instr, (list, tuple, np.ndarray)):
+        instr = instr[0]
+    
+    if instr in ("CLE-SIM", "MUR-SIM", "PyCELP"):                                             ## CASE 1: Simulated OBSERVATIONS
         crpix1 = headkeys[0]['CRPIX1']                                                        ## Rerefence pixels along all dimensions
         crpix2 = headkeys[0]['CRPIX2']
         if nline == 1:
-            crpix3 =  [np.int32(headkeys[0]['CRPIX3']),0]                                       ## Dummy 0 output, not used.
+            crpix3 =  [np.int32(headkeys[0]['CRPIX3']),0]                                     ## Dummy 0 output, not used.
         else:
             crpix3 = [np.int32(headkeys[0]['CRPIX3']),np.int32(headkeys[1]['CRPIX1'])]        ## two lines have different wavelength parameters
 
         crval1 = np.float32(headkeys[0]['CRVAL1'])                                            ## solar/wavelength coordinates at crpixn in r_sun/angstrom;
         crval2 = np.float32(headkeys[0]['CRVAL2'])
         if nline == 1:
-            crval3 = [np.float32(headkeys[0]['CRVAL3']),0]                                     ## Dummy 0 output, not used.
+            crval3 = [np.float32(headkeys[0]['CRVAL3']),0]                                    ## Dummy 0 output, not used.
         else:
             crval3 = [np.float32(headkeys[0]['CRVAL3']), np.float32(headkeys[1]['CRVAL3'])]
 
@@ -744,7 +749,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
         else:
             cdelt3 = [np.float32(headkeys[0]['CDELT3']), np.float32(headkeys[1]['CDELT3'])]
 
-    elif (headkeys[0]['INSTRUME'] == "COMP"):                                                 ## CASE 2: COMP OBSERVATIONS
+    elif (instr == "COMP"):                                                                   ## CASE 2: COMP OBSERVATIONS
 
         crpix1 = headkeys[0]['CRPIX1']                                                        ## Comp takes reference at center
         crpix2 = headkeys[0]['CRPIX2']
@@ -764,7 +769,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
         else:
             cdelt3 = [0.0,0.0]                                                                ## not used for integrated data such as CoMP
 
-    elif (headkeys[0]['INSTRUME'] == "UCoMP"):                                                ##CASE 3: uCoMP OBSERVATIONS;;
+    elif (instr == "UCoMP"):                                                                  ## CASE 3: uCoMP OBSERVATIONS;;
 
         crpix1 = headkeys[0]['CRPIX1']                                                        ## Comp takes reference at center
         crpix2 = headkeys[0]['CRPIX2']
@@ -787,7 +792,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
         else:
             cdelt3 = [0.0,0.0]
 
-    elif (headkeys[0][0]['INSTRUME'] == "CRYO-NIRSP") or (headkeys[0]['INSTRUME'] == "CRYO-NIRSP"):  ## CASE 3: Cryo-NIRSP OBSERVATIONS;
+    elif (instr == "CRYO-NIRSP"):                                                             ## CASE 3: Cryo-NIRSP OBSERVATIONS;
         ### Cryo-NIRSP specifications defines CRPIX1=wavelength, CRPIX2= spatial and CRPIX3=spatial.
         ### We translate these to keep all data sources consistent to: CRPIX1=spatial, CRPIX2= spatial and CRPIX3=wavelength
 
@@ -795,15 +800,15 @@ def obs_headstructproc(sobs_in,headkeys,params):
         ########### GET SPECTRAL DISPERSION AXIS #######
         ## Use the WCS tools for this as the dispersion axis in not strictly linear
         ## the spectral dispersion axis type (CTYPE1) is 'AWAV-GRA' refers to a grating func for air wavelengths
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")  ## TO ELIMINATE datafix warnings
-            wcs1 = WCS(headkeys[0][0])
-            nwv1 = headkeys[0][0]['NAXIS1']
-            wlarr[:,0] = wcs1.array_index_to_world(0,0,np.arange(nwv1))[0].to(u.nm).value[:2].reshape(1,nwv1)
-            if nline == 2:
-                wcs2 = WCS(headkeys[1][0])
-                nwv2 = headkeys[1][0]['NAXIS1']
-                wlarr[:,1] = wcs2.array_index_to_world(0,0,np.arange(nwv2))[0].to(u.nm).value[:2]
+        warnings.filterwarnings("ignore", category=FITSFixedWarning)  ## TO ELIMINATE datafix warnings
+        wcs1 = WCS(headkeys[0][0])
+        nwv1 = headkeys[0][0]['NAXIS1']
+        wlarr = np.zeros((nwv1,nline),dtype=np.float32)                  ## In this case we redefine wlarr to process Cryo data, even if integrated through separate fitting
+        wlarr[:,0] = wcs1.array_index_to_world(0,0,np.arange(nwv1))[0].to(u.nm).value
+        if nline == 2:
+            wcs2 = WCS(headkeys[1][0])
+            nwv2 = headkeys[1][0]['NAXIS1']
+            wlarr[:,1] = wcs2.array_index_to_world(0,0,np.arange(nwv2))[0].to(u.nm).value
 
 
         crpix1 = headkeys[0][0]['CRPIX2']                                    ##
@@ -823,8 +828,8 @@ def obs_headstructproc(sobs_in,headkeys,params):
         p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 50000)     ## dynamically defined from system query as total CPU core number - 2
         arg_array = []
 
-        for yy in range(ny):
-            arg_array.append((yy,headkeys[0][ny],WCS(headkeys[0][yy]),headkeys[0][yy]["NAXIS2"]))
+        for xx in range(nx):
+            arg_array.append((xx,WCS(headkeys[0][xx]),headkeys[0][xx]["NAXIS2"]))
 
         if params.verbose >= 1:       ## Some progressbar print output
             print("OBS_HEADSTRUCTPROC: Processing the pointing and header information:")
@@ -834,11 +839,10 @@ def obs_headstructproc(sobs_in,headkeys,params):
             rs = p.starmap(obs_headstructproc_work_1pix,arg_array)
 
         p.close()
-
         for i,res in enumerate(rs):
-            xloc,yloc,x,y = res
-            hpxygrid[0,:,yloc] =  x
-            hpxygrid[1,:,yloc] =  y
+            steploc,x,y = res
+            hpxygrid[0,steploc,:] =  x
+            hpxygrid[1,steploc,:] =  y
 
     else:
         if params.verbose >= 1: print("OBS_HEADSTRUCTPROC: FATAL! Observation keywords not recognized.") ## fatal error
@@ -875,18 +879,16 @@ def obs_headstructproc(sobs_in,headkeys,params):
 
 ###########################################################################
 ###########################################################################
-def obs_headstructproc_work_1pix(yy,wcs_pix,ys):
+def obs_headstructproc_work_1pix(xx,wcs_pix,ys):
     """
     Helper function defining for parallelizing *obs_headstructproc*.
     """
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")  ## TO ELIMINATE datafix warnings
-        xy = wcs_pix.array_index_to_world(0,np.arange(ys),0)[1]
-        x,y,obstime = xy.Tx.value,xy.Ty.value
+    xy  = wcs_pix.array_index_to_world(0,np.arange(ys),0)[1]
+    x,y = xy.Tx.value,xy.Ty.value
     ## return current scan step number, current measurement number,
     ## Tx and Ty helioprojective coordinates, and the observation time.
-    return yy,x,y
+    return xx,x,y
 ###########################################################################
 ###########################################################################
 
@@ -923,7 +925,7 @@ def obs_calcheight(keyvals,hpxygrid):
     else:                        ## Cryo_NIRSP
         for xx in range(nx):
             for yy in range(ny):
-                yobs[xx,yy] = np.sqrt(hpxygrid[0,xx,yy]**2 + hpxygrid[1,xx,yy]**2 )     ## Use the rectangular coordinate grid array
+                yobs[xx,yy] = np.sqrt(hpxygrid[0,xx,yy]**2 + hpxygrid[1,xx,yy]**2 )*720/695700     ## Use the rectangular coordinate grid array converrts to R_SUN
 
     return yobs
 ###########################################################################

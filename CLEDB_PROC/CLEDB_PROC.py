@@ -62,6 +62,7 @@ import time
 
 from scipy.optimize import curve_fit
 from tqdm import tqdm
+import warnings
 
 import constants
 import ctrlparams
@@ -539,7 +540,7 @@ def spectro_proc(sobs_in,sobs_tot,snr,issuemask,background,wlarr,keyvals,consts,
     """
 
     if params.integrated == True: ## No spectroscopy on integrated data.
-        print("SPECTRO_PROC: FATAL! Integrated data for IQUD does not have a wavelength dimension. No spectroscopy products to compute!")
+        print("SPECTRO_PROC: FATAL! Integrated input data does not have a wavelength dimension. No spectroscopy products to compute!")
         return 0
 
     else:
@@ -963,7 +964,7 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
         database_sel = database_sel[outargs]
     else:
         ## In this "else" branch, outredindex is not used, but numba does not properly compile because the array is presumably used for matching.
-        outredindex = np.empty((nbphi,nsearch),dtype=np.float32)
+        outredindex = np.empty((nbphi,nsearch),dtype=np.int32)
         ## no NED encoded in pycelp databases
         ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
         if dbtype == 0:
@@ -994,8 +995,7 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     # print(scale_fact)
     # print((database_sel[0,:8] - sobs_1pix/norm_fact/snr)*wtg_fact)
     # print((database_sel[134,:8] - sobs_1pix/norm_fact/snr)*wtg_fact)
-    ndata = 3*2#              ## Number of observables; Stikes V not included in the fit so only 6 inputs.
-    denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
+    denom = 3*2-4            ## Number of observables; Stikes V not included in the fit so only 6 inputs / Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
     diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
 
     ##Sum the components for chi^2/. Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced.
@@ -1008,7 +1008,11 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
     ## it does a standard sorting, aranging only the first nsearch elements, making it much faster than np.argsort for few (<100) solutions.
     if nsearch <= 100:
-        asrt = cledb_partsort(chisq,nsearch)
+        #asrt = cledb_partsort(chisq,nsearch)
+        # Partial selection: smallest nsearch, NOT fully sorted
+        part = np.argpartition(chisq, nsearch)[:nsearch]
+        # Sort JUST the selected elements
+        asrt = part[np.argsort(chisq[part])]
     else: ## for a lot of solutions, a full sort will perform better
         asrt = np.argsort(chisq)[0:nsearch]
 
@@ -1018,6 +1022,12 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     ## whichever comes first!!
 
     ## initialize return indices and chisq of nearest solutions
+
+    if asrt.size == 0:                              ## no entries are compatible with the maxchisq requirement
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
+        nullout[:,0] = np.full(nsearch,-1)
+        return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
+
     si       = 0
     ix       = asrt[0]
     ixr      = asrt[0]
@@ -1134,7 +1144,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
         database_sel = database_sel[outargs]
     else:
         ## In this "else" branch, outredindex is not used, but numba does not properly compile because the array is presumably used for matching.
-        outredindex = np.empty((nbphi,nsearch),dtype=np.float32)
+        outredindex = np.empty((nbphi,nsearch),dtype=np.int32)
 
         ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
         ## no NED encoded in pycelp databases
@@ -1169,8 +1179,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     # print(scale_fact)
     # print((database_sel[0,:8] - sobs_1pix/norm_fact/snr)*wtg_fact)
     # print((database_sel[134,:8] - sobs_1pix/norm_fact/snr)*wtg_fact)
-    ndata = 3*2#              ## Number of observables; Stikes V not included in the fit so only 6 inputs.
-    denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
+    denom = 3*2-4             ## Number of observables; Stikes V not included in the fit so only 6 inputs / Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
     diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
 
     ##Sum the components for chi^2/. Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced.
@@ -1183,7 +1192,11 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
     ## it does a standard sorting, aranging only the first nsearch elements, making it much faster than np.argsort for few (<100) solutions.
     if nsearch <= 100:
-        asrt = cledb_partsort(chisq,nsearch)
+        #asrt = cledb_partsort(chisq,nsearch)
+        # Partial selection: smallest nsearch, NOT fully sorted
+        part = np.argpartition(chisq, nsearch)[:nsearch]
+        # Sort JUST the selected elements
+        asrt = part[np.argsort(chisq[part])]
     else: ## for a lot of solutions, a full sort will perform better
         asrt =np.argsort(chisq)[0:nsearch]
 
@@ -1287,7 +1300,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
 #         if verbose >= 3:print("CLEDB_MATCH: using reduced DB:",database_sel.shape,outredindex.shape)
 
 #     else:
-#         outredindex = np.empty((nbphi,nsearch),dtype=np.float32)                ## In this branch, outredindex is never used, but numba does not properly compile because the array is presumably presumably used for matching.
+#         outredindex = np.empty((nbphi,nsearch),dtype=np.int32)                ## In this branch, outredindex is never used, but numba does not properly compile because the array is presumably presumably used for matching.
 #         database_sel = np.reshape(database_sel,(ned*ngx*nbphi*nbtheta,8))       ## Reshape is found to be the fastest python/numpy/numba method to reorganize array dimensions.
 #         ## Different from IQUV implementation
 #         outargs=np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobsd_1pix[2]+1e-7) )[:,0]   ## keeps the argument for the reduced entry based on the sign from doppler waves.
@@ -1433,7 +1446,7 @@ def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
     ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
     outredindex = np.zeros((nbphi,2*nsearch),dtype=np.int32)
 
-    if dbtype == 0:
+    if database_in.ndim == 5 and dbtype == 0:
         datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
 
         for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
@@ -1455,7 +1468,7 @@ def cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch):
         ## now work with reduced dataset with nbtheta replaced by nsearch. The full dimensions of the database are no longer needed. It is converted to a [index,8] shape
         return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
 
-    elif dbtype == 1:
+    elif database_in.ndim == 4 and dbtype == 1:
         datasel     = np.zeros((ngx,nbphi,2*nsearch,8),dtype=np.float32)
 
         for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
@@ -1494,9 +1507,6 @@ def cledb_getsubsetiqud(sobs_1pix,sobsd_1pix,dbhdr,database_in,nsearch):
     dbcgrid, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
     bthetamin, bthetamax, nline, wavel, dbtype = dbhdr
 
-    ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
-    datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
-    outredindex = np.zeros((nbphi,2*nsearch),dtype=np.float32)
     ##NOTE: the sorting done here only takes into account the linear polarization tangent of the observation.
     ##      This sorting is not 1:1 equivalent with the main chi^2 sorting.
     ##      To be sure all compatible solutions are captured nsearch*2 solutions must be enforced here, and further refined in cledb_match
@@ -1523,7 +1533,7 @@ def cledb_getsubsetiqud(sobs_1pix,sobsd_1pix,dbhdr,database_in,nsearch):
     ## Create the reduced arrays for analysis; we don't need more than the desired nsearch subsets
     outredindex = np.zeros((nbphi,2*nsearch),dtype=np.int32)
 
-    if dbtype == 0:
+    if database_in.ndim == 5 and dbtype == 0:
         datasel     = np.zeros((ned,ngx,nbphi,2*nsearch,8),dtype=np.float32)
 
         for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
@@ -1545,7 +1555,7 @@ def cledb_getsubsetiqud(sobs_1pix,sobsd_1pix,dbhdr,database_in,nsearch):
         ## now work with reduced dataset with nbtheta replaced by nsearch. The full dimensions of the database are no longer needed. It is converted to a [index,8] shape
         return np.reshape(datasel,(ned*ngx*nbphi*2*nsearch,8)),outredindex
 
-    elif dbtype == 1:
+    elif database_in.ndim == 4 and dbtype == 1:
         datasel     = np.zeros((ngx,nbphi,2*nsearch,8),dtype=np.float32)
 
         for ir in range(bphir.shape[0]):                           ## loop over bphi in cle frame
@@ -1638,23 +1648,23 @@ def cledb_params(index,dbcgrid,dbtype):
     For input index, get the i,j,k,l indices in a database.
     """
 
-    ned     = np.int32(dbcgrid[1])
-    ngx     = np.int32(dbcgrid[2])
-    nbphi   = np.int32(dbcgrid[3])
-    nbtheta = np.int32(dbcgrid[4])
+    ned     = dbcgrid[1]
+    ngx     = dbcgrid[2]
+    nbphi   = dbcgrid[3]
+    nbtheta = dbcgrid[4]
     n5      = ngx*nbphi*nbtheta
     n4      =     nbphi*nbtheta
     n3      =           nbtheta
 
     if dbtype == 0:
-        i = index   //        n5
+        i = np.int32(index   //        n5)
     else:
-        i = 0                       ## pycelp databases do not implicitly encode density ranges; i index is 0
+        i = np.int32(0)                       ## pycelp databases do not implicitly encode density ranges; i index is 0
     j     = index   -     i * n5
-    j     = j      //         n4
+    j     = np.int32(j      //         n4)
     k     = index   -     i * n5 - j * n4
-    k     = k      //         n3
-    l     = index   -     i * n5 - j * n4 - k * n3
+    k     = np.int32(k      //         n3)
+    l     = np.int32(index   -     i * n5 - j * n4 - k * n3)
 
     return i,j,k,l
 ###########################################################################
