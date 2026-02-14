@@ -70,9 +70,11 @@ params=ctrlparams.ctrlparams()    ## just a shorter label
 
 import os
 os.environ['NUMBA_DISABLE_JIT'] = str(np.int32(params.jitdisable))
+if params.verbose < 2: np.seterr(divide='ignore', invalid='ignore', over='ignore')
 
-from numba import jit,njit ##,prange; disabled prange. Multiprocessing used instead.
-from numba.typed import List  ## numba list is needed as standard reflected python list ingestion will be deprecated in numba
+
+from numba import jit,njit     ##,prange; disabled prange. Multiprocessing used instead.
+from numba.typed import List   ## numba list is needed as standard reflected python list ingestion will be deprecated in numba
 
 from CLEDB_PREPINV.CLEDB_PREPINV import iss_block   ## import the issue trtacking module
 
@@ -203,7 +205,7 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,dobs,snr,issue
     ## Main loops to do the matching pixelwise
     ## We use the iqud keyword to run the fucntion that matches either IQUV or IQUD data.
     if iqud == True:
-        #### old version with numba parallelization. Disable but keep commented.
+        #### old version with numba parallelization. obsolete but kept commented.
         # if verbose >= 3:         ## Heavy print output
         #     for xx in range(nx):
         #         print("CLEDB_INVPROC (IQUD): Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
@@ -274,7 +276,7 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,dobs,snr,issue
                 if snr[xx,yy,0] <1 and 2048 not in iss_block(issuemask[xx,yy,k]):        issuemask[xx,yy,k] += 2048
 
     else:
-        #### old version with numba parallelization. Disable but keep commented.
+        #### old version with numba parallelization. Obsolete but kept commented.
         # if verbose >= 3:         ## Heavy print output
         #     for xx in range(nx):
         #         print("CLEDB_INVPROC (IQUV): Executing ext. loop: ",xx," of ",nx," (",ny," calculations / loop )")
@@ -444,10 +446,10 @@ def blos_proc(sobs_tot,snr,issuemask,keyvals,consts,params):
         ######################################################################
         ##Setup a multiprocessing worker to split the tasks
         p         = multiprocessing.Pool(processes = min(params.ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 50000) ## dynamically defined from system query as total CPU core number - 1
-        ## argument index keeper for splitting tasks to cpu cores
-        arg_array = []
 
         for zz in range(0,nline):
+            ## argument index keeper for splitting tasks to cpu cores
+            arg_array = []
             ## initialize constants
             const = consts.Constants(tline[zz])                       ## for each line load the correct constants
 
@@ -945,7 +947,7 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     if np.isnan(sobs_1pix).any() or np.count_nonzero(sobs_1pix) == 0:
         nullout = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
-        if verbose >= 3: print("CLEDB_MATCHIQUV: FATAL! No observation in voxel!")
+        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUV: FATAL! No observation in voxel!")
         return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
 
     ##  Read the database in full or reduced mode ## database_sel becomes the reduced database in both cases
@@ -979,11 +981,10 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     ## Normalize the input data to the strongest component and do a scaling to assign more equal weights to QU similar to I
     ## NOTE: Below we use these factors heavily to avoid altering the sobs_1pix or database_sel arrays
     norm_fact        = sobs_1pix[0]#sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0,0]]     ## normalization factor for the observation
-    wtg_fact         = np.array((1,1,1,0,0.01,1,1,0))                                  ## weighting factor for the chi^2 fit
+    wtg_fact         = np.array((1,1,1,0,0.01,1,1,0))                                   ## weighting factor for the chi^2 fit
     #scale_fact       = np.ones(8,dtype=np.float32)                                     ## scaling factor for Q and U components Just weighting the fits works better.
     #scale_fact[1:7]  = 10**(-np.floor(np.log10(np.abs(sobs_1pix[1:7]/norm_fact))) - 1) ## I1 and V2 have scale factors of 1
     #scale_fact[3:5]  = 1                                                               ## V1 and I2 also get scale factors of 1
-
     ## Geometric solution is based on a reduced chi^2 measure fit. We match sobs data with database_sel using the reduced chi^2 method.
     ## If observation has Stokes V, we include it in the difference for the chi^2, although it will have low influence because of small v/i. Can be ignored by weighting.
     #diff = np.zeros((database_sel.shape[0],8),dtype=np.float32)
@@ -1016,18 +1017,19 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     else: ## for a lot of solutions, a full sort will perform better
         asrt = np.argsort(chisq)[0:nsearch]
 
+    ## escape for when no solutions are matched at all.
+    if asrt.size == 0:                              ## no entries are compatible with the maxchisq requirement
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
+        nullout[:,0] = np.full(nsearch,-1)
+        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUV: FATAL! No entries are compatible with the maxchisq requirement")
+        return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
+
     ## the following will compute the first nsearch solutions
     ## OR
     ## solutions that have chi^2 less than maxchisq
     ## whichever comes first!!
 
     ## initialize return indices and chisq of nearest solutions
-
-    if asrt.size == 0:                              ## no entries are compatible with the maxchisq requirement
-        nullout = np.zeros((nsearch,11),dtype=np.float32)
-        nullout[:,0] = np.full(nsearch,-1)
-        return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
-
     si       = 0
     ix       = asrt[0]
     ixr      = asrt[0]
@@ -1038,7 +1040,7 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
         nullout      = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
         nullout[:,1] = np.full(nsearch,chisq[ixr])
-        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUV: WARNING! No solutions in this pixel compatible with the maximum Chi^2 constraint.")
+        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUV: FATAL! No solutions in this pixel compatible with the maximum Chi^2 constraint.")
         return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
 
     ## arrays for storing the results
@@ -1058,15 +1060,16 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
             ## If Stokes V is less than 1e-7, the matched field strength is 0 regardless of contents of the observation (usually it is very small).
             if bcalc == 0:                       ## using first line
                 ## for division operation precision when database bfields are close to 0;
-                bfield = np.abs(database_sel[ixr,3])>1e-7 and sobs_1pix[3] / norm_fact / database_sel[ixr,3] or 0
+                #print(sobs_1pix[3]/norm_fact, database_sel[ixr,3]))
+                bfield = np.abs(database_sel[ixr,3])>1e-8 and sobs_1pix[3] / norm_fact / database_sel[ixr,3] or 0
                 #print(sobs_1pix[3]/norm_fact, database_sel[ixr,3])
                 #bfield = (sobs_1pix[3]/norm_fact)/(database_sel[ixr,3]+1e-8)
             if bcalc == 1:                       ## using second line
-                bfield = np.abs(database_sel[ixr,7])>1e-7 and sobs_1pix[7] / norm_fact / database_sel[ixr,7] or 0
+                bfield = np.abs(database_sel[ixr,7])>1e-8 and sobs_1pix[7] / norm_fact / database_sel[ixr,7] or 0
                 #bfield = (sobs_1pix[7]/norm_fact)/(database_sel[ixr,7]+1e-8)
             if bcalc == 2:                       ## using the average of the two lines
-                bfield = 0.5*((np.abs(database_sel[ixr,7])>1e-7 and sobs_1pix[7] / norm_fact / database_sel[ixr,7] or 0) +\
-                              (np.abs(database_sel[ixr,3])>1e-7 and sobs_1pix[3] / norm_fact / database_sel[ixr,3] or 0))
+                bfield = 0.5*((np.abs(database_sel[ixr,7])>1e-8 and sobs_1pix[7] / norm_fact / database_sel[ixr,7] or 0) +\
+                              (np.abs(database_sel[ixr,3])>1e-8 and sobs_1pix[3] / norm_fact / database_sel[ixr,3] or 0))
                 #bfield = 0.5*((sobs_1pix[3]/norm_fact)/(database_sel[ixr,3]+1e-8) + (sobs_1pix[7]/norm_fact)/(database_sel[ixr,7]+1e-8) )
             ## No bcalc == 3 in a full stokes inversion ## this is enforced upstream in cledb_invproc
 
@@ -1128,7 +1131,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     if np.isnan(sobs_1pix).all() or np.count_nonzero(sobs_1pix) == 0:
         nullout = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
-        if verbose >= 3: print("CLEDB_MATCHIQUD: FATAL! No observation in voxel!")
+        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUD: FATAL! No observation in voxel!")
         return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
 
     ##  Read the database in full or reduced mode ## database_sel becomes the reduced database in both cases
@@ -1200,6 +1203,13 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     else: ## for a lot of solutions, a full sort will perform better
         asrt =np.argsort(chisq)[0:nsearch]
 
+    ## escape for when no solutions are matched at all.
+    if asrt.size == 0:                              ## no entries are compatible with the maxchisq requirement
+        nullout = np.zeros((nsearch,11),dtype=np.float32)
+        nullout[:,0] = np.full(nsearch,-1)
+        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUV: FATAL! No entries are compatible with the maxchisq requirement")
+        return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
+
     ## the following will compute the first nsearch solutions
     ## OR
     ## solutions that have chi^2 less than maxchisq
@@ -1216,7 +1226,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
         nullout      = np.zeros((nsearch,11),dtype=np.float32)
         nullout[:,0] = np.full(nsearch,-1)
         nullout[:,1] = np.full(nsearch,chisq[ixr])
-        if verbose >= 3: print("CLEDB_MATCHIQUD: WARNING! No solutions in this pixel compatible with the maximum Chi^2 constraint.")
+        if verbose >= 3: print("x = ",xx," y = ", yy,"CLEDB_MATCHIQUD: WARNING! No solutions in this pixel compatible with the maximum Chi^2 constraint.")
         return xx,yy,nullout,np.zeros((nsearch,8),dtype=np.float32)
 
     ## arrays for storing the results

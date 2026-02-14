@@ -78,6 +78,7 @@ import ctrlparams
 params=ctrlparams.ctrlparams()    ## just a shorter label
 
 os.environ['NUMBA_DISABLE_JIT'] = str(np.int32(params.jitdisable))
+if params.verbose < 2: np.seterr(divide='ignore', invalid='ignore', over='ignore')
 
 from numba import jit,njit
 from numba.typed import List  ## numba list is needed as standard reflected python list ingestion will be deprecated in numba
@@ -151,13 +152,13 @@ def sobs_preprocess(sobs_in,headkeys,params):
             sobs_tot,snr,background,issuemask = obs_integrate(sobs_in,wlarr,keyvals,params.verbose,params.ncpu,params.atmred)
         else:
             if params.verbose >=1:
-                print('SOBS_PREPROCESS: FATAL! INPUT DATA does NOT have a wavelength dimension. Integrated keyword incorrect? Aborting!')
+                print('SOBS_PREPROCESS: FATAL! INPUT DATA does NOT have a wavelength dimension. Integrated keyword incorrectly set? Aborting!')
             return -1,0,0,0,0,0,0,0,0,0
 
     else:    ##Integrated observation array initialization
         sobs_tot   = np.concatenate((sobs_in[0],sobs_in[1]),axis=2)
-        snr        = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)
-        background = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1 ## set the array to -1 because it can't be computed
+        snr        = np.ones((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)     ## output array to record snr statistics of the profile
+        background = np.zeros((keyvals[0],keyvals[1],keyvals[3]*4),dtype=np.float32)-1  ## set the array to -1 because it can't be computed
         issuemask  = np.zeros((keyvals[0],keyvals[1],keyvals[3]))
 
     if keyvals[3] == 2:          ##TWO LINE BRANCH

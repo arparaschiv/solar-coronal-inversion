@@ -16,10 +16,10 @@ class ctrlparams:
         """
         Class only performs a main initialization for all variables.
         """
-        ## general params
+        ## General params
         self.dbdir        = './CLEDB_BUILD/'                                                   ## directory for database
         self.lookuptb     = self.dbdir + 'chianti_v10.1_pycelp_fe13_h99_d120_ratio.npz'        ## CHIANTI density look-up table
-        self.verbose      = 2                                                                  ## verbosity parameter
+        self.verbose      = 1                                                                  ## verbosity parameter
         self.ncpu         = 100                                                                ## Number of cpu cores to use. If more than the available cores are requested, n-2 available cores are used.
 
         ## Used in CLEDB_PREPINV
@@ -36,7 +36,7 @@ class ctrlparams:
         self.reduced      = False                                                              ## Boolean; parameter for reduced database search using linear polarization azimuth
         self.iqud         = False                                                              ## Boolean; parameter for IQU + Doppler data matching when Stokes V is not measurable
 
-        ##numba jit flags
+        ##Numba jit flags
         self.jitparallel  = False                                                              ## Boolean; Enable or disable numba jit parralel interpreter. Parallel runs
         self.jitcache     = False                                                              ## Boolean; Jit caching for slightly faster repeated execution. Enable only after no changes to @jit functions are required. Otrherwise kernel restarts are needed to clear caches.
         self.jitdisable   = True                                                               ## Boolean; enable or disable numba jit entirely; Requires python kernel restart!
