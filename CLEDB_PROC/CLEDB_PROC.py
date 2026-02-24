@@ -394,7 +394,8 @@ def blos_proc(sobs_tot,snr,issuemask,keyvals,consts,params):
 
     This uses the "improved" magnetograph formulation discussed in eq 40 Casini &Judge 99, eq 14 of Plowman 2014, and eq 17 and 18 of Dima & Schad 2020
     Follows the discussion in the three papers and adopts different analythical implementations based on the line combination used.
-    As shown in the papers the magnetograph formulation is not precise in terms of recovering the LOS magnetic field.
+    As shown in the papers the magnetograph formulation is not precise in86
+h1.80 IQUD: 296698 3302 98.899333 terms of recovering the LOS magnetic field.
     Differences of the order of plus-minus 2 times actual values based on the atomic alignment, F factor, and LOS angle theta can manifest.
 
     The function will produce a set of 2 times degenerate magnetograph along with a classic magnetograph and a field azimuth for each ingested line/observation.
@@ -1165,7 +1166,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
 
     ## Normalize the input data to the strongest component and do a scaling to assign more equal weights to QU similar to I
     ## NOTE: Below we use these factors heavily to avoid altering the sobs_1pix or database_sel arrays
-    norm_fact        = sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0,0]]     ## normalization factor for the observation
+    norm_fact        = sobs_1pix[0] #sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0,0]]     ## normalization factor for the observation
     wtg_fact         = np.array((1,1,1,0,0.01,1,1,0))                                  ## weighting factor for the chi^2 fit
     #scale_fact       = np.ones(8,dtype=np.float32)                                     ## scaling factor for Q and U components Just weighting the fits works better.
     #scale_fact[1:7]  = 10**(-np.floor(np.log10(np.abs(sobs_1pix[1:7]/norm_fact))) - 1) ## I1 and V2 have scale factors of 1

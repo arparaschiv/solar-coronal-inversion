@@ -1192,7 +1192,7 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,wlarr,wcont,dwv,sobs_in_1pix):
         ## the sums give 4 values (for each iquv spectral signal) of noise before and after the line emission in the wavelength range.
         ## Finaly it divides by the amount of points summed over for each components.
         #background_1pix     = (np.sum(sobs_in_1pix[0:lr0[0,0],:],axis=0) + np.sum(sobs_in_1pix[lr0[-1,0]:,:],axis=0)) / (nw-lr0[-1,0]+lr0[0,0]+1)
-        background_1pix      = np.mean(sobs_in_1pix[wcont:wcont+3:,:],axis = 0)       ## just evaluate and subtract the continuuum observed around specific wavelentghts.
+        background_1pix      = np.nanmean(sobs_in_1pix[wcont:wcont+3:,:],axis = 0)       ## just evaluate and subtract the continuuum observed around specific wavelentghts.
         #background_1pix = 0
 
         ## Temporary array to store the background subtracted spectra. All four component done in one call.
