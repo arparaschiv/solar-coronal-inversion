@@ -394,8 +394,7 @@ def blos_proc(sobs_tot,snr,issuemask,keyvals,consts,params):
 
     This uses the "improved" magnetograph formulation discussed in eq 40 Casini &Judge 99, eq 14 of Plowman 2014, and eq 17 and 18 of Dima & Schad 2020
     Follows the discussion in the three papers and adopts different analythical implementations based on the line combination used.
-    As shown in the papers the magnetograph formulation is not precise in86
-h1.80 IQUD: 296698 3302 98.899333 terms of recovering the LOS magnetic field.
+    As shown in the papers the magnetograph formulation is not precise in terms of recovering the LOS magnetic field.
     Differences of the order of plus-minus 2 times actual values based on the atomic alignment, F factor, and LOS angle theta can manifest.
 
     The function will produce a set of 2 times degenerate magnetograph along with a classic magnetograph and a field azimuth for each ingested line/observation.
