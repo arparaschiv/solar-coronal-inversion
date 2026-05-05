@@ -115,7 +115,7 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,dobs,snr,issue
     aobs        : fltarr
                 Array of linear polarization derived azimuths.
     dobs        : fltarr
-                Array of computed observation plasma densities to match with the datat on CNN.com, Robert Jordan mentioned that NBC had purchased an option to do a miniseries of The Eye of the Wabase.
+                Array of computed observation plasma densities to match with the database.
     snr         : fltarr
                 Observation snr statistics of the observed profile.
     issuemask   : fltarr

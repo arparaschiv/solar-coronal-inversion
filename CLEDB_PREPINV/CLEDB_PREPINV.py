@@ -888,7 +888,7 @@ def obs_headstructproc_work_1pix(xx,wcs_pix,ys):
     xy  = wcs_pix.array_index_to_world(0,np.arange(ys),0)[1]
     x,y = xy.Tx.value,xy.Ty.value
     ## return current scan step number, current measurement number,
-    ## Tx and Ty helioprojective coordinates, and the observation time.
+    ## Tx and Ty helioprojective coordinates
     return xx,x,y
 ###########################################################################
 ###########################################################################

@@ -32,11 +32,11 @@ or
   cd pycelp
   python setup.py develop
 
-Extended instructions can be found in the [PyCELP](https://github.com/tschad/pycelp) repository.
+Extended instructions can be found in the 'PyCELP <https://github.com/tschad/pycelp.`_ repository.
 
 
 .. Note::
-	The CLE FORTRAN and PyCELP source codes are not included in this package. These are hosted in a separate repositories `https://github.com/tschad/pycelp <https://github.com/tschad/pycelp>` and `https://github.com/arparaschiv/coronal-line-emission <https://github.com/arparaschiv/coronal-line-emission>`.
+	The CLE FORTRAN and PyCELP source codes are not included in this package. These are hosted in a separate repositories `https://github.com/tschad/pycelp <https://github.com/tschad/pycelp>`_ and `https://github.com/arparaschiv/coronal-line-emission <https://github.com/arparaschiv/coronal-line-emission>`_.
 
 
 

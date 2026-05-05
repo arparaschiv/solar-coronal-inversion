@@ -100,17 +100,16 @@ PREPINV Parameters
 	To use for calibrated COMP/UCOMP data. In this case, the profiles are integrated across the line sampling points. This parameter defaults to 0 to be applicable to spectroscopic data such as DKIST.
 
 ``dblinpolref [] rad``
-	Assign the database reference direction of linear polarization. Angle direction is trigonometric. Values are in radians; e.g. 0 for horizontal ->0deg; np.pi/2 for vertical ->90deg rotation in linear polarization QU. `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ and the `CLE <https://github.com/arparaschiv/coronal-line-emission>` database building functions conventionally use a vertical direction for the direction used in computing the database (at Z=0 plane) of dblinpolref =0. See CLE routine db.f line 120. If the database building reference direction is changed, this parameter needs to match that change.
+	Assign the database reference direction of linear polarization.  Angle direction is trigonometric. Values are in radians; e.g. For horizontal reference dblinpolref -> 0; For vertical reference, dblinpolref -> np.pi/2, etc. The rotation applied to the llinear polarization QU as described in `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ and the `CLE, <https://github.com/arparaschiv/coronal-line-emission>`_ database building functions use a horizontal direction for the direction used in computing the database (at Z=0 plane) of dblinpolref = 0. See CLE routine db.f line 120. If the database building reference direction is changed, this parameter needs to match that change.
 
 ``instwidth [] nm``
 	Instrumental line broadening/width in nm units should be included here if known. It is not clear at this point if this will be a constant or a varying keyword for one instrument. Setting a instwidth = 0 value will skip including an instrumental contribution when computing non-thermal widths (:ref:`specout[:,:,:,9]<specout-label>`) output in the :ref:`SPECTRO_PROC <cledb_spectro-label>` module.
 
-	``atmred [] boolean``
-	 Flag to reduce atmospheric and photospheric lines present in spectral data using curated spectral atlases. Useful for reducing DKIST Cryo-NIRSP Level 1 data. This can be applied only to Stokes I at the moment. Dedicated information on the photospheric `(link) <https://mark4sun.jpl.nasa.gov/toon/solar/solar_spectrum.html>`_ and telluric `(link) <https://github.com/tschad/dkist_telluric_atlas/atlases>'_ can be found online.
+``atmred [] boolean``
+	 Flag to reduce atmospheric and photospheric lines present in spectral data using curated spectral atlases. Useful for reducing DKIST Cryo-NIRSP Level 1 data. Dedicated information on the photospheric `(link) <https://mark4sun.jpl.nasa.gov/toon/solar/solar_spectrum.html>`_ and telluric `(link) <https://github.com/tschad/dkist_telluric_atlas/atlases>`_ atlases can be found online.
 
 .. Warning::
-	Currently atmred does not correct for line polarization effects and residual cross-talk in Stokes QUV data. Beware when interpreting and integrating polarization profiles.
-
+	Implementation currently incomplete. At this moment, it is recommended that atmred is kept False, and DKIST observations are reduced and integrated using the more advanced and complete analysis provided by the public `Cryo-NIRSP tutorial, <https://bitbucket.org/dkist-community-code/cryonirsp-notebooks/src/main/first_release_specFitting/>`_. atmred does not correct for line polarization effects and residual cross-talk in Stokes QUV data. This can be applied only to Stokes I at the moment. Beware when interpreting and integrating polarization profiles if enabling.
 
 PROC Parameters
 ^^^^^^^^^^^^^^^
