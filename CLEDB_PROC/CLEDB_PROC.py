@@ -197,7 +197,7 @@ def cledb_invproc(sobs_totrot,sobs_dopp,database,db_enc,yobs,aobs,dobs,snr,issue
                 print("CLEDB_INVPROC: A VERY HIGH number of solutions requested. Using a full array sort! This will take some time to finish.")
     ######################################################################
     ##Setup a multiprocessing worker to split the tasks
-    p         = multiprocessing.Pool(processes = min(ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 50000) ## dynamically defined from system query as total CPU core number - 1
+    p         = multiprocessing.Pool(processes = min(ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 10000) ## dynamically defined from system query as total CPU core number - 1
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
 
@@ -445,7 +445,7 @@ def blos_proc(sobs_tot,snr,issuemask,keyvals,consts,params):
 
         ######################################################################
         ##Setup a multiprocessing worker to split the tasks
-        p         = multiprocessing.Pool(processes = min(params.ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 50000) ## dynamically defined from system query as total CPU core number - 1
+        p         = multiprocessing.Pool(processes = min(params.ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 10000) ## dynamically defined from system query as total CPU core number - 1
 
         for zz in range(0,nline):
             ## argument index keeper for splitting tasks to cpu cores
@@ -606,7 +606,7 @@ def spectro_proc(sobs_in,sobs_tot,snr,issuemask,background,wlarr,keyvals,consts,
 
         ######################################################################
         ##Setup a multiprocessing worker to split the tasks
-        p          = multiprocessing.Pool(processes = min(params.ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 50000) ## dynamically defined from system query as total CPU core number - 1
+        p          = multiprocessing.Pool(processes = min(params.ncpu, multiprocessing.cpu_count()-2), maxtasksperchild = 10000) ## dynamically defined from system query as total CPU core number - 1
 
         ######################################################################
         ## process the spectroscopy
@@ -956,7 +956,7 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
         ## cledb_getsubset will reshape database_in to database_sel of [index,nline*4] shape
         database_sel,outredindex = cledb_getsubsetiquv(sobs_1pix,dbhdr,database_in,nsearch)
         # for i in range(len(database_sel[:,0])):
-        #     if np.sum(database_in[i,:]) == 0:
+        #     if np.nansum(database_in[i,:]) == 0:
         #         print(i,database_in[i,:])
         ## keeps the argument for the reduced entry using the sign of Stokes V. outargs+outredindex will return the correct initial db index below.
         outargs = np.argwhere(np.sign(database_sel[:,3]) == np.sign(sobs_1pix[3]))[:,0]
@@ -1002,8 +1002,8 @@ def cledb_matchiquv(xx,yy,sobs_1pix,yobs_1pix,aobs_1pix,dobs_1pix,database_in,db
     ##Sum the components for chi^2/. Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced.
     ## if no snr and counts are present, the truncation is beyond a float32 without this decimal fix.
     #chisq = np.zeros((diff.shape[0]),dtype=np.float64)
-    #np.round_( np.sum( diff, axis=1)/denom/norm_fact,15,chisq)
-    chisq = np.around( np.sum( diff, axis=1)/denom,15)
+    #np.round_( np.nansum( diff, axis=1)/denom/norm_fact,15,chisq)
+    chisq = np.around( np.nansum( diff, axis=1)/denom,15)
 
     ## Need to use a manual numba compatible fast sorting as np.argpartition is not numba implemented!
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
@@ -1166,7 +1166,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     ## Normalize the input data to the strongest component and do a scaling to assign more equal weights to QU similar to I
     ## NOTE: Below we use these factors heavily to avoid altering the sobs_1pix or database_sel arrays
     norm_fact        = sobs_1pix[0] #sobs_1pix[np.argwhere(sobs_1pix == np.max(sobs_1pix))[0,0]]     ## normalization factor for the observation
-    wtg_fact         = np.array((1,1,1,0,0.01,1,1,0))                                  ## weighting factor for the chi^2 fit
+    wtg_fact         = np.array((1,1,1,0,0.1,0.05,0.05,0))                                  ## weighting factor for the chi^2 fit
     #scale_fact       = np.ones(8,dtype=np.float32)                                     ## scaling factor for Q and U components Just weighting the fits works better.
     #scale_fact[1:7]  = 10**(-np.floor(np.log10(np.abs(sobs_1pix[1:7]/norm_fact))) - 1) ## I1 and V2 have scale factors of 1
     #scale_fact[3:5]  = 1                                                               ## V1 and I2 also get scale factors of 1
@@ -1188,13 +1188,13 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
     ##Sum the components for chi^2/. Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced.
     ## if no snr and counts are present, the truncation is beyond a float32 without this decimal fix.
     #chisq = np.zeros((diff.shape[0]),dtype=np.float64)
-    #np.round_( np.sum( diff, axis=1)/denom/norm_fact,15,chisq)
-    chisq = np.around( np.sum( diff, axis=1)/denom,15)
+    #np.round_( np.nansum( diff, axis=1)/denom/norm_fact,15,chisq)
+    chisq = np.around( np.nansum( diff, axis=1)/denom,15)
 
     ## Need to use a manual numba compatible fast sorting as np.argpartition is not numba implemented!
     ## cledb_partsort is a simple parallel function that produces an output similar to np.argpartition with sort.
     ## it does a standard sorting, aranging only the first nsearch elements, making it much faster than np.argsort for few (<100) solutions.
-    if nsearch <= 100:
+    if nsearch <= 10:
         #asrt = cledb_partsort(chisq,nsearch)
         # Partial selection: smallest nsearch, NOT fully sorted
         part = np.argpartition(chisq, nsearch)[:nsearch]
@@ -1342,7 +1342,7 @@ def cledb_matchiqud(xx,yy,sobs_1pix,sobsd_1pix,yobs_1pix,aobs_1pix,dobs_1pix,dat
 #     denom = ndata-4           ## Denominator used below in reduced chi^2      ## 4 = number of degree of freedom in model: ne, x, bphi, btheta
 #     diff *= diff              ## pure python multiplication was found to be faster than numpy or any power function applied.
 #     chisq = np.zeros((diff.shape[0]),dtype=np.float64)
-#     np.round_( np.sum( diff, axis=1)/denom,15,chisq)snr
+#     np.round_( np.nansum( diff, axis=1)/denom,15,chisq)snr
 #     ## Unorthodox definition: chisq needs to be initialized separately, because np.round_ is not supported as a addressable function
 #     ## This is the only numba compatible implementation possible with current numba implementation.
 #     ## Precision is up to 15 decimals; Significant truncation errors appear if this is not enforced.
@@ -1780,7 +1780,7 @@ def obs_cdf(spectr):
 
     cdf = np.zeros((spectr.shape[0]),dtype=np.float32)
     for i in range (0,spectr.shape[0]):
-        cdf[i] = np.sum(spectr[0:i+1])
+        cdf[i] = np.nansum(spectr[0:i+1])
     return cdf/cdf[-1]                      ## norm the cdf to simplify interpretation
 ###########################################################################
 ###########################################################################

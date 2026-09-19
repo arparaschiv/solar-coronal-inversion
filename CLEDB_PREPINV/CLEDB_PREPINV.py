@@ -267,7 +267,7 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     db_enc_flnm=np.zeros((nx,ny),dtype=np.int32)    ## location in file list when read from disk; used only internally in sdb_preprocess
     arg_array = []
 
-    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 50000)     ## dynamically defined from system query as total CPU core number - 2
+    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
 
     for xx in range(nx):
         for yy in range(ny):
@@ -727,7 +727,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
     # if it's an array-like, force scalar
     if isinstance(instr, (list, tuple, np.ndarray)):
         instr = instr[0]
-    
+
     if instr in ("CLE-SIM", "MUR-SIM", "PyCELP"):                                             ## CASE 1: Simulated OBSERVATIONS
         crpix1 = headkeys[0]['CRPIX1']                                                        ## Rerefence pixels along all dimensions
         crpix2 = headkeys[0]['CRPIX2']
@@ -772,8 +772,8 @@ def obs_headstructproc(sobs_in,headkeys,params):
 
     elif (instr == "UCoMP"):                                                                  ## CASE 3: uCoMP OBSERVATIONS;;
 
-        crpix1 = headkeys[0]['CRPIX1']                                                        ## Comp takes reference at center
-        crpix2 = headkeys[0]['CRPIX2']
+        crpix1 = headkeys[0]['CRPIX2']                                                        ## Comp takes reference at center Centers reversed as python loads data in  heightXwidth order
+        crpix2 = headkeys[0]['CRPIX1']
         if nline == 1:
             crpix3 = [0,0]                                                                    ## Dummy 0 output, not used.
         else:
@@ -826,7 +826,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
 
 
         ## update the hpxygrid with the scans. We calculate only for the first map
-        p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 50000)     ## dynamically defined from system query as total CPU core number - 2
+        p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
         arg_array = []
 
         for xx in range(nx):
@@ -919,7 +919,7 @@ def obs_calcheight(keyvals,hpxygrid):
     yobs=np.empty((nx,ny),dtype=np.float32)
 
     ## Check for custom hpxy grid of coordinates for Cryo-NIRSP data
-    if np.sum(hpxygrid) == 0.:   ## Other data sources
+    if np.nansum(hpxygrid) == 0.:   ## Other data sources
         for xx in range(nx):
             for yy in range(ny):
                 yobs[xx,yy] = np.sqrt((crval1+(xx*cdelt1))**2+(crval2+(yy*cdelt2))**2 ) ## use just the pointing keywords
@@ -962,7 +962,7 @@ def obs_integrate(sobs_in,wlarr,keyvals,verbose,ncpu,atmred):
     ## integrate for total profiles.
 
     ## set up the cpu worker and argument arrays
-    p         = multiprocessing.Pool(processes=min(ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 50000)     ## dynamically defined from system query as total CPU core number - 2
+    p         = multiprocessing.Pool(processes=min(ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
 
@@ -1076,7 +1076,7 @@ def objFuncStokesI(para,ii):
     """
 
     ifit = obs_integrate_atmred_1pix(para)
-    ires = np.sum((ii-ifit)**2  * Iwgts) / np.sum(Iwgts)
+    ires = np.nansum((ii-ifit)**2  * Iwgts) / np.nansum(Iwgts)
     return ires
 ###########################################################################
 
@@ -1191,7 +1191,7 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,wlarr,wcont,dwv,sobs_in_1pix):
         ## sobs_in subscripted by zz,xx,yy, thus the sum is over columns(axis=0) over the wavelength range.
         ## the sums give 4 values (for each iquv spectral signal) of noise before and after the line emission in the wavelength range.
         ## Finaly it divides by the amount of points summed over for each components.
-        #background_1pix     = (np.sum(sobs_in_1pix[0:lr0[0,0],:],axis=0) + np.sum(sobs_in_1pix[lr0[-1,0]:,:],axis=0)) / (nw-lr0[-1,0]+lr0[0,0]+1)
+        #background_1pix     = (np.nansum(sobs_in_1pix[0:lr0[0,0],:],axis=0) + np.nansum(sobs_in_1pix[lr0[-1,0]:,:],axis=0)) / (nw-lr0[-1,0]+lr0[0,0]+1)
         background_1pix      = np.nanmean(sobs_in_1pix[wcont:wcont+3:,:],axis = 0)       ## just evaluate and subtract the continuuum observed around specific wavelentghts.
         #background_1pix = 0
 
@@ -1202,7 +1202,7 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,wlarr,wcont,dwv,sobs_in_1pix):
         ##Now integrate/sum the four profiles
         ## tmp2 [:,0] --> Stokes I
         sobs_tot_1pix       = np.zeros((4),dtype=np.float64)
-        sobs_tot_1pix[0]    = np.sum(tmp2[:,0]*dwv)                         ## background subtraction can introduce negative values unphysical for I; Sum only positive counts;
+        sobs_tot_1pix[0]    = np.nansum(tmp2[:,0]*dwv)                         ## background subtraction can introduce negative values unphysical for I; Sum only positive counts;
 
         ## tmp2 [:,3] --> Stokes V
         ## old descriptive method for estimating the position of the sign
@@ -1226,9 +1226,9 @@ def obs_integrate_work_1pix(xx,yy,zz,nw,wlarr,wcont,dwv,sobs_in_1pix):
         #sobs_tot_1pix[3]    = np.mean(np.sign(svmin-svmax)*vscl[np.isfinite(vscl)])
 
         ## tmp2 [:,1:3] --> Stokes Q and U
-        #sobs_tot_1pix[1:3]=np.sum(tmp2[:-1,1:3]*dwv,axis=0) ## sum both components in one call. These can take negative values, no need for precautions like for Stokes I.
-        sobs_tot_1pix[1]    = np.sum(tmp2[:,1]*dwv)
-        sobs_tot_1pix[2]    = np.sum(tmp2[:,2]*dwv)
+        #sobs_tot_1pix[1:3]=np.nansum(tmp2[:-1,1:3]*dwv,axis=0) ## sum both components in one call. These can take negative values, no need for precautions like for Stokes I.
+        sobs_tot_1pix[1]    = np.nansum(tmp2[:,1]*dwv)
+        sobs_tot_1pix[2]    = np.nansum(tmp2[:,2]*dwv)
 
         ## Check for finite and defined integrated totals to avoid overflows downstream. Set integrals to 0 if any of the the line sums are infinite or beyond float 64 precision
         # for kk in range(4):
@@ -1300,7 +1300,7 @@ def obs_qurotate(sobs_tot,keyvals,hpxygrid):
     aobs        = np.empty((nx,ny),dtype=np.float32)
     sobs_totrot = np.copy(sobs_tot)                      ## copy the sobs array as only QU need to be updated
 
-    if np.sum(hpxygrid) == 0.:    ## rectangular grid array
+    if np.nansum(hpxygrid) == 0.:    ## rectangular grid array
         for xx in range(nx):
             for yy in range(ny):
                 aobs[xx,yy]= - np.arctan2((crval1 +xx*cdelt1),(crval2 +yy*cdelt2)) ## assuming the standard convention for arcsecond coordinates <--> trigonometric circle
@@ -1363,7 +1363,7 @@ def obs_cdf(spectr):
     """
     cdf=np.zeros((spectr.shape[0]),dtype=np.float32)
     for i in range (0,spectr.shape[0]):
-        cdf[i]=np.sum(spectr[0:i+1])        ## need to check if should start from 0 or not.
+        cdf[i]=np.nansum(spectr[0:i+1])        ## need to check if should start from 0 or not.
     return cdf[:]/cdf[-1]                      ## norm the cdf to simplify interpretation
 ###########################################################################
 ###########################################################################
@@ -1408,7 +1408,7 @@ def obs_dens(sobs_totrot,yobs,keyvals,params):
 
     ######################################################################
     ## set up the cpu worker and argument arrays and send the parallel tasks to execute
-    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 50000)     ## dynamically defined from system query as total CPU core number - 2
+    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
     ## argument index keeper for splitting tasks to cpu cores
 
     arg_array = []

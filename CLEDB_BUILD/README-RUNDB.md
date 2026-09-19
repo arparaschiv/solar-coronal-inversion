@@ -7,20 +7,21 @@ Contact: Alin Paraschiv (arparaschiv at nso edu)
 
 #### **History for the BUILD module:**
 
-- ARP: 20210617 - initial release. 
+- ARP: 20210617 - initial release.
 - ARP: 20210827 - Added a Slurm enabled version of the script for batch jobs on RC systems.
 - ARP: 20210915 - Rewrote the thread scaling to allocate tasks uniformly across threads; Both interactive and batch scripts now can utilize RC Slurm capabilities. The interactive version can only use Slurm allocated resources inside interactive jobs. The batch dedicated version can utilize scratch directories; It copies final outputs in a user's project directory after finalizing tasks.
 - ARP: 20221222 - Updated both scripts to fix an error with calculating the optimal heights that are scaled across available nodes.
 - ARP: 20240730 - Overhaul of the database building functionality. A new implementation of the CLEDB BUILD module using PyCELP is now provided.
+- ARP: 20260903 - Two pycelp databases up to 1.5 solar radiuses with adequate 90 level calculations are computed. One standard database (DB_R15_90lvl.tar.xz). A second database (DB_R15_90lvl_gausslos_v20260703.tar.xz) contains a gaussian distribution of LOS positions as opposed to the standard linear configuration.
 
 #### **SCOPE:**
 
 This is a script implementation that launches separate parallel processes for building Stokes IQUV databases as part of the CLEDB_BUILD module.
 Three versions are provisioned:
 
-1. *[rundb_1line_with_PyCELP.py](./rundb_1line_with_PyCELP.py)*        -- PyCELP:  For local **interactive** and **batch** runs.
-3. *[rundb_1line_with_CLE.sh](./rundb_1line_with_CLE.sh)*              -- DEPRECATED -- CLE: For local **interactive** runs (Slurm interactive session compatible).
-4. *[rundb_1line_with_CLE_batch.sh](./rundb_1line_with_CLE_batch.sh)*  -- DEPRECATED -- CLE: For **batch** and/or headless runs.
+1. *[rundb_1line_with_PyCELP.py](./rundb_1line_with_PyCELP.py)*        -- CURRENT    -- PyCELP:  For local **interactive** and **batch** runs.
+3. *[rundb_1line_with_CLE.sh](./rundb_1line_with_CLE.sh)*              -- DEPRECATED -- CLE:     For local **interactive** runs (Slurm interactive session compatible).
+4. *[rundb_1line_with_CLE_batch.sh](./rundb_1line_with_CLE_batch.sh)*  -- DEPRECATED -- CLE:     For **batch** and/or headless runs.
 
 #### **INSTALL and USAGE:**
 - PyCELP database building requires three components:

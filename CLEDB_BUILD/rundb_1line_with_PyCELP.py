@@ -43,7 +43,7 @@ os.environ["XUVTOP"] = './config/pycelp/CHIANTI_11.0_database/' ## If you havent
 # In[ ]:
 
 
-def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-4, la = 25):
+def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-2, la = 90):
     ## Constants and useful variables with respect to this specific calculation
     linestr = [["fe-xiii_1074/","fe-xiii_1079/","si-x_1430/","si-ix_3934/","mg-viii_3028/"],
               ["fe_13",         "fe_13",        "si_10",     "si_9",       "mg_8"       ],
@@ -102,11 +102,11 @@ def gen_pycelp_db(na = 0, mpc = multiprocessing.cpu_count()-4, la = 25):
     ## loop has the order height --> density --> losdepth --> phi--> theta for PyCELP efficiency
 
     ## set up the cpu worker and argument arrays
-    if mpc > multiprocessing.cpu_count()-4:
-        mpc   = multiprocessing.cpu_count()-4
+    if mpc > multiprocessing.cpu_count()-2:
+        mpc   = multiprocessing.cpu_count()-2
         print("More CPU threads than available are requested! Using system max - 1 threads.")
 
-    p         = multiprocessing.Pool(processes = mpc, maxtasksperchild = 10) ## dynamically defined from system query as total CPU core number - 1
+    p         = multiprocessing.Pool(processes = mpc, maxtasksperchild = 100) ## dynamically defined from system query as total CPU core number - 1
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
 
