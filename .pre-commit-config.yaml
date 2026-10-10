@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: notebook-to-python
+        name: Convert selected notebooks to Python
+        entry: jupyter nbconvert --to script
+        language: system
+        files: '^(test_1line|test_2line)\.ipynb$'
+        pass_filenames: true

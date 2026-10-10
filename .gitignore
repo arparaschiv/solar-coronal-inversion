@@ -132,7 +132,7 @@ dmypy.json
 
 ## test datacubes; available via google drive.
 obsstokes*
-obsdopp*.pkl
+obsdopp*
 outparams*.pkl
 ## other test scripts
 Untitled.ipynb
@@ -141,6 +141,7 @@ test_2line_IQUD.ipynb
 test_2line-worker.ipynb
 test_dbgen.ipynb
 test_unittests.ipynb
+check_sort.ipynb
 ## output plots
 specout*.pdf
 invout*.pdf
@@ -163,8 +164,11 @@ codedoc-latex/*.tex.bak
 codedoc-latex/*.bak
 codedoc-latex/*.bbl
 codedoc-latex/*.blg
+## other
 CLEDB_BUILD/rundb_1line_with_PyCELP.ipynb
+CLEDB_BUILD/test_dbgen.ipynb
 CLEDB_BUILD/config/pycelp/CHIANTI_10.1_database
+CLEDB_BUILD/config/pycelp/CHIANTI_11.0_database
 CLEDB_build/tmp2
 uCoMP-20240409-l2
 Cryo-NIRSP-20231011

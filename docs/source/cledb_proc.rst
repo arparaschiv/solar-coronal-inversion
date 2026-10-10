@@ -189,7 +189,7 @@ CLEDB_INVPROC Main Functions
     :math:`\triangleright` CLEDB_GETSUBSETIQUV
         When :ref:`enabled<ctrl_red-label>` via *ctrlparams*, the information encoded in the Stokes Q and U magnetic azimuth is used to reduce the matched database by approximately 1 order of magnitude in terms of observation-comparable calculations.
 
-    :math:`\triangleright` CLEDB_GETSUBSETIQUD
+    :math:`\triangleright` CLEDB_GETSUBSETIQUD [Deprecated]
         When :ref:`reduced is enabled<ctrl_red-label>` via *ctrlparams*, the information encoded in the doppler wave angle azimuth is used to reduce the matched database by approximately 1 order of magnitude in terms of observation-comparable calculations.
 
     .. Attention::

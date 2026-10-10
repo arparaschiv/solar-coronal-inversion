@@ -41,6 +41,10 @@ from astropy.io import fits       ## To properly load DKISt Cryo-NIRSP data
 # if params.integrated == False:
 #     sobs_in=[sobsa[:,:,:,0:4]]   ## The simulated data is a x*y*wl*8 dimensional array with both lines included.  ## create a 2line standard input for an actual observation.
 
+# else:
+#     print("Control parameter set to integrated. Data will not be processed properly downstream!")
+
+
 # ## A fake minimal header for CLE
 # ## This assumes the reference pixel is in the left bottom of the array; the values are in solar coordinates at crpixn in r_sun. The wavelength raferences (vacuum), ranges and spectral resolutions are unique. See CLE outfiles and grid.dat.
 # ## sobsa.shape == (600, 280, 30, 8)
@@ -75,7 +79,6 @@ from astropy.io import fits       ## To properly load DKISt Cryo-NIRSP data
 #     print("Control parameter set to integrated. Data will not be read properly downstream!")
 
 
-
 # #### 3.a DKIST Cryo-NIRSP Provisional example data (Integrated required).
 
 # In[ ]:
@@ -92,11 +95,11 @@ from astropy.io import fits       ## To properly load DKISt Cryo-NIRSP data
 
 #     sobsa   = np.load('./obsstokes_cryonirsp_BZJOM_int1074')    ## 1074 fit data
 #     sobs_in=[sobsa]   ## The Xryo-NIRSP data is a x*y*wl*4 dimensional array with one lines included.  ## create a 2line standard input for an actual observation.  
-
+# else:
+#     print("Control parameter not set to integrated. Data will not be processed properly downstream!")
 
 # ## Delete the large arrays from memory
 # sobsa = 0
-
 
 
 # MLSO CoMP/uCoMP data can not be used here due to the absence of Stokes V.

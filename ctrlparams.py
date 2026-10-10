@@ -18,12 +18,12 @@ class ctrlparams:
         """
         ## General params
         self.dbdir        = './CLEDB_BUILD/'                                                   ## directory for database
-        self.lookuptb     = self.dbdir + 'chianti_v10.1_pycelp_fe13_h99_d120_ratio.npz'        ## CHIANTI density look-up table
+        self.lookuptb     = self.dbdir + 'chianti_v11.0.2_pycelp_fe13_h99_d120_ratio.npz'        ## CHIANTI density look-up table
         self.verbose      = 1                                                                  ## verbosity parameter
         self.ncpu         = 100                                                                ## Number of cpu cores to use. If more than the available cores are requested, n-2 available cores are used.
 
         ## Used in CLEDB_PREPINV
-        self.integrated   = False                                                              ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO
+        self.integrated   = False                                                              ## Boolean; parameter for switching to line-integrated data such as CoMP/uCoMP/COSMO or DKIST L1+
         self.dblinpolref  = 0                                                                  ## Parameter for changing the database calculation linear reference. Should not need changing in normal situations. radian units.
         self.instwidth    = 0                                                                  ## Parameter for fine-correcting non-thermal widths if instrument widths are known or computed by user. nm units.
         self.atmred       = False                                                              ## Parameter that controls whether to reduce photospheric and atmospheric contributions using spectral atlases. Useful for Cryo-NIRSP L1 data.

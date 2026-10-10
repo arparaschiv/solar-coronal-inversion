@@ -267,7 +267,7 @@ def sdb_preprocess(yobs,dobs,keyvals,wlarr,params):
     db_enc_flnm=np.zeros((nx,ny),dtype=np.int32)    ## location in file list when read from disk; used only internally in sdb_preprocess
     arg_array = []
 
-    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
+    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 25000)     ## dynamically defined from system query as total CPU core number - 2
 
     for xx in range(nx):
         for yy in range(ny):
@@ -826,7 +826,7 @@ def obs_headstructproc(sobs_in,headkeys,params):
 
 
         ## update the hpxygrid with the scans. We calculate only for the first map
-        p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
+        p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 25000)     ## dynamically defined from system query as total CPU core number - 2
         arg_array = []
 
         for xx in range(nx):
@@ -962,7 +962,7 @@ def obs_integrate(sobs_in,wlarr,keyvals,verbose,ncpu,atmred):
     ## integrate for total profiles.
 
     ## set up the cpu worker and argument arrays
-    p         = multiprocessing.Pool(processes=min(ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
+    p         = multiprocessing.Pool(processes=min(ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 25000)     ## dynamically defined from system query as total CPU core number - 2
     ## argument index keeper for splitting tasks to cpu cores
     arg_array = []
 
@@ -1408,7 +1408,7 @@ def obs_dens(sobs_totrot,yobs,keyvals,params):
 
     ######################################################################
     ## set up the cpu worker and argument arrays and send the parallel tasks to execute
-    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 10000)     ## dynamically defined from system query as total CPU core number - 2
+    p         = multiprocessing.Pool(processes=min(params.ncpu, multiprocessing.cpu_count()-2),maxtasksperchild = 25000)     ## dynamically defined from system query as total CPU core number - 2
     ## argument index keeper for splitting tasks to cpu cores
 
     arg_array = []
