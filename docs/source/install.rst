@@ -89,7 +89,7 @@ or
   cd pycelp
   python setup.py develop
 
-Extended instructions can be found in the 'PyCELP <https://github.com/tschad/pycelp>`_ repository.
+Extended instructions can be found in the `PyCELP <https://github.com/tschad/pycelp>`_ repository.
 
 
 .. Note::
@@ -143,13 +143,6 @@ Some cases are not yet fully implemented or available. The available datafiles c
 
 	`The data can be downloaded from gdrive <https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=sharing>`_.
 
-.. * IQUV test example 1.b
-    Full Stokes synthetic IQUV data.
-    A `CLE <https://github.com/arparaschiv/coronal-line-emission>`_ computed forward-synthesis of Fe XIII 1074 and 1079 nm lines using a current sheet generator program (See CLE sheet.f).
-    Five simple independent magnetic structures are generated along the LOS to test the algorithm's matching for :term:`LOS` positions.
-    image:: figs/los23.png
-    :width: 800
-
 	.. Attention::
 		The structures are confounded with respect to the LOS leading the inversion to give erroneous results for these locations. This is expected. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_.
 
@@ -175,7 +168,7 @@ Some cases are not yet fully implemented or available. The available datafiles c
 	.. image:: figs/cryonirsp_iquv.png
 		:width: 800
 
-	`The data can be downloaded from gdrive <https://drive.google.com/file/d/1o65wMbcmobTVHOSnEPOQhJmG4hGk3Hyt/view?usp=sharing >`_
+	`The data can be downloaded from gdrive <https://drive.google.com/file/d/1o65wMbcmobTVHOSnEPOQhJmG4hGk3Hyt/view?usp=sharing>`_.
 
 .. Caution::
     The 3.a datafiles are line-integrated IQUV datasets resulting from the analysis tutorial processing provided by the DKIST Science team. `The data analysis tutorial can be found here <https://bitbucket.org/dkist-community-code/cryonirsp-notebooks/src/main/first_release_specFitting/>`_ This processing is just a conceptual example of analysis steps and not a careful science-ready processing. Neither the input data nor the output CLEDB products are scientifically validated and science ready.
@@ -193,7 +186,7 @@ Some cases are not yet fully implemented or available. The available datafiles c
 		:width: 800
 
 	Doppler oscillation analysis B_POS is required in addition to the CoMP/UCoMP observations for infering a vector magnetic solution. This data and methods of inferring POS magnetic maps from Doppler oscillations are described in `Yang et. al, Sci. 2020 <https://ui.adsabs.harvard.edu/abs/2020Sci...369..694Y/abstract>`_, and `Yang, et. al, Sci. 2024 <https://ui.adsabs.harvard.edu/abs/2024Sci...386...76Y/abstract>`_.
-	We utilize ``sobs_dopp[:,:,0]`` that encodes the :term:`POS` projected magnetic field strength and the wave propagation angles. The *test_2line* scripts will create an empty ``sobs_dopp`` array when a full Stokes IQUV inversion is pursued due to the implemented numba optimization schemes.
+	We utilize ``sobs_dopp`` that encodes the :term:`POS` projected magnetic field strength and the wave propagation angles. The *test_2line* scripts will create an empty ``sobs_dopp`` array when a full Stokes IQUV inversion is pursued due to the implemented numba optimization schemes.
 
 	.. image:: figs/comp_20120327_blos.png
 		:width: 200

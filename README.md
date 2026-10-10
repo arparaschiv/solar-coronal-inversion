@@ -52,15 +52,15 @@ The test data are hosted separately. These are called by enabling the correspond
 - [4. CoMP IQUD-only line-integrated observation](https://drive.google.com/file/d/1P1XvRy7VXehkJvmx_zVmhzlSyacOVwtb/view?usp=drive_link).
 - [5. Additional CoMP and UCoMP IQUD examples associated to publications](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/Y6M7HJ)
 
-For terminal only compute systems, the test data can be downloaded via the shell interface with the following method:
+For terminal-only compute systems, test data can be downloaded directly from Google Drive using gdown.
 
-i. Load the following gdrive wrapper script into your bash window directly, or introduce it in your .bash_alias setup.
+i Install gdown (requires Python 3.10 or later):
 
-    function gdrive_download () {   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p');   wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2;   rm -rf /tmp/cookies.txt; }
+    conda install -c conda-forge gdown
 
-ii. Download the file using its gdrive FILE_ID from the download link (*1.a test data FILE_ID = 1beyDfZbm6epMne92bqlKXcgPjYI2oGRR*):
+ii. Download the file using its gdrive FILE_ID from the download link (precompiled database FILE_ID = 1Rehk5jThUzE_9LyoQpi6lJcGlomFIOPy):
 
-    gdrive_download FILE_ID local_path/local_name   (sometimes needs to be run two times to set cookies correctly!)
+    gdown 1Rehk5jThUzE_9LyoQpi6lJcGlomFIOPy -O local_path/local_name
 
 Note: The script versions of all tests *[test_1line.py](./test_1line.py)* and *[test_2line.py](./test_2line.py)* together with the *[test_cledb_slurm.sh](./test_cledb_slurm.sh)* are slurm enabled to be used for headless RC system runs.
 These offer the same functionality as the notebooks (from which they are directly generated from). See the dedicated [README-SLURM](./README-SLURM.md) for additional information.

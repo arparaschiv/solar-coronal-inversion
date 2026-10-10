@@ -40,7 +40,7 @@ List of Relevant Publications
 
 Academic journal papers that helped fundament, build and justify CLEDB:
 
-1. `Paraschiv, Yang, Lacatus, & Molnar, ApJL, 2026 <https://ui.adsabs.harvard.edu/abs/2026ApJL/abstract>`_ demonstrates the applicability of the IQUD inversion methodology to both CoMP and UCoMP observations. (in press)
+1. `Paraschiv, Yang, Lacatus, & Molnar, ApJL, 2026 <https://ui.adsabs.harvard.edu/abs/2026arXiv260935100P/abstract>`_ demonstrates the applicability of the IQUD inversion methodology to both CoMP and UCoMP observations. (in press)
 2. `Paraschiv, ApJ, 2026 <https://ui.adsabs.harvard.edu/abs/2026ApJ..1008...29P/abstract>`_ provides the theoretical basis of the IQUD approach and a comprehensive statistical analysis demonstrating the IQUD inversion methodology, with an accuracy comparable to that of Stokes IQUV spectropolarimetry.
 3. `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ covered the scientific justification of the algorithm, and the setup of the CLEDB inversion.
 4. `Judge, Casini, & Paraschiv, ApJ, 2021 <https://ui.adsabs.harvard.edu/abs/2021ApJ...912...18J/abstract>`_ discussed the importance of scattering geometry when solving for coronal magnetic fields.
