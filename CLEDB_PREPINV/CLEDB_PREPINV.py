@@ -473,43 +473,44 @@ def sdb_findelongationanddens(xx,yy,y,d,dbynumbers):
 ###########################################################################
 
 ###########################################################################
+## Documentation include start
 ###########################################################################
 @jit(parallel=False,forceobj=True,cache=params.jitcache)  ## don't try to parallelize things that don't need as the overhead will slow everything down
 def sdb_parseheader(dbheaderfile):
     """
     Reads and parses the database header (db.hdr file) and returns the parameters contained in the set of calculations.
 
-    db.hdr text file needs to have the specific CLE or PyCELP version format described in the CLEDB readme.
+    db.hdr text file needs to have the specific CLE or PyCELP version format described in the documentation.
     """
 
     g=np.fromfile(dbheaderfile,dtype=np.float32,sep=' ')
     ## two kinds of data are returned
-    ## 1. the linear coefficents of the form min, max, nx,theta,phi
-    ## 2. logarithmically spaced parameters xed  (electron density array in CLE case); for these the min and max and number are not returned.
+    ## 1. the linear coefficients of the form min, max, nx,theta,phi
+    ## 2. logarithmically spaced parameters xed (electron density array in CLE case) ## for these the min and max and number are not returned.
 
     ngy       = np.int32(g[0])             ## database file is individual with respect with ngy, no need to output further
-    ned       = np.int32(g[1])             ## pycelp databases are individual also with respect to density. output only for consistency with cle
-    ngx       = np.int32(g[2])
-    nbphi     = np.int32(g[3])
-    nbtheta   = np.int32(g[4])
-    emin      = np.float32(g[5])
-    emax      = np.float32(g[6])
-    xed       = sdb_lcgrid(emin,emax,ned)    ## Ne is log. Unpack all computed densities using the min max and number of computed densities
-    gxmin     = np.float32(g[7])
-    gxmax     = np.float32(g[8])
-    bphimin   = np.float32(g[9])
-    bphimax   = np.float32(g[10])
-    bthetamin = np.float32(g[11])
-    bthetamax = np.float32(g[12])
-    nline     = np.int32(g[13])
-    wavel     = np.empty(nline,dtype=np.float32)
-    dbtype    = np.int32(g[-1])    # if g[-1] == 0: --> CLE database##   elif g[-1] == 1: --> PyCELP database
-
-    for k in range(0,nline): wavel[k]=g[14+k]
+    ned       = np.int32(g[1])             ## PyCELP databases are individual also with respect to density. output only for consistency with cle
+    ngx       = np.int32(g[2])             ## number of samples along the LOS (x-axis)
+    nbphi     = np.int32(g[3])             ## number of sampled azimuth angles
+    nbtheta   = np.int32(g[4])             ## number of sampled polar angles
+    emin      = np.float32(g[5])           ## minimum sampled density
+    emax      = np.float32(g[6])           ## maximum sampled density
+    xed       = sdb_lcgrid(emin,emax,ned)  ## Ne is log. Unpack all computed densities using the min max and number of computed densities
+    gxmin     = np.float32(g[7])           ## minimum LOS depth sampled (this is symmetric)
+    gxmax     = np.float32(g[8])           ## maximum LOS depth sampled (this is symmetric)
+    bphimin   = np.float32(g[9])           ## Starting azimuth angle to sample (usually 0)
+    bphimax   = np.float32(g[10])          ## final azimuth angle to sample (usually 2*pi-1 discretization step)
+    bthetamin = np.float32(g[11])          ## Starting polar angle to sample (usually 0)
+    bthetamax = np.float32(g[12])          ## final polar angle to sample (usually pi-1 discretization step)
+    nline     = np.int32(g[13])            ## number of lines in the database (default is one-line)
+    wavel     = g[14:14+nline].astype(np.float32)  ## Sub-array with the sampled line wavelengths
+    #ncalc     = g[14+nline]                ## number of included atomic levels in PyCELP databases. Just for preserving information. not used downstream.
+    dbtype    = np.int32(g[-1])            ## if g[-1] == 0: --> CLE database##   elif g[-1] == 1: --> PyCELP database always keep last dimensions to extend the header if needed
 
     return g, ned, ngx, nbphi, nbtheta, xed, gxmin, gxmax, bphimin, bphimax,\
         bthetamin, bthetamax, nline, wavel,dbtype
 ###########################################################################
+## Documentation include end
 ###########################################################################
 
 ###########################################################################

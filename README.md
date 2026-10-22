@@ -1,7 +1,9 @@
 # **CLEDB Coronal Magnetic Field Database Inversion**
 [![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
-[![ADS](https://img.shields.io/badge/NASA%20ADS-SoPhys%2C%20V297%2C%20%2063-red)](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract)
+[![ADS](https://img.shields.io/badge/CLEDB%20ADS-SoPhys%2C%20V297%2C%20%2063-red)](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract)
+[![ADS](https://img.shields.io/badge/IQUD%20ADS-ApJ%2C%20V1008%2C%20%20%2029-red)](https://ui.adsabs.harvard.edu/abs/2026ApJ..1008...29P/abstract)
+
 
 [![Documentation Status](https://readthedocs.org/projects/cledb/badge/?version=latest)](https://cledb.readthedocs.io/en/latest/?badge=latest)
 ![Run Tests](https://github.com/arparaschiv/solar-coronal-inversion/actions/workflows/test.yml/badge.svg)
@@ -23,7 +25,7 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 ### **Documentation**
 
 1. Extensive documentation, **including installation instruction, dependencies, algorithm schematics and much more** is available on [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) A git distribution [PDF build](./docs/cledb-readthedocs-io-en-update-iqud.pdf) is also provided.
-2. In-depth documentation for the Bash & Fortran parallel database generation module is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
+2. In-depth documentation for both the Python and Fortran parallel database generation modules is provided in [README-RUNDB.md](./CLEDB_BUILD/README-RUNDB.md).
 3. Installation and usage on RC systems is described in [README-SLURM.md](./README-SLURM.md).
 4. This is a beta-level release. Not all functionality is implemented. [TODO.md](./TODO.md) documents updates, current issues, and functions to be implemented in the near future.
 
@@ -35,9 +37,9 @@ Inverting magnetic field information from spectro-polarimetric solar coronal obs
 4. Windows platform                       -- not tested.
 
 ### **Examples**
-Install the CLEDB distribution, generate databases, and, if needed, update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) .
+Install the CLEDB distribution, generate databases, and if needed, update the database save location in the *[ctrlparams.py](./ctrlparams.py)* class, as described in the [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/) .
 
-The new PyCELP database generation tool is recommended. It is more precise, but requires some computational resources for calculations. [A default PyCELP generated database can be found here to help get started (33Gb download)](https://drive.google.com/file/d/1Rehk5jThUzE_9LyoQpi6lJcGlomFIOPy/view?usp=sharing). The two database line folders need to be extracted to the CLEDB_BUILD directory.
+The new PyCELP database generation tool is recommended. It is more precise, but requires some computational resources for calculations. [A default PyCELP generated database can be found here to help get started (35Gb download)](https://drive.google.com/file/d/1Rehk5jThUzE_9LyoQpi6lJcGlomFIOPy/view?usp=sharing). The two database line folders need to be extracted to the CLEDB_BUILD directory.
 
 Afterward, both 1-line and 2-line implementations of CLEDB can be tested with synthetic data using the two provided Jupyter notebook examples
 
@@ -49,7 +51,7 @@ The test data are hosted separately. These are called by enabling the correspond
 - [1. synthetic CLE 3 dipole "observation"](https://drive.google.com/file/d/1beyDfZbm6epMne92bqlKXcgPjYI2oGRR/view?usp=drive_link).
 - [2. Synthetic PyCELP "observation" from MURAM cube](https://drive.google.com/file/d/1G03zXcyREF5BBZtay1P1sjcBlZyVNDF4/view?usp=drive_link)
 - [3. DKIST Cryo-NIRSP line-integrated observation](https://drive.google.com/file/d/1o65wMbcmobTVHOSnEPOQhJmG4hGk3Hyt/view?usp=drive_link)
-- [4. CoMP IQUD-only line-integrated observation](https://drive.google.com/file/d/1P1XvRy7VXehkJvmx_zVmhzlSyacOVwtb/view?usp=drive_link).
+- [4. CoMP IQUD-only line-integrated observation](https://drive.google.com/file/d/1P1XvRy7VXehkJvmx_zVmhzlSyacOVwtb/view?usp=drive_link)
 - [5. Additional CoMP and UCoMP IQUD examples associated to publications](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/Y6M7HJ)
 
 For terminal-only compute systems, test data can be downloaded directly from Google Drive using gdown.

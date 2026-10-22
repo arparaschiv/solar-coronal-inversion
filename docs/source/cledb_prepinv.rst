@@ -19,6 +19,9 @@ CLEDB_PREPINV Module Functions
 
 .. _sobs_preprocess-label:
 
+.. image:: figs/3_CLEDB_PREP.png
+   :width: 800
+
 :math:`\diamond` **SOBS_PREPROCESS**
     Main function to process an input observation and ingest the relevant :term:`header` keywords. Generally, this function iterates over the observation maps and sends each pixel to the internal functions. It returns a processed observation array (input dependent) that is ready for analysis. Additional products are calculated. e.g. a height map (used to match databases), signal statistics, etc. via its subfunctions.
 
@@ -29,18 +32,16 @@ CLEDB_PREPINV Module Functions
         Estimates background counts using a cumulative distribution function (:term:`CDF`\ ) statistical method, then integrates along the wavelength dimension, in all IQUV components of all input lines. Profile integration is required because the database dimensionality and inversion computational times would not be feasible when processing full-spectra observations. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ for additional information.
 
         .. Note::
-            The Stokes V coefficient is not integrated with respect to wavelength (units with Armstrong^-1, see PyCELP calc_PolEmissCoeff documentation).
-            The PyCELP database has the same restriction. Thus, the SV data presented in any wavelength units, needs to be converted in Angstrom^-1 counts for matching and field scaling.
-            e.g. if the input dispersion axis is in nm, then the integrated SV signal needs a factor *10  to account for this.
+            The Stokes V coefficient is not integrated with respect to wavelength (units with Armstrong^-1, see PyCELP  documentation for `calc_PolEmissCoeff <https://tschad.github.io/pycelp/pycelp/emissionLine.html#pycelp.emissionLine.emissionLine.calc_PolEmissCoeff>`_). The PyCELP database has the same restriction. Thus, the :term:`Stokes V` data presented in other wavelength units, needs to be converted in Angstrom^-1 counts for matching and field scaling. e.g. if the input dispersion axis is in nm, then the integrated :term:`Stokes V` signal needs a factor *10  to account for this.
 
 
         :math:`\triangleright\triangleright` OBS_CDF
-            Computes the CDF distribution from spectra corresponding to one voxel.
+            Computes the :term:`CDF` distribution from spectra corresponding to one :term:`voxel`.
 
     .. _qurotate-label:
 
     :math:`\triangleright` OBS_QUROTATE
-        If ingested a 2-line observation, the :term:`Stokes Q and U` components are rotated to match the database's reference direction with the pbservation reference direction. The observation reference direction should be read as input from the header metadata. This enables using just a 1D database computation (along y heights) to match the any observed Stokes profiles, under any linear polarization reference in a 2D map with these applied rotational transforms. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ for extended information.
+        If ingesting a 2-line observation, the :term:`Stokes Q and U` components are rotated to match the database's reference direction with the pbservation reference direction. The observation reference direction should be read as input from the header metadata. This enables using just a 1D database computation (along y heights) to match the any observed Stokes profiles, under any linear polarization reference in a 2D map with these applied rotational transforms. See `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_ for extended information.
 
 .. _sdb_preproc-label:
 
@@ -54,7 +55,13 @@ CLEDB_PREPINV Module Functions
         Compares the database entries (along *ny*) with the heights covered by the observation to deduce the closest matching database entries and minimizes the number of database DBXXXX.dat files to be read into memory.
 
     :math:`\triangleright` SDB_PARSEHEADER
-        Parses the database header information from the db.hdr file.
+        Parses the database header information from the db.hdr file. A description of the hdr information to be read is appended
+
+        .. literalinclude:: ../../CLEDB_PREPINV/CLEDB_PREPINV.py
+            :language: python
+            :start-at: ## Documentation include start
+            :end-at: ## Documentation include end
+            :dedent: 0
 
         :math:`\triangleright\triangleright` SDB_LCGRID
             Computes the grid spacing for the logarithm of density ranges covered in the database. The grid is correspondent to the density configuration in :ref:`DB.INPUT <db_input-label>` of the database calculations.
@@ -63,15 +70,12 @@ CLEDB_PREPINV Module Functions
         Reads all needed database files. This concludes all the disk I/O operations done during one run of the inversion.
 
         .. Warning::
-            CLE databases are written as binary files, the variable type fed to the *np.fromfile* reader needs to match the Fortran datatype CLE *dbe.f* uses to write the calculations. Currently, these are set as single precision floats of np.float32 and REAL types, respectively. PyCELP databases are saved as np variables that are easily loaded through *np.load*.
+            CLE databases are written as binary files, the variable type fed to the *np.fromfile* reader needs to match the Fortran datatype CLE *dbe.f* uses to write the calculations. Currently, these are set as single precision floats of np.float32 and REAL types, respectively. PyCELP databases are saved as .npy variables that are easily loaded through *np.load*.
 
 
 The ``CLEDB_PREPINV`` module is not fully compatible with Numba non-python mode, due to disk I/O operations. All non-python compatible functions are enabled in non-python mode, while the rest are compiled in object-mode via the hard-coded "forcedobj=True" flag in the *@jit* decorators. :ref:`python_modules-label` section provides more details on the differences between the two Numba modes.  The algorithm flow is described in the below diagram.
 
-
-.. image:: figs/3_CLEDB_PREP.png
-   :width: 800
-
+-----------------------------------------------------------------------------
 
 CLEDB_PREPINV Main Variables
 ----------------------------
@@ -117,5 +121,5 @@ CLEDB_PREPINV Main Variables
 ``issuemask [xs,ys] float array``
     An array that encodes issues appearing during processing. This array will be updated across all modules. The tentative :ref:`issuemask implementation <issuemask-label>` is described separately.
 
-.. Note::
-    Input variables, e.g. ``header *keys``, ``sobs_in``, *ctrlparams*, *constants*, etc. that are described in the :ref:`inputvars-label` section are not repeated in this section.
+    .. Note::
+        Input variables, e.g. ``header *keys``, ``sobs_in``, *ctrlparams*, *constants*, etc. that are described in the :ref:`inputvars-label` section are not repeated in this section.

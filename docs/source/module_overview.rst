@@ -13,8 +13,15 @@ We illustrate our definitions for the flowcharts presented throughout this docum
 
 .. _module_flow-label:
 
+-----------------------------------------------------------------------------
+
+
 The CLEDB Modules
 -----------------
+
+.. image:: figs/1_CLEDB_OVERVIEW.png
+   :width: 800
+
 
 The CLEDB inversion algorithm can be split into three parts:
 
@@ -24,18 +31,12 @@ The CLEDB inversion algorithm can be split into three parts:
 
 *  The ``CLEDB_PROC`` module encompasses the main data analysis functions :ref:`SPECTRO_PROC <cledb_spectro-label>`, :ref:`BLOS_PROC <cledb_blos-label>`, and/or :ref:`CLEDB_INVPROC <cledb_invproc-label>`. These apply :term:`analytical solutions` or database inversion schemes on the input observational data to recover the desired plasma and magnetic field parameters (e.g. the :ref:`OUTPUTS <outputs-label>`).
 
-.. hint::
-	The :ref:`readme-main-label` contains instructions on how to end-to-end run the provided examples.
-
-.. image:: figs/1_CLEDB_OVERVIEW.png
-   :width: 800
-
-
 The flowchart schematic presents the modules along with the main inputs and outputs. Each module is described separately in the following sections, along with detailed operation flowcharts. The most important variables and functions are described for each inversion module component. The definitions and accompanying diagrams are not meant to be 1:1 mirrors of the coding, but merely to trace the most crucial operations and resulting outputs. Common terminology is defined in the last section.
 
 .. note::
 	Additional extended comments on specific code blocks and function inner-workings can be found in each module's Python/Bash scripts.
 
+-----------------------------------------------------------------------------
 
 .. _python_modules-label:
 
@@ -77,3 +78,5 @@ The following Python packages are required. For numerical computation efficiency
 
 * sphinx, sphinx-rtd-theme and myst-parser
 	Libraries for building documentation and processing markdown files. Disabled by default as these are not required for running the inversion.
+
+-----------------------------------------------------------------------------

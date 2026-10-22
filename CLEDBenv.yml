@@ -9,19 +9,19 @@ dependencies:
  - numba   = 0.61
  - scipy   = 1.15
  - astropy = 7.0
- - pyyaml           ## 6.0.2 used only in ctrlparams for NUMBA global options
- - ipython          ## 8.34
- - ipympl           ## 0.96
- -  tqdm            ## 4.67
- - jupyter          ## 1.1.1
- - jupyterlab       ## 4.3.5
- - matplotlib       ## 3.10.0
-# - pytest          ## 8.3.5  ## necesary only for unit testing.
-# - nbconvert       ##        for automatically converting notebooks to scripts before comits
-# - pre-commit      ##        to hook the precommit instructions before pushing to git
-# - sphinx=8.2.3           ## 5.0.2  Not required by CLEDB; used only to build the documentation locally; see more in docs/requirements.txt
-# - myst-parser=4.0.1      ## 0.18.1 Not required by CLEDB; used to add markdown parsing to documentation building.
-# - sphinx-rtd-theme=3.0.2 ## 1.1.1 Not required by CLEDB; theme for the documentation
+ - pyyaml                  ##  6.0.2 used only in ctrlparams for NUMBA global options
+ - ipython                 ##  8.34
+ - ipympl                  ##  0.96
+ -  tqdm                   ##  4.67
+ - jupyter                 ##  1.1.1
+ - jupyterlab              ##  4.3.5
+ - matplotlib              ##  3.10.0
+# - pytest                 ##  8.3.5  ## necessary only for unit testing.
+# - nbconvert              ##  for automatically converting notebooks to scripts before commits
+# - pre-commit             ##  to hook the pre-commit instructions before pushing to git
+# - sphinx=8.2.3           ##  5.0.2  Not required by CLEDB; used only to build the documentation locally; see more in docs/requirements.txt
+# - myst-parser=4.0.1      ##  0.18.1 Not required by CLEDB; used to add markdown parsing to documentation building.
+# - sphinx-rtd-theme=3.0.2 ##  1.1.1  Not required by CLEDB; theme for the documentation build
 
 
 ## please reflect any changes to pyproject.toml dependencies.

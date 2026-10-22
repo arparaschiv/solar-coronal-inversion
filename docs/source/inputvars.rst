@@ -61,6 +61,8 @@ Input Data and Metadata
 
 .. _ctrl-label:
 
+-----------------------------------------------------------------------------
+
 Ctrl. Parameters *ctrlparams.py* Class
 --------------------------------------
 
@@ -93,6 +95,8 @@ General Parameters
 
 	* verbose == 3: **Heavy Debug** - Will reveal the pixel being run along with any issues or warnings detected at the pixel level. Output will be hard to navigate!
 
+-----------------------------------------------------------------------------
+
 PREPINV Parameters
 ^^^^^^^^^^^^^^^^^^
 
@@ -110,6 +114,8 @@ PREPINV Parameters
 
 .. Warning::
 	Implementation currently incomplete. At this moment, it is recommended that atmred is kept False, and DKIST observations are reduced and integrated using the more advanced and complete analysis provided by the public `Cryo-NIRSP tutorial, <https://bitbucket.org/dkist-community-code/cryonirsp-notebooks/src/main/first_release_specFitting/>`_. atmred does not correct for line polarization effects and residual cross-talk in Stokes QUV data. This can be applied only to Stokes I at the moment. Beware when interpreting and integrating polarization profiles if enabling.
+
+-----------------------------------------------------------------------------
 
 PROC Parameters
 ^^^^^^^^^^^^^^^
@@ -164,6 +170,8 @@ PROC Parameters
 ``iqud [] boolean``
 	Switches the main matching function of ``CLEDB_PROC`` in order to utilize either Stokes V or Doppler oscillations to compute the magnetic field strength and orientation.
 
+-----------------------------------------------------------------------------
+
 Numba Jit Parameters
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -178,6 +186,7 @@ Numba Jit Parameters
 ``jitdisable [] boolean``
 	Debug parameter to control the enabling of Numba Just in Time compilation (:term:`JIT`) decorators throughout. Higher level verbosity requires disabling the JIT decorators. This functionality can only be done via Numba GLOBAL flags that need to be written to a configuration file ``.numba_config.yaml``. Any change of this parameter requires a kernel restart.
 
+-----------------------------------------------------------------------------
 
 Constants *constants.py* Class
 ------------------------------

@@ -26,6 +26,7 @@ The main CLEDB inversion algorithm outputs are stored in the following variables
 .. note::
 	The global process followed to produce these outputs is sketched in :ref:`module_flow-label`.
 
+-----------------------------------------------------------------------------
 
 .. _issuemask-label:
 
@@ -89,6 +90,5 @@ Code 2048
 
 Code 4096
     \----------------TBD - reserved for 2-line processing codes----------
-
 
 Encoding the information is done sequentially when progressing through the different modules. This will be done by using a decimal to binary conversion to map the codes. The issuemask values thus become cumulative. Following the sketch map encoding from above, we take for example a pixel from a 1-line observation with unreliable Stokes V signal. The uncertainty in Stokes V will also lead to compromised B\ :math:`_{LOS}` information. Thus, the *issuemask* will encode a value of 130 for that respective pixel.

@@ -25,6 +25,8 @@ The 1-line branch employs analytical approximations to calculate line of sight (
 
 The databases are generated via forward modeling of combinations of input magnetic field and geometric parameters. In this setup, databases are used as a static input with respect to the inversion scheme and **should not** be computed dynamically for each observation.
 
+-----------------------------------------------------------------------------
+
 Motivation for the CLEDB approach
 ---------------------------------
 
@@ -34,6 +36,7 @@ Building a static database (via the ``CLEDB_BUILD`` module of our algorithm) to 
 
 Additionally, the database theoretical calculations gain intrinsic access to otherwise un-observable input parameters (e.g. atomic alignment :math:`{\sigma}_0^2`, intrinsic magnetic field angles :math:`{\vartheta}`, :math:`{\varphi}` etc.) that can be used to break inherent degeneracies encountered when attempting analytical inversions (as for example occurring in the 1-line branch implementation). The dimensionality of the problem at hand can be further reduced by 1-2 orders of magnitude by using native symmetries when building and querying databases. Detailed discussions on the physics aspects of dimensionality reduction and :term:`degeneracy` breaking effects can be found in the sources below.
 
+-----------------------------------------------------------------------------
 
 List of Relevant Publications
 -----------------------------

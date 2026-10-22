@@ -10,6 +10,8 @@ Three main functions, **SPECTRO_PROC**, **BLOS_PROC**, and **CLEDB_INVPROC** are
 .. image:: figs/4_CLEDB_PROC.png
    :width: 800
 
+-----------------------------------------------------------------------------
+
 .. _cledb_spectro-label:
 
 The SPECTRO_PROC Function
@@ -49,7 +51,6 @@ SPECTRO_PROC Main Functions
 
     .. important::
         This functions was provisioned in the incipient stages of the pipeline design. Subsequently, it was found that CLEDB can utilize only normalized Stokes profiles such that absolute calibrations are not required (see `Paraschiv & Judge, SolPhys, 2022 <https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract>`_). Implementation is halted at this time.
-
 
 SPECTRO_PROC Main Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -104,6 +105,8 @@ SPECTRO_PROC Main Variables
 .. Attention::
 	Regardless if solving for 1-line or 2-line observations, ``specout`` will return both ``nline`` dimensions. In the case of 1-line observations, the ``nline`` = 1 dimension corresponding to the hypothetical second line is returned as 0 for all pixel locations. The unused dimension can be removed from the upstream example script, if needed. This behavior is known and enforced to keep output casting static, making the codebase compatible with Numba and speeding up execution.
 
+-----------------------------------------------------------------------------
+
 .. _cledb_blos-label:
 
 The BLOS_PROC Function
@@ -157,6 +160,7 @@ BLOS_PROC Main Variables
     .. note::
         This is the :math:`\Phi`B angle, and not the :math:`\Gamma`B angle used to construct the databases (:math:`\Gamma`B = :math:`\Pi` - :math:`\Phi`B ).
 
+-----------------------------------------------------------------------------
 
 .. _cledb_invproc-label:
 

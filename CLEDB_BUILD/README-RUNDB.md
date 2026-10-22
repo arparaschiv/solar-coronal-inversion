@@ -3,7 +3,7 @@
 
 README for performing PyCELP or CLE database calculations on multiple CPU threads.
 
-Contact: Alin Paraschiv (arparaschiv at nso edu)
+Contact: Alin Paraschiv 
 
 #### **History for the BUILD module:**
 
@@ -12,7 +12,7 @@ Contact: Alin Paraschiv (arparaschiv at nso edu)
 - ARP: 20210915 - Rewrote the thread scaling to allocate tasks uniformly across threads; Both interactive and batch scripts now can utilize RC Slurm capabilities. The interactive version can only use Slurm allocated resources inside interactive jobs. The batch dedicated version can utilize scratch directories; It copies final outputs in a user's project directory after finalizing tasks.
 - ARP: 20221222 - Updated both scripts to fix an error with calculating the optimal heights that are scaled across available nodes.
 - ARP: 20240730 - Overhaul of the database building functionality. A new implementation of the CLEDB BUILD module using PyCELP is now provided.
-- ARP: 20260903 - Two pycelp databases up to 1.5 solar radiuses with adequate 90 level calculations are computed. One standard database (DB_R15_90lvl.tar.xz). A second database (DB_R15_90lvl_gausslos_v20260703.tar.xz) contains a gaussian distribution of LOS positions as opposed to the standard linear configuration.
+- ARP: 20261019 - Two pycelp databases up to 2.0 solar radiuses with adequate-precision 90 level calculations are computed. One standard database (DB_R15_90lvl.tar.xz). A second database (DB_R15_90lvl_gausslos_v20260903.tar.xz) is built with a gaussian distribution of LOS positions as opposed to the standard linear configuration.
 
 #### **SCOPE:**
 
@@ -28,9 +28,9 @@ Three versions are provisioned:
 
     a. The *CLEDBenv* conda python environment to be installed. Instructions: [CLEDB.READTHEDOCS.IO](https://cledb.readthedocs.io/en/latest/install.html#a-cledbenv-python-environment)
 
-    b. PyCELP will need to be installed separately in the *CLEDBenv* environment, following the instructions [on Github](https://github.com/tschad/pycelp/tree/main) (In this casedo not create a separate environment as recommended there). PyCELP can not be automatically included in the *CLEDBenv* environment at this moment.
+    b. PyCELP will need to be installed separately within the *CLEDBenv* environment, following the instructions [on Github](https://github.com/tschad/pycelp/tree/main) (In this case, do not create a separate environment as recommended bt PyCELP). PyCELP is not included in the *CLEDBenv* environment.
 
-    c. The latest available version CHIANTI database to be downloaded from the [CHIANTI website](https://www.chiantidatabase.org/chianti_download.html). Default CHIANTI download folder in CLEDB is [./CLEDB_BUILD/config/PyCELP/](./CLEDB_BUILD/config/PyCELP/). Otherwise, the XUVTOP path in the [rundb_1line_with_PyCELP.py](./rundb_1line_with_PyCELP.py) script will need updating to where you installed CHIANTI.
+    c. The latest available version CHIANTI database to be downloaded from the [CHIANTI website](https://www.chiantidatabase.org/chianti_download.html). Default CHIANTI download folder in CLEDB is [./CLEDB_BUILD/config/](./CLEDB_BUILD/config/). Otherwise, the XUVTOP path in the [rundb_1line_with_PyCELP.py](./rundb_1line_with_PyCELP.py) script will need updating to the installed CHIANTI location.
 
 - make sure the scripts you plan using are executable:
 
@@ -39,9 +39,9 @@ Three versions are provisioned:
 - With PyCELP: run any type of job via (see notes below about options):
 
         conda activate CLEDBenv
-        python rundb_1line_with_PyCELP.py in1 in2(Optional) in3(optional)
+        python rundb_1line_with_PyCELP.py in1 in2(Optional) in3(optional) in4(optional)
         or
-        nohup python rundb_1line_with_PyCELP.py in1 in2 in3 & (This frees the terminal and appends all output to a text file called nohup in the directory from which the script is run.)
+        nohup python rundb_1line_with_PyCELP.py in1 in2 in3 in4 & (This frees the terminal and appends all output to a text file called nohup in the directory from which the script is run.)
 
 - With CLE (deprecated): run interactive jobs (after starting the interactive node; see README_SLURM) and batch/headless jobs with either:
 
@@ -64,13 +64,13 @@ Three versions are provisioned:
 
 
 #### **NOTES:**
-- ** NEWLY COMPLETED RUNS WILL DELETE/OVERWRITE PREVIOUSLY COMPUTED CALCULATIONS AND LOGS IN THE CORRESPONDENT SUBFOLDER**
+- ** NEWLY COMPLETED RUNS WILL DELETE/OVERWRITE PREVIOUSLY COMPUTED CALCULATIONS AND LOGS IN THE CORRESPONDENT SUBFOLDER (default)**
 
 - The scripts are configured to produce one line database outputs. All atomic data for the four ions of interest along with the configuration files are available in the *config* directory. This setup selects the relevant inputs automatically.
 
 - A database configuration file is [CLEDB_BUILD/DB.INPUT](./CLEDB_BUILD/DB.INPUT) that configures the database number of calculations (parameter resolution) that is read by either PyCELP or CLE tools.
 
-Production Databases generated via PyCELp calculation:
+Production Databases generated via PyCELP calculation:
 
 - The *[rundb_1line_with_PyCELP.py](./rundb_1line_with_PyCELP.py)* script can be run straight using default values or by specifying two direct parameter inputs, in1, in2, and in3.
 
@@ -82,9 +82,11 @@ Production Databases generated via PyCELp calculation:
         3:    Si X    1430.1nm
         4:    Si IX   3934.3nm
 
-    - **in2** -- (optional) The number of CPU threads to use. Valid options are 1 to n - 4 threads, where n represents the available system threads. If the number is bigger than available threads, the script will use n-4 threads to leave room for cpu task overhead.  By default, the script will scale n-4 parallel threads to run calculations.
+    - **in2** -- (optional) The number of CPU threads to use. Valid options are 1 to n - 1 threads, where n represents the available system threads. If the number is bigger than available threads, the script will use n-1 threads to leave room for cpu task overhead.  By default, the script will scale n-1 parallel threads to run calculations.
 
-    - **in3** -- (optional) The number of atomic levels to include in calculations. The script is internally configured to run with 25 atomic levels. Although this ensures a fast execution for the default DB.INPUT configuration, the computed databases will not be as accurate for precision inversion calculations. About 80 levels minimum are required for a quantitative analysis level database, although this is rather computationally demanding. A precompiled 80 level database can be downloaded from the link provided in the main CLEDB readme.
+    - **in3** -- (optional) The number of atomic levels to include in calculations. Default flag configures the script to run with 25 atomic levels. Although this ensures a fast execution for the default DB.INPUT configuration, the computed databases will not be as accurate for precision inversion calculations. About 90 levels minimum are required for a quantitative analysis level database, although this is rather computationally demanding. A precompiled 90 level database can be downloaded from the link provided in the main CLEDB [README][./README.md].
+    
+    - **in4** -- (optional) Boolean input to try resuming calculations in case of partial runs. Requires using the same [CLEDB_BUILD/DB.INPUT](./CLEDB_BUILD/DB.INPUT)  configuration file. This implementation will not be able to accommodate recomputing incomplety written database files. Default flag is disabled (deletes existing calculations and starts from scratch).
 
 Alternative databases  generated via CLE calculations --**Deprecated**--
 - The *[rundb_1line_with_CLE.sh](./rundb_1line_with_CLE.sh)* script requires two manual keyboard user inputs.

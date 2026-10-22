@@ -18,7 +18,7 @@ Glossary
 		Coronal Line Emission FORTRAN spectral synthesis code. It is hosted on `Github <https://github.com/arparaschiv/coronal-line-emission>`_.
 
 	CLEDB
-		Coronal Line Emission DataBase Inversion PYTHON algorithm that matches spectropolarimetric observations with CLE generated databases.
+		Coronal Line Emission DataBase Inversion algorithm that matches spectropolarimetric observations with generated databases.
 
 	CHIANTI
 		atomic database for spectroscopic diagnostics of astrophysical plasmas. See `the documentation <https://www.chiantidatabase.org/>`_.
@@ -39,13 +39,19 @@ Glossary
 	    Sets of input metadata that accompanies an observation datafile.
 
 	Inversion
-	    Mathematical process that starts from the output of a physical 		process and backtraces to recover one or more input variables. In our particular case, we start from output Stokes IQUV profiles and attempt at recovering coronal magnetic fields responsible for producing said profiles.
+	    Mathematical process that starts from the output of a physical process and backtraces to recover one or more input variables. In our particular case, we start from output Stokes IQUV profiles and attempt at recovering coronal magnetic fields responsible for producing said profiles.
+
+	IQUV inversion
+		Full Stokes IQUV inversion using a :term:`LOS` field-strength constraint through :term:`Stokes V` measurements.
+
+	IQUD Inversion
+		Stokes IQU + Doppler Oscillation :math:`B_{POS}`. The inversion is contstrain through the :term:`POS` projection of the magnetic field.
 
 	JIT
-		`Just In Time <https://numba.readthedocs.io/en/stable/reference/jit-compilation.html>`_ compilation decorator from the Numba library package.
+		`Just-in-Time <https://numba.readthedocs.io/en/stable/reference/jit-compilation.html>`_ compilation decorator from the Numba library package.
 
 	LOS
-		Line Of Sight. In CLE references this direction is along the x-axis. The CLE :math:`\varphi` angle traverses this direction. In the observer geometry, the :math:`\Theta_B` angle traverses this direction.
+		Line-of-Sight. In CLE references this direction is along the x-axis. The CLE :math:`\varphi` angle traverses this direction. In the observer geometry, the :math:`\Theta_B` angle traverses this direction.
 
 	Normal distribution
 		A Gaussian function, or a bell curve. Probability distribution that is symmetric around a mean value, in which data near the mean are more frequent in occurrence than data far from the mean.
@@ -65,8 +71,11 @@ Glossary
 	Pixel
 		A 2D representation of a signal integrating area. This is equivalent to a LOS integration of a voxel. This is also the fundamental storage datatype for Python/Numpy arrays. In this document, we refer to pixels when discussing data/array elements.
 
+	PyCELP
+		Python package for Coronal Emission Line Polarization synthesis. It is hosted on `Github <https://github.com/tschad/pycelp>`_.
+
 	POS
-		Plane Of Sky. In CLE references this direction is correspondent to the zy-plane. The CLE :math:`\vartheta` angle traverses this direction. In the observer geometry, the :math:`\Phi_B` angle traverses this direction.
+		Plane-of-Sky. In CLE references this direction is correspondent to the zy-plane. The CLE :math:`\vartheta` angle traverses this direction. In the observer geometry, the :math:`\Phi_B` angle traverses this direction.
 
 	Radiative transfer
 	    Transfer of electromagnetic radiation through a medium.
@@ -90,7 +99,7 @@ Glossary
 	    A set of values or spectra that describe the polarization state of electromagnetic radiation.
 
 	Stokes I
-	    Total intensity of spectroscopic line emission.
+	    Intensity of spectroscopic line emission.
 
 	Stokes Q and U
 	    Linear polarization components of spectroscopic line emission.
