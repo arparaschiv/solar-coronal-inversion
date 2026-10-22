@@ -199,15 +199,15 @@ Some cases are not yet fully implemented or available. The available datafiles c
 * 4. CoMP IQUD test example
 	Stokes IQU data with no Stokes V measurement. This example utilizes a real observation from CoMP from on March 27 2012. CoMP is not capable of routinely measuring Stokes V. UCoMP ingestion is also implemented in CLEDB. Multiple real-life coronal structures are observed. Because Stokes V is not measured, we do not get access to a 1-line analytical solution via the :ref:`BLOS_PROC <blos-label>` module.
 
-  .. list-table::
-     :widths: 63 36
-     :align: center
+	.. list-table::
+		:widths: 63 36
+		:align: center
 
-     * - .. image:: figs/comp_20120327_iqu.png
-            :width: 100%
+		* - .. image:: figs/comp_20120327_iqu.png
+			:width: 100%
 
-       - .. image:: figs/comp_20120327_blos.png
-            :width: 100%
+		- .. image:: figs/comp_20120327_blos.png
+			:width: 100%
 
 	Doppler oscillation analysis B_POS is required in addition to the CoMP/UCoMP observations for infering a vector magnetic solution. This data and methods of inferring POS magnetic maps from Doppler oscillations are described in `Yang et. al, Sci. 2020 <https://ui.adsabs.harvard.edu/abs/2020Sci...369..694Y/abstract>`_, and `Yang, et. al, Sci. 2024 <https://ui.adsabs.harvard.edu/abs/2024Sci...386...76Y/abstract>`_. We utilize ``sobs_dopp`` that encodes the :term:`POS` projected magnetic field strength and the wave propagation angles. The *test_2line* scripts will create an empty ``sobs_dopp`` array when a full Stokes IQUV inversion is pursued due to the implemented numba optimization schemes.
 
