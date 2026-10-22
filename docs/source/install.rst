@@ -203,9 +203,9 @@ Some cases are not yet fully implemented or available. The available datafiles c
 		:widths: 63 36
 		:align: center
 
-		* - .. image:: figs/comp_20120327_iqu.png
-			:width: 100%
-
+		*
+			- .. image:: figs/comp_20120327_iqu.png
+				:width: 100%
 			- .. image:: figs/comp_20120327_blos.png
 				:width: 100%
 
