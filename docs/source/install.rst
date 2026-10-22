@@ -199,15 +199,15 @@ Some cases are not yet fully implemented or available. The available datafiles c
 * 4. CoMP IQUD test example
 	Stokes IQU data with no Stokes V measurement. This example utilizes a real observation from CoMP from on March 27 2012. CoMP is not capable of routinely measuring Stokes V. UCoMP ingestion is also implemented in CLEDB. Multiple real-life coronal structures are observed. Because Stokes V is not measured, we do not get access to a 1-line analytical solution via the :ref:`BLOS_PROC <blos-label>` module.
 
-	.. list-table::
-		:widths: 69 29
-		:align: center
+  .. list-table::
+     :widths: 69 29
+     :align: center
 
-		* - .. image:: figs/comp_20120327_iqu.png
-			:width: 100%
+     * - .. image:: figs/comp_20120327_iqu.png
+            :width: 100%
 
-		- .. image:: figs/comp_20120327_blos.png
-			:width: 100%
+       - .. image:: figs/comp_20120327_blos.png
+            :width: 100%
 
 ..  image:: figs/comp_20120327_iqu.png :width: 800
 
