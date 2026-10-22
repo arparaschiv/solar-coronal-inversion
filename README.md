@@ -1,4 +1,16 @@
-# **CLEDB Coronal Magnetic Field Database Inversion**
+<!--# **CLEDB Coronal Magnetic Field Database Inversion**-->
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="docs/source/_static/cledb-5f-grid-loops-dark.png">
+    <source media="(prefers-color-scheme: light)"
+            srcset="docs/source/_static/cledb-5f-grid-loops-light.png">
+    <img alt="CLEDB — Coronal Line Emission DataBase"
+         src="docs/source/_static/cledb-5f-grid-loops-dark.png"
+         width="1000">
+  </picture>
+</p>
+
 [![github](https://img.shields.io/badge/GitHub-arparaschiv%2Fsolar--coronal--inversion-blue.svg?style=flat)](https://github.com/arparaschiv/solar-coronal-inversion)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 [![ADS](https://img.shields.io/badge/CLEDB%20ADS-SoPhys%2C%20V297%2C%20%2063-red)](https://ui.adsabs.harvard.edu/abs/2022SoPh..297...63P/abstract)
@@ -11,9 +23,9 @@
 
 ### Repository for **CLEDB** - the **C**oronal **L**ine **E**mission **D**ata**B**ase inversion.
 
-**Authors:** Alin Paraschiv and Philip Judge. National Solar Observatory & High Altitude Observatory
+**Authors:** Alin Paraschiv and Philip Judge. National Solar Observatory & NCAR High Altitude Observatory
 
-**Contact:** arparaschiv "at" nso.edu
+<!--**Contact:** arparaschiv "at" nso.edu-->
 
 #### **Main aim:**
 Invert coronal vector magnetic field products from observations of polarized light.
