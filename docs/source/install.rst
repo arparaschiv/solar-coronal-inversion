@@ -202,8 +202,8 @@ Some cases are not yet fully implemented or available. The available datafiles c
 	.. raw:: html
 
 		<div style="display: flex; gap: 10px;">
-		<img src="figs/comp_20120327_iqu.png" style="width: 69%;">
-		<img src="figs/comp_20120327_blos.png" style="width: 29%;">
+		<img src="_images/comp_20120327_iqu.png" style="width: 69%;">
+		<img src="_imagesq/comp_20120327_blos.png" style="width: 29%;">
 		</div>
 
 ..  image:: figs/comp_20120327_iqu.png :width: 800
