@@ -209,11 +209,7 @@ Some cases are not yet fully implemented or available. The available datafiles c
        - .. image:: figs/comp_20120327_blos.png
             :width: 100%
 
-..  image:: figs/comp_20120327_iqu.png :width: 800
-
 	Doppler oscillation analysis B_POS is required in addition to the CoMP/UCoMP observations for infering a vector magnetic solution. This data and methods of inferring POS magnetic maps from Doppler oscillations are described in `Yang et. al, Sci. 2020 <https://ui.adsabs.harvard.edu/abs/2020Sci...369..694Y/abstract>`_, and `Yang, et. al, Sci. 2024 <https://ui.adsabs.harvard.edu/abs/2024Sci...386...76Y/abstract>`_. We utilize ``sobs_dopp`` that encodes the :term:`POS` projected magnetic field strength and the wave propagation angles. The *test_2line* scripts will create an empty ``sobs_dopp`` array when a full Stokes IQUV inversion is pursued due to the implemented numba optimization schemes.
-
-..  image:: figs/comp_20120327_blos.png :width: 200
 
 	`The data (5.8MB obsstokes_CoMP_IQUD_example_20120327.tar.gz) can be downloaded from gdrive <https://drive.google.com/file/d/1P1XvRy7VXehkJvmx_zVmhzlSyacOVwtb/view?usp=sharing>`_.
 
